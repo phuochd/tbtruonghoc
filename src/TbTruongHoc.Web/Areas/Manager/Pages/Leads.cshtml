@@ -1,0 +1,145 @@
+@page "~/manager/leads"
+@model TbTruongHoc.Web.Areas.Manager.Pages.LeadsModel
+@using Piranha.Manager
+@*
+    Story 1.5 (AD-3): Manager-only "Danh sách khách để lại thông tin" screen.
+    Follows piranha.core v12.0's own AliasEdit.cshtml structure exactly (see
+    this story's Code Map): a Razor Page under Areas/Manager/Pages, explicitly
+    laid out inside Piranha Manager's own _Layout.cshtml (the same layout the
+    built-in Aliases/Pages/Media screens use), with a hand-written Vue 2
+    instance - loaded against the globally-available Vue already bundled by
+    Piranha's own piranha-deps script - driving the list/filter/detail
+    behavior against LeadApiController. No Vue-Router SPA route, no
+    webpack/gulp build step (Boundaries &amp; Constraints).
+
+    Every interpolated value below is a Vue mustache ({{ }}) expression, which
+    Vue HTML-escapes by default - the same convention _QuoteRequestForm.cshtml
+    documents. Nothing here uses v-html.
+*@
+@{
+    Layout = "~/Areas/Manager/Shared/_Layout.cshtml";
+    ViewBag.Title = "Danh sách khách để lại thông tin";
+    ViewBag.MenuItem = "Leads";
+}
+@section script
+{
+    <script src="~/assets/js/manager-leads.js" asp-append-version="true"></script>
+    <script>
+        piranha.permissions.load(function () {
+            managerLeads.load(null, "Tất cả site");
+        });
+    </script>
+}
+
+<div id="leads">
+    <div class="top">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">Nội dung</li>
+                <li class="breadcrumb-item active" aria-current="page">Danh sách khách để lại thông tin</li>
+            </ol>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="top-nav">
+                <div class="dropdown d-inline">
+                    <button class="btn btn-primary btn-labeled dropdown-toggle" type="button" data-toggle="dropdown">
+                        <span class="btn-label"><i class="fas fa-globe"></i></span>
+                        {{ siteTitle }}
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#" data-site-id="" data-site-title="Tất cả site" v-on:click.prevent="selectSite">Tất cả site</a>
+                        @foreach (var site in Model.Sites)
+                        {
+                            <a class="dropdown-item" href="#" data-site-id="@site.Id" data-site-title="@site.Title" v-on:click.prevent="selectSite">@site.Title</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app" :class="{ ready: !loading }">
+        <div class="container-fluid">
+            <div v-if="error" class="row">
+                <div class="col">
+                    <div class="alert alert-danger" role="alert">
+                        Không thể tải dữ liệu. Phiên đăng nhập có thể đã hết hạn - vui lòng tải lại trang và đăng nhập lại.
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div v-if="items.length !== 0" class="col">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Site</th>
+                                <th>Loại form</th>
+                                <th>Họ tên</th>
+                                <th>Số điện thoại</th>
+                                <th>Ngày gửi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in items" v-on:click="showDetail(item.id)" style="cursor:pointer">
+                                <td>{{ item.siteName }}</td>
+                                <td>{{ item.formType }}</td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.phone }}</td>
+                                <td>{{ formatDate(item.createdAt) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-else class="col">
+                    <div class="empty-info">
+                        <p>Chưa có khách để lại thông tin nào.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="leadDetailModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" v-if="detail">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user"></i> {{ detail.name }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Site</dt>
+                        <dd class="col-sm-8">{{ detail.siteName }}</dd>
+
+                        <dt class="col-sm-4">Loại form</dt>
+                        <dd class="col-sm-8">{{ detail.formType }}</dd>
+
+                        <dt class="col-sm-4">Họ tên</dt>
+                        <dd class="col-sm-8">{{ detail.name }}</dd>
+
+                        <dt class="col-sm-4">Số điện thoại</dt>
+                        <dd class="col-sm-8">{{ detail.phone }}</dd>
+
+                        <dt class="col-sm-4">Sản phẩm quan tâm</dt>
+                        <dd class="col-sm-8">{{ detail.productOfInterest || '—' }}</dd>
+
+                        <dt class="col-sm-4">Lời nhắn</dt>
+                        <dd class="col-sm-8">{{ detail.message || '—' }}</dd>
+
+                        <dt class="col-sm-4">Địa chỉ khảo sát</dt>
+                        <dd class="col-sm-8">{{ detail.locationAddress || '—' }}</dd>
+
+                        <dt class="col-sm-4">Ngoài khu vực phục vụ</dt>
+                        <dd class="col-sm-8">{{ formatOutsideServiceArea(detail.isOutsideServiceArea) }}</dd>
+
+                        <dt class="col-sm-4">Ngày gửi</dt>
+                        <dd class="col-sm-8">{{ formatDate(detail.createdAt) }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

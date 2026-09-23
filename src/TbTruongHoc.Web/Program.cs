@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Piranha;
 using Piranha.AttributeBuilder;
 using Piranha.AspNetCore.Identity.MySQL;
@@ -72,6 +73,11 @@ var app = builder.Build();
 // were ever removed - the hook below guards for that.
 var siteContentCache = app.Services.GetService<ICache>();
 
+// Resolved once at startup for the Manager menu registration's defensive
+// null-check below (same resolve-once-before-UsePiranha pattern as
+// siteContentCache above).
+var startupLogger = app.Services.GetService<ILogger<Program>>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -81,6 +87,46 @@ app.UsePiranha(options =>
 {
     // Initialize Piranha
     App.Init(options.Api);
+
+    // Story 1.5 (AD-3): register the "Danh sách khách để lại thông tin" entry
+    // into Piranha's own Manager menu - mirrors this file's existing inline-
+    // registration style for hooks/seeding below rather than introducing a
+    // new IModule class (Code Map).
+    //
+    // Piranha.Manager.Menu.Items (see Piranha.Manager.Menu's own source) is a
+    // strictly two-level structure: top-level entries are headers only
+    // (_Menu.cshtml renders a group's own Route as nothing - only its
+    // Css/Name - and then loops group.Items for the actual clickable links),
+    // so the new leaf MenuItem must be added to an existing group's Items,
+    // not appended to Menu.Items directly. "Content" is the built-in group
+    // this naturally belongs under, alongside "Pages"/"Media"/"Comments".
+    // Guarded so re-running this callback (e.g. a second WebApplicationFactory
+    // in the same process) never adds a duplicate entry.
+    var contentMenuGroup = Piranha.Manager.Menu.Items["Content"];
+    if (contentMenuGroup != null)
+    {
+        if (contentMenuGroup.Items["Leads"] == null)
+        {
+            contentMenuGroup.Items.Add(new Piranha.Manager.MenuItem
+            {
+                InternalId = "Leads",
+                Name = "Danh sách khách để lại thông tin",
+                Route = "~/manager/leads",
+                Policy = Piranha.Manager.Permission.Admin,
+                Css = "fas fa-address-book"
+            });
+        }
+    }
+    else
+    {
+        // Should never happen with piranha.manager 12.0.0's built-in menu -
+        // this only fires if a future Piranha upgrade renames/removes the
+        // "Content" group. Logged rather than silently skipped, since the
+        // failure mode is otherwise invisible: the Leads screen would still
+        // work at ~/manager/leads, just with no menu link to reach it.
+        startupLogger?.LogWarning(
+            "Could not register the Manager menu entry for the Leads screen: Piranha.Manager.Menu.Items has no 'Content' group. The screen is still reachable directly at ~/manager/leads.");
+    }
 
     // Defense in depth for Story 1.3's Zalo/Maps fields: _ContactBlock.cshtml
     // already skips rendering an unsafe (non-http/https) scheme, but reject
