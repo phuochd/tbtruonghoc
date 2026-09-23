@@ -10,8 +10,8 @@ namespace TbTruongHoc.Web.Data;
 /// content instance, so Piranha Manager's built-in per-site settings edit UI
 /// has something to open on first use. Mirrors <see cref="SiteSeed.EnsureSeededAsync"/>'s
 /// get-or-create pattern: never overwrites an already-saved instance, so a
-/// Manager-edited Phone/ZaloUrl/Address/MapsUrl value is never clobbered by a
-/// later restart.
+/// Manager-edited Phone/ZaloUrl/Address/MapsUrl/Ga4MeasurementId/
+/// SearchConsoleVerification value is never clobbered by a later restart.
 /// </summary>
 public static class SiteSettingsSeed
 {

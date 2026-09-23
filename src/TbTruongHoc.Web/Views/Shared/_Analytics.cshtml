@@ -1,0 +1,40 @@
+@using TbTruongHoc.Web.Models
+@*
+    Story 1.6 (FR-4): renders this site's own GA4 gtag.js snippet and
+    Search Console verification meta tag - never hardcoded, never another
+    site's values. Included in _Layout.cshtml's <head> so both apply to
+    every page on both sites without touching per-type views, mirroring
+    _ContactBlock.cshtml's read pattern.
+
+    Both pieces render only when their own field is set - fields are
+    expected to stay empty in dev/pre-launch, and an empty GA4 ID would
+    only emit a broken gtag.js call under no real property. Values are
+    also format-validated (SiteSettingsValidation), same defense-in-depth
+    convention as Story 1.3's Zalo/Maps URLs: an invalid value is treated
+    as unset here, and rejected outright at save time by Program.cs's
+    OnBeforeSave hook - because these values are embedded straight into an
+    inline <script> and an attribute, a value crafted to break out of
+    either (a quote, an angle bracket) must never reach either place.
+*@
+@{
+    var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
+    var ga4Id = settings?.Ga4MeasurementId?.Value;
+    var verification = settings?.SearchConsoleVerification?.Value;
+
+    var hasGa4Id = SiteSettingsValidation.IsValidGa4MeasurementId(ga4Id);
+    var hasVerification = SiteSettingsValidation.IsValidSearchConsoleVerification(verification);
+}
+@if (hasVerification)
+{
+    <meta name="google-site-verification" content="@verification">
+}
+@if (hasGa4Id)
+{
+    <script async src="https://www.googletagmanager.com/gtag/js?id=@ga4Id"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', '@ga4Id');
+    </script>
+}

@@ -15,7 +15,8 @@ duplicates.
 - .NET 8 SDK (pinned via `global.json`; this machine may also have newer
   SDKs installed, but `global.json` forces `dotnet` commands in this repo
   onto 8.0.406)
-- Docker Desktop (for the local MariaDB + app Compose stack)
+- Docker Desktop (for the local MariaDB container only — the app itself
+  runs via `dotnet run`, not a container)
 
 ## One-time local setup: hosts-file aliases
 
@@ -45,52 +46,50 @@ cp .env.example .env
 The defaults in `.env.example` work for local dev as-is; change them if you
 want different credentials.
 
-## Running with Docker Compose (recommended)
+## Running the app
 
-```
-docker compose up -d
-docker compose ps
-```
+Docker is only for MariaDB — the app itself always runs via `dotnet run`,
+no container build needed.
 
-- `mariadb` runs pinned to `mariadb:10.11` (never `:latest`), with a named
-  volume (`mariadb-data`) for the database files.
-- `piranha-app` builds from `src/TbTruongHoc.Web/Dockerfile`, waits for
-  `mariadb`'s healthcheck before starting, and applies Piranha's EF Core
-  migrations automatically on first startup.
-- Uploaded media is bind-mounted at `./media` on the host so it persists
-  across container restarts/rebuilds.
+`appsettings.json` deliberately ships with an empty `ConnectionStrings:piranha`
+value (no credentials are hardcoded in tracked files), so supply it via an
+environment variable using the same values as your `.env`:
 
-Once containers are up, visit:
+1. Start the database: `docker compose up -d mariadb`
+2. Set the connection string and environment for your shell session, e.g. in
+   PowerShell:
+   ```
+   $env:ConnectionStrings__piranha = "server=localhost;port=3307;database=piranha;uid=piranha;password=<value from .env>"
+   $env:ASPNETCORE_ENVIRONMENT = "Development"
+   ```
+   (or the bash equivalent: `export ConnectionStrings__piranha="..."` /
+   `export ASPNETCORE_ENVIRONMENT="Development"`)
+3. `dotnet run --project src/TbTruongHoc.Web` (talks to the Compose-exposed
+   `mariadb` port on `localhost:3307` — mapped off the default `3306` in
+   case another local MySQL/MariaDB is already using it)
 
-- `http://tbtruonghoc.local:8091/` — Site A (default)
-- `http://trongdoitam.local:8091/` — Site B
+`ASPNETCORE_ENVIRONMENT=Development` is required for the `.local` hostname
+mapping above (`appsettings.Development.json`) to apply — without it, the
+app falls back to `appsettings.json`'s production hostnames
+(`tbtruonghoc.com` / `trongdoitam.net`) and won't match your hosts-file
+entries.
+
+By default `dotnet run` listens on its own Kestrel port (printed to the
+console, e.g. `http://localhost:5236`) — visit:
+
+- `http://tbtruonghoc.local:<port>/` — Site A (default)
+- `http://trongdoitam.local:<port>/` — Site B
 - Any other/unmapped hostname falls back to the default site (Site A).
 
 The Piranha Manager is at `/manager` (credentials are seeded by Piranha's
 default identity seed on first run — see the console output on first
 startup for the generated admin login).
 
-## Running locally without Docker
-
-`appsettings.json` deliberately ships with an empty `ConnectionStrings:piranha`
-value (no credentials are hardcoded in tracked files). Supply it via an
-environment variable, using the same values as your `.env`:
-
-1. Start only the database: `docker compose up -d mariadb`
-2. Set the connection string for your shell session, e.g. in PowerShell:
-   ```
-   $env:ConnectionStrings__piranha = "server=localhost;port=3307;database=piranha;uid=piranha;password=<value from .env>"
-   ```
-   (or the bash equivalent: `export ConnectionStrings__piranha="..."`)
-3. `dotnet run --project src/TbTruongHoc.Web` (talks to the Compose-exposed
-   `mariadb` port on `localhost:3307` — mapped off the default `3306` in
-   case another local MySQL/MariaDB is already using it)
-
 ## Running tests
 
 `tests/TbTruongHoc.Web.Tests` boots the real app in-process against the real
 MariaDB (no mocked/in-memory provider), so the database must already be
-running and reachable the same way as "Running locally without Docker" above:
+running and reachable the same way as "Running the app" above:
 
 1. `docker compose up -d mariadb`
 2. Set `ConnectionStrings__piranha` in your shell session (same as step 2
