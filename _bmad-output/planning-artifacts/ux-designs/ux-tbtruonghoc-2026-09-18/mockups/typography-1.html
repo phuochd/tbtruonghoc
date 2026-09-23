@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Site A (tbtruonghoc.com) — Webfont candidates — typography-1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--
+  PURPOSE
+  This is a font-picker utility, not a production mock. It exists to help Phước make a
+  deliberate webfont choice for tbtruonghoc.com (Site A), replacing the system-font-stack
+  that DESIGN.md flags as "decision by survival, not a real choice" (see DESIGN.md
+  Typography section, the [ASSUMPTION: ...] block).
+
+  Locked from DESIGN.md, held constant across all 4 candidates so ONLY the typeface varies:
+    - Colors: bg #FCFEFD, primary #0E7A6C, text #123832, cta #E3A63B / cta-text #2B1B02,
+      surface-tint #EFF8F6, border-tint #BFE3DA (price-block), label color = primary.
+    - Type scale/roles/weights: display 34px/800, heading-md 19px/700, body 13.5px/400,
+      label 11px/700 tracked 0.05em, price 24px/800, cta 14px/700 — sizes and weights are
+      copied verbatim from DESIGN.md; only `font-family` changes per column below.
+
+  Network access to fonts.googleapis.com / fonts.gstatic.com is intentional for this one
+  utility page, to load real Google Fonts for a genuine side-by-side comparison.
+
+  This page must NOT be treated as a rendered/approved mock per DESIGN.md's own preamble —
+  it exists to produce ONE input to a future DESIGN.md typography-token update, not to
+  replace or supersede DESIGN.md itself.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Mulish:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#FCFEFD;
+    --surface:#FFFFFF;
+    --primary:#0E7A6C;
+    --text:#123832;
+    --text-muted:#4F6E68;
+    --border-neutral:#E3ECE9;
+    --cta:#E3A63B;
+    --cta-text:#2B1B02;
+    --surface-tint:#EFF8F6;
+    --border-tint:#BFE3DA;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    background:#E9EFEC;
+    color:var(--text);
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding:32px 24px 80px;
+  }
+
+  .page-header{
+    max-width:1280px;
+    margin:0 auto 28px;
+  }
+  .page-header h1{
+    font-size:22px;
+    font-weight:800;
+    margin:0 0 6px;
+    color:var(--text);
+  }
+  .page-header p{
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--text-muted);
+    margin:0;
+    max-width:780px;
+  }
+
+  .grid{
+    max-width:1280px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+    gap:20px;
+    align-items:start;
+  }
+
+  .card{
+    background:var(--bg);
+    border:1px solid var(--border-neutral);
+    border-radius:12px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .card-head{
+    background:var(--surface);
+    border-bottom:1px solid var(--border-neutral);
+    padding:16px 20px;
+  }
+  .card-head .font-name{
+    font-size:15px;
+    font-weight:800;
+    color:var(--primary);
+    margin:0 0 4px;
+  }
+  .card-head .personality{
+    font-size:12px;
+    line-height:1.5;
+    color:var(--text-muted);
+    margin:0;
+  }
+
+  .sample{
+    padding:24px 20px 28px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+
+  .hero-headline{
+    font-size:26px;      /* scaled down from DESIGN.md's 34px display so 4 columns fit side by side; weight/family unchanged */
+    font-weight:800;
+    line-height:1.22;
+    color:var(--text);
+    margin:0;
+  }
+
+  .heading-md{
+    font-size:19px;
+    font-weight:700;
+    line-height:1.3;
+    color:var(--text);
+    margin:0;
+  }
+
+  .body-copy{
+    font-size:13.5px;
+    font-weight:400;
+    line-height:1.6;
+    color:var(--text-muted);
+    margin:0;
+  }
+
+  .price-block{
+    background:var(--surface-tint);
+    border:1px solid var(--border-tint);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .price-label{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--primary);
+    margin:0 0 4px;
+  }
+  .price-value{
+    font-size:24px;
+    font-weight:800;
+    line-height:1.2;
+    color:var(--primary);
+  }
+
+  .cta-btn{
+    display:inline-block;
+    align-self:flex-start;
+    background:var(--cta);
+    color:var(--cta-text);
+    font-size:14px;
+    font-weight:700;
+    line-height:1.2;
+    border:none;
+    border-radius:6px;
+    padding:12px 22px;
+  }
+
+  .diacritic-check{
+    font-size:11px;
+    color:var(--text-muted);
+    border-top:1px dashed var(--border-neutral);
+    padding-top:10px;
+    margin-top:2px;
+  }
+  .diacritic-check b{ color:var(--text); font-weight:700; }
+
+  /* ============================================================
+     CANDIDATE 1 — Inter
+     Google Fonts import (combined in <head>):
+       family=Inter:wght@400;600;700;800
+     CSS font-family stack:
+       'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+     Personality: neutral modern-SaaS / institutional workhorse — the safest, most
+     "default-good" choice; reads competent and clean but closest in spirit to a system
+     font, so it under-commits on brand distinction.
+     ============================================================ */
+  .font-inter{ font-family:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+  /* ============================================================
+     CANDIDATE 2 — Plus Jakarta Sans
+     Google Fonts import (combined in <head>):
+       family=Plus+Jakarta+Sans:wght@400;600;700;800
+     CSS font-family stack:
+       'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+     Personality: geometric with slightly warmer, rounder-shouldered letterforms than
+     Inter — still professional/institutional but a touch friendlier, good middle ground
+     between "corporate" and "approachable."
+     ============================================================ */
+  .font-jakarta{ font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+  /* ============================================================
+     CANDIDATE 3 — IBM Plex Sans
+     Google Fonts import (combined in <head>):
+       family=IBM+Plex+Sans:wght@400;500;600;700
+     CSS font-family stack:
+       'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+     NOTE: IBM Plex Sans's heaviest Google Fonts weight is 700 (no 800 cut exists for this
+     family). Roles specced at weight 800 in DESIGN.md (display/heading-lg/heading-sm/
+     heading-xs/price/stat-number) will render at the nearest available weight (700) here —
+     a real characteristic of choosing this family, not a bug in this page.
+     Personality: technical/engineered feel (IBM's own engineering-docs typeface) — matches
+     a "spec-driven B2B" register well, reads precise and serious, less warm than the others.
+     ============================================================ */
+  .font-plex{ font-family:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .font-plex .hero-headline, .font-plex .price-value{ font-weight:700; } /* see NOTE above: 800 not available in this family */
+
+  /* ============================================================
+     CANDIDATE 4 — Mulish
+     Google Fonts import (combined in <head>):
+       family=Mulish:wght@400;600;700;800
+     CSS font-family stack:
+       'Mulish', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+     Personality: rounder terminals and a softer, brighter feel than the other three —
+     leans into the "tươi sáng" (brighter/fresher, school-age-adjacent) brief note while
+     staying legible and business-appropriate; the most distinct from Site B's Be Vietnam
+     Pro (which is warm/humanist rather than geometric-rounded).
+     ============================================================ */
+  .font-mulish{ font-family:'Mulish', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+</style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>Site A (tbtruonghoc.com) — webfont candidates</h1>
+    <p>Same locked palette and type scale from DESIGN.md on all four — only the font-family changes. Same Vietnamese B2B content in every card so diacritic rendering (ệ, ẫ, ộ…) is directly comparable. Pick one to replace the current system-font placeholder.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- CANDIDATE 1: Inter -->
+    <div class="card font-inter">
+      <div class="card-head">
+        <p class="font-name">Inter</p>
+        <p class="personality">Neutral modern-SaaS / institutional workhorse — safe and competent, but closest in spirit to a system font.</p>
+      </div>
+      <div class="sample">
+        <p class="hero-headline">Thiết bị trường học chuyên nghiệp, đồng hành cùng hàng trăm ngôi trường</p>
+        <p class="heading-md">Nhóm sản phẩm nổi bật</p>
+        <p class="body-copy">Bàn ghế học sinh khung thép sơn tĩnh điện, mặt gỗ công nghiệp phủ melamine chống trầy xước, thiết kế công thái học phù hợp nhiều lứa tuổi, đảm bảo tiêu chuẩn an toàn cho trường học và cơ sở giáo dục mầm non.</p>
+        <div class="price-block">
+          <span class="price-label">Giá tham khảo</span>
+          <span class="price-value">185.000đ / chiếc</span>
+        </div>
+        <button class="cta-btn" type="button">Đăng ký khảo sát miễn phí</button>
+        <p class="diacritic-check">Diacritic check: <b>chuyên nghiệp · đồng hành · nổi bật · trường học</b></p>
+      </div>
+    </div>
+
+    <!-- CANDIDATE 2: Plus Jakarta Sans -->
+    <div class="card font-jakarta">
+      <div class="card-head">
+        <p class="font-name">Plus Jakarta Sans</p>
+        <p class="personality">Geometric but slightly warmer/rounder than Inter — still professional, a touch friendlier.</p>
+      </div>
+      <div class="sample">
+        <p class="hero-headline">Thiết bị trường học chuyên nghiệp, đồng hành cùng hàng trăm ngôi trường</p>
+        <p class="heading-md">Nhóm sản phẩm nổi bật</p>
+        <p class="body-copy">Bàn ghế học sinh khung thép sơn tĩnh điện, mặt gỗ công nghiệp phủ melamine chống trầy xước, thiết kế công thái học phù hợp nhiều lứa tuổi, đảm bảo tiêu chuẩn an toàn cho trường học và cơ sở giáo dục mầm non.</p>
+        <div class="price-block">
+          <span class="price-label">Giá tham khảo</span>
+          <span class="price-value">185.000đ / chiếc</span>
+        </div>
+        <button class="cta-btn" type="button">Đăng ký khảo sát miễn phí</button>
+        <p class="diacritic-check">Diacritic check: <b>chuyên nghiệp · đồng hành · nổi bật · trường học</b></p>
+      </div>
+    </div>
+
+    <!-- CANDIDATE 3: IBM Plex Sans -->
+    <div class="card font-plex">
+      <div class="card-head">
+        <p class="font-name">IBM Plex Sans</p>
+        <p class="personality">Technical/engineered feel — matches a spec-driven B2B register, precise and serious, less warm.</p>
+      </div>
+      <div class="sample">
+        <p class="hero-headline">Thiết bị trường học chuyên nghiệp, đồng hành cùng hàng trăm ngôi trường</p>
+        <p class="heading-md">Nhóm sản phẩm nổi bật</p>
+        <p class="body-copy">Bàn ghế học sinh khung thép sơn tĩnh điện, mặt gỗ công nghiệp phủ melamine chống trầy xước, thiết kế công thái học phù hợp nhiều lứa tuổi, đảm bảo tiêu chuẩn an toàn cho trường học và cơ sở giáo dục mầm non.</p>
+        <div class="price-block">
+          <span class="price-label">Giá tham khảo</span>
+          <span class="price-value">185.000đ / chiếc</span>
+        </div>
+        <button class="cta-btn" type="button">Đăng ký khảo sát miễn phí</button>
+        <p class="diacritic-check">Diacritic check: <b>chuyên nghiệp · đồng hành · nổi bật · trường học</b></p>
+      </div>
+    </div>
+
+    <!-- CANDIDATE 4: Mulish -->
+    <div class="card font-mulish">
+      <div class="card-head">
+        <p class="font-name">Mulish</p>
+        <p class="personality">Rounder, brighter, most distinct from Site B's Be Vietnam Pro — leans into the "tươi sáng" brief note.</p>
+      </div>
+      <div class="sample">
+        <p class="hero-headline">Thiết bị trường học chuyên nghiệp, đồng hành cùng hàng trăm ngôi trường</p>
+        <p class="heading-md">Nhóm sản phẩm nổi bật</p>
+        <p class="body-copy">Bàn ghế học sinh khung thép sơn tĩnh điện, mặt gỗ công nghiệp phủ melamine chống trầy xước, thiết kế công thái học phù hợp nhiều lứa tuổi, đảm bảo tiêu chuẩn an toàn cho trường học và cơ sở giáo dục mầm non.</p>
+        <div class="price-block">
+          <span class="price-label">Giá tham khảo</span>
+          <span class="price-value">185.000đ / chiếc</span>
+        </div>
+        <button class="cta-btn" type="button">Đăng ký khảo sát miễn phí</button>
+        <p class="diacritic-check">Diacritic check: <b>chuyên nghiệp · đồng hành · nổi bật · trường học</b></p>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

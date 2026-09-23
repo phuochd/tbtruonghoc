@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direction 2 — Thương Hiệu Rộng Rãi</title>
+<style>
+  /*
+    =========================================================
+    DIRECTION 2 — "THƯƠNG HIỆU RỘNG RÃI" (Spacious Confident Brand)
+    Thiết Bị Trường Học Ngọc Anh — Site A homepage hero screen
+    Hero state shown: PHOTO-CAROUSEL (large, full-bleed, real
+    legacy product photo as background).
+
+    PALETTE — fixed, unchanged:
+      primary teal #0E7A6C | amber CTA #E3A63B (ink #2B1B02)
+      body bg #FCFEFD | body text #123832
+      hero subtext #D8F3EC | secondary/outline #6FBFAE
+    Tints used (trust surface #EFF8F6, border #BFE3DA, neutral
+    card border #E3ECE9) are desaturated derivatives of the fixed
+    teal only. Outer wrapper (#EDEFEF) is tool chrome, not product.
+    =========================================================
+  */
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: #EDEFEF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1B2733;
+  }
+  .rationale {
+    max-width: 1200px; margin: 28px auto 8px; padding: 16px 22px;
+    background: #fff; border: 1px solid #DADFDD; border-radius: 8px;
+  }
+  .rationale h1 { font-size: 17px; margin: 0 0 6px; color: #123832; }
+  .rationale p { font-size: 13.5px; line-height: 1.55; color: #45524D; margin: 4px 0; }
+  .rationale .tag {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    background: #0E7A6C; color: #fff; border-radius: 4px;
+    padding: 2px 8px; margin-right: 8px; letter-spacing: .3px;
+  }
+
+  .browser-frame {
+    max-width: 1200px; margin: 18px auto 60px; border-radius: 10px;
+    overflow: hidden; box-shadow: 0 10px 34px rgba(0,0,0,.16);
+    border: 1px solid #D6DBD9; background: #FCFEFD;
+  }
+  .browser-chrome {
+    background: #E7ECEA; padding: 9px 14px; display: flex; align-items: center; gap: 7px;
+    border-bottom: 1px solid #D3DBD8;
+  }
+  .browser-chrome .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .browser-chrome .url {
+    margin-left: 8px; background: #fff; border: 1px solid #D3DBD8; border-radius: 6px;
+    padding: 4px 12px; font-size: 11.5px; color: #5b6b66; flex: 1; max-width: 380px;
+  }
+
+  /* ---------- simple nav (no mega-menu) ---------- */
+  .nav {
+    background: #0E7A6C; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 30px;
+  }
+  .logo { font-weight: 800; font-size: 17px; letter-spacing: .6px; }
+  .main-links { display: flex; align-items: center; gap: 22px; font-size: 12.5px; font-weight: 600; }
+  .main-links a { color: #fff; text-decoration: none; opacity: .92; }
+  .contact-chip-float {
+    position: absolute; top: 68px; right: 30px;
+    background: #E3A63B; color: #2B1B02; font-size: 11px; font-weight: 700;
+    padding: 6px 12px; border-radius: 20px; box-shadow: 0 3px 10px rgba(0,0,0,.2);
+    z-index: 5;
+  }
+  .nav-wrap { position: relative; }
+
+  /* ---------- hero: LARGE, full-bleed photo carousel ---------- */
+  .hero {
+    position: relative;
+    min-height: 460px;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    background:
+      linear-gradient(180deg, rgba(14,122,108,.30) 0%, rgba(14,122,108,.72) 60%, rgba(14,122,108,.88) 100%),
+      url('https://tbtruonghoc.com/uploaded/1/273_dth07_mamnon-1.jpg') center/cover no-repeat;
+  }
+  .hero-inner { max-width: 620px; padding: 0 24px; }
+  .hero .eyebrow {
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+    color: #D8F3EC; text-transform: uppercase; margin-bottom: 14px;
+    border: 1px solid rgba(216,243,236,.5); border-radius: 20px; padding: 4px 12px;
+  }
+  .hero h2 {
+    font-size: 34px; line-height: 1.22; margin: 0 0 16px; color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,.28); font-weight: 800;
+  }
+  .hero p { font-size: 15px; line-height: 1.6; color: #D8F3EC; margin: 0 auto 26px; max-width: 460px; }
+  .cta-row { display: flex; gap: 12px; justify-content: center; }
+  .btn-primary {
+    background: #E3A63B; color: #2B1B02; border: none;
+    font-size: 14px; font-weight: 700; padding: 13px 22px; border-radius: 7px;
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,.05); color: #fff; border: 1.5px solid #D8F3EC;
+    font-size: 14px; font-weight: 600; padding: 12px 21px; border-radius: 7px;
+  }
+  .carousel-controls {
+    position: absolute; bottom: 22px; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+  }
+  .arrow {
+    width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,.16);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; border: 1px solid rgba(255,255,255,.4);
+  }
+  .dots { display: flex; gap: 7px; }
+  .dots span { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.4); }
+  .dots span.active { background: #E3A63B; width: 20px; border-radius: 4px; }
+
+  /* ---------- featured categories (only 6 of 11, spacious cards) ---------- */
+  .featured-section { padding: 48px 40px 20px; background: #FCFEFD; text-align: center; }
+  .featured-section h3 { font-size: 19px; margin: 0 0 6px; color: #123832; }
+  .featured-section .sub { font-size: 13px; color: #45524D; margin: 0 0 28px; }
+  .featured-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: left;
+  }
+  .feat-card {
+    background: #FCFEFD; border: 1px solid #E3ECE9; border-radius: 12px;
+    padding: 22px 20px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .feat-card .icon { width: 34px; height: 34px; border-radius: 8px; background: #0E7A6C; }
+  .feat-card span { font-size: 13.5px; font-weight: 700; color: #123832; line-height: 1.35; }
+  .view-all {
+    display: inline-block; margin-top: 26px; font-size: 12.5px; font-weight: 700; color: #0E7A6C;
+  }
+
+  /* ---------- trust band — placed LOWER, below categories ---------- */
+  .trust-band {
+    margin: 36px 40px 44px; padding: 22px 28px; background: #EFF8F6;
+    border: 1px solid #BFE3DA; border-radius: 12px;
+    display: flex; flex-wrap: wrap; gap: 22px; justify-content: center;
+  }
+  .trust-item { text-align: center; min-width: 130px; }
+  .trust-item .num { font-size: 18px; font-weight: 800; color: #0E7A6C; }
+  .trust-item .label { font-size: 10.5px; color: #45524D; font-weight: 600; }
+
+  .footer-strip {
+    padding: 16px 30px; background: #0E7A6C; color: #E9F5F2; font-size: 11px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-strip .brand { font-weight: 800; color: #fff; }
+</style>
+</head>
+<body>
+
+  <div class="rationale">
+    <h1><span class="tag">Direction 2</span>Thương Hiệu Rộng Rãi</h1>
+    <p>Hero lớn, chiếm gần trọn màn hình đầu, dùng ảnh thật (nội thất mầm non) để tạo cảm giác thương hiệu tự tin, "đơn vị lớn" thay vì liệt kê sản phẩm ngay. Nav rút gọn (không mega-menu) giữ sự thoáng đãng. Chỉ 6/11 nhóm nổi bật hiển thị dưới dạng thẻ rộng rãi kèm link "xem tất cả 11 nhóm" — ưu tiên cảm xúc thương hiệu trước, điều hướng chi tiết sau. Trust-badge đẩy xuống thành dải thống kê phía dưới, sau phần danh mục.</p>
+    <p><strong>Hero state:</strong> Photo-carousel (ảnh nền lớn full-bleed, dot/arrow điều hướng).</p>
+  </div>
+
+  <div class="browser-frame">
+    <div class="browser-chrome">
+      <span class="dot" style="background:#FF5F57"></span>
+      <span class="dot" style="background:#FEBC2E"></span>
+      <span class="dot" style="background:#28C840"></span>
+      <span class="url">tbtruonghoc.com</span>
+    </div>
+
+    <div class="nav-wrap">
+      <div class="nav">
+        <span class="logo">NGỌC ANH</span>
+        <nav class="main-links">
+          <a>Trang chủ</a>
+          <a>Giới thiệu</a>
+          <a>Sản phẩm</a>
+          <a>Tin tức</a>
+          <a>Liên hệ</a>
+        </nav>
+      </div>
+      <span class="contact-chip-float">Hotline 0909 123 456 · Zalo (cố định)</span>
+    </div>
+
+    <div class="hero">
+      <div class="hero-inner">
+        <span class="eyebrow">Ngọc Anh · từ 2005</span>
+        <h2>Trang bị trường học trọn gói — từ sân chơi đến phòng học thông minh</h2>
+        <p>Tư vấn kỹ thuật miễn phí, khảo sát tận nơi, bảo hành chính hãng trên toàn quốc.</p>
+        <div class="cta-row">
+          <button class="btn-primary">Nhận báo giá</button>
+          <button class="btn-secondary">Đăng ký khảo sát miễn phí</button>
+        </div>
+      </div>
+      <div class="carousel-controls">
+        <span class="arrow">‹</span>
+        <div class="dots"><span class="active"></span><span></span><span></span></div>
+        <span class="arrow">›</span>
+      </div>
+    </div>
+
+    <div class="featured-section">
+      <h3>Nhóm sản phẩm nổi bật</h3>
+      <p class="sub">6 trong số 11 nhóm thiết bị — xem đầy đủ tại trang Sản phẩm</p>
+      <div class="featured-grid">
+        <div class="feat-card"><div class="icon"></div><span>Dù che nắng sân trường</span></div>
+        <div class="feat-card"><div class="icon"></div><span>Nội thất mầm non</span></div>
+        <div class="feat-card"><div class="icon"></div><span>Bảng tương tác</span></div>
+        <div class="feat-card"><div class="icon"></div><span>Màn hình LED hiển thị</span></div>
+        <div class="feat-card"><div class="icon"></div><span>Phòng thí nghiệm Lý – Hóa – Sinh</span></div>
+        <div class="feat-card"><div class="icon"></div><span>Thiết bị mầm non ngoài trời</span></div>
+      </div>
+      <a class="view-all">Xem tất cả 11 nhóm sản phẩm →</a>
+    </div>
+
+    <div class="trust-band">
+      <div class="trust-item"><div class="num">500+</div><div class="label">Trường đã lắp đặt</div></div>
+      <div class="trust-item"><div class="num">20 năm</div><div class="label">Kinh nghiệm ngành</div></div>
+      <div class="trust-item"><div class="num">100%</div><div class="label">Bảo hành chính hãng</div></div>
+      <div class="trust-item"><div class="num">24/7</div><div class="label">Hỗ trợ kỹ thuật</div></div>
+    </div>
+
+    <div class="footer-strip">
+      <span class="brand">Ngọc Anh — Thiết Bị Trường Học</span>
+      <span>Zalo tư vấn · 0909 123 456 · info@tbtruonghoc.com</span>
+    </div>
+  </div>
+
+</body>
+</html>

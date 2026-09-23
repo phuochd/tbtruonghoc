@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>trongdoitam.net — Bảng chọn tông màu</title>
+<style>
+/*
+  =========================================================
+  TÀI LIỆU MÃ MÀU (HEX) THEO TỪNG PHƯƠNG ÁN
+  Dùng để lấy màu nếu chọn phương án này. Các biến CSS bên
+  dưới chỉ mang tính ngữ nghĩa (semantic tokens); giá trị
+  hex thật được ghi lại tại đây.
+  =========================================================
+
+  1) MỘC TRẦM (gỗ mộc, ấm)
+     --bg:            #F5EFE6
+     --surface:       #FFFFFF
+     --text:          #3A2E22
+     --text-muted:    #7A6A56
+     --primary:       #8B5A2B
+     --primary-text:  #FFFFFF
+     --secondary:     #A97142
+     --border:        #DCCFB8
+
+  2) GIẤY DÓ (giấy mộc, trung tính ấm, nhẹ nhàng)
+     --bg:            #F7F3EC
+     --surface:       #FFFFFF
+     --text:          #4A4038
+     --text-muted:    #8C8177
+     --primary:       #6E5A45
+     --primary-text:  #FFFFFF
+     --secondary:     #B08D57
+     --border:        #E3DCCF
+
+  3) TRẦM TÍCH (chiều sâu, trang nghiêm kiểu đình/chùa)
+     --bg:            #E8E0D0
+     --surface:       #FBF8F2
+     --text:          #2B2118
+     --text-muted:    #6B5D4D
+     --primary:       #5C3A21
+     --primary-text:  #F5EFE6
+     --secondary:     #8A6D3B
+     --border:        #C9B99A
+     --nav-bg:        #2B2118   (thanh điều hướng tối, gỗ lim/gỗ mun)
+     --nav-text:      #EFE6D6
+
+  4) ĐẤT NUNG CỔ (đất nung, ấm hơn, thiên về lễ hội)
+     --bg:            #F6EDE4
+     --surface:       #FFFFFF
+     --text:          #3D2B22
+     --text-muted:    #8A6F5E
+     --primary:       #B85C38
+     --primary-text:  #FFFFFF
+     --secondary:     #C98A4B
+     --border:        #E8CBB0
+
+  5) TRẦM HƯƠNG (trầm, ngả nâu-ô liu, tĩnh tại)
+     --bg:            #F0EBE0
+     --surface:       #FAF7F0
+     --text:          #362F26
+     --text-muted:    #7D7364
+     --primary:       #6B5B3E
+     --primary-text:  #FFFFFF
+     --secondary:     #9C8654
+     --border:        #D8D0BC
+*/
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 32px 20px 80px;
+  background: #EAE4D8;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  color: #2B2118;
+}
+
+.page-header {
+  max-width: 1200px;
+  margin: 0 auto 36px;
+}
+.page-header h1 {
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+.page-header p {
+  margin: 0;
+  color: #6B5D4D;
+  font-size: 14px;
+}
+
+.themes-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 28px;
+}
+
+.theme {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #d8cfba;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.theme-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.theme-header h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+.theme-header .register {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--bg);
+}
+.chip .swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+.chip code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.mock {
+  padding: 0 0 18px;
+}
+
+.mock-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--nav-bg, var(--surface));
+  color: var(--nav-text, var(--text));
+  border-bottom: 1px solid var(--border);
+}
+.mock-nav .brand {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+.mock-nav .brand span {
+  color: var(--secondary);
+}
+.mock-nav .links {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+}
+.mock-nav .links a {
+  color: inherit;
+  opacity: 0.85;
+  text-decoration: none;
+}
+
+.trust-bar {
+  margin: 14px 20px 0;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+.trust-bar strong { color: var(--text); }
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 14px 20px 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card .thumb {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: var(--primary-text);
+}
+
+.card .body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.card .cat {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--secondary);
+  font-weight: 600;
+}
+.card h3 {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.3;
+}
+.card p.desc {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.card .price-row {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+}
+.card .price {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.card .price.contact {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.card .cta {
+  border: none;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 11px;
+  border-radius: 6px;
+  cursor: default;
+}
+
+.footnote-quote {
+  margin: 14px 20px 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  border-left: 3px solid var(--secondary);
+  padding-left: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>trongdoitam.net — Bảng chọn tông màu (Phương án 1)</h1>
+  <p>5 phương án màu, cùng đi theo hướng "một chút cổ điển, màu đơn giản, tông trầm ấm". Nội dung mẫu giống nhau ở mỗi phương án để so sánh công bằng — chỉ khác nhau về tông màu.</p>
+</div>
+
+<div class="themes-grid">
+
+  <!-- ============ 1. MỘC TRẦM ============ -->
+  <section class="theme" style="
+      --bg:#F5EFE6; --surface:#FFFFFF; --text:#3A2E22; --text-muted:#7A6A56;
+      --primary:#8B5A2B; --primary-text:#FFFFFF; --secondary:#A97142; --border:#DCCFB8;">
+    <div class="theme-header">
+      <h2>1. Mộc Trầm</h2>
+      <p class="register">Ấm và chắc như gỗ mít lên nước — cảm giác một xưởng mộc lâu đời, gần gũi.</p>
+    </div>
+    <div class="tokens">
+      <span class="chip"><span class="swatch" style="background:#F5EFE6"></span>Nền <code>#F5EFE6</code></span>
+      <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>Bề mặt <code>#FFFFFF</code></span>
+      <span class="chip"><span class="swatch" style="background:#3A2E22"></span>Chữ <code>#3A2E22</code></span>
+      <span class="chip"><span class="swatch" style="background:#8B5A2B"></span>Chính <code>#8B5A2B</code></span>
+      <span class="chip"><span class="swatch" style="background:#A97142"></span>Phụ <code>#A97142</code></span>
+      <span class="chip"><span class="swatch" style="background:#DCCFB8"></span>Viền <code>#DCCFB8</code></span>
+    </div>
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="brand">Trống <span>Đọi Tam</span></div>
+        <div class="links"><a>Trống</a><a>Thùng rượu</a><a>Bồn tắm</a><a>Liên hệ</a></div>
+      </div>
+      <div class="trust-bar"><strong>Nghệ nhân làng nghề Đọi Tam</strong> trực tiếp kiểm định từng sản phẩm trước khi xuất xưởng.</div>
+      <div class="cards">
+        <div class="card">
+          <div class="thumb">🥁</div>
+          <div class="body">
+            <span class="cat">Trống lễ hội</span>
+            <h3>Trống chùa gỗ mít nguyên khối</h3>
+            <p class="desc">Da trâu căng tay, âm vang chuẩn, làm theo đặt hàng cho đình chùa.</p>
+            <div class="price-row">
+              <span class="price contact">Liên hệ báo giá</span>
+              <button class="cta">Liên hệ báo giá</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="thumb">🛢️</div>
+          <div class="body">
+            <span class="cat">Quà Tết 2027</span>
+            <h3>Thùng rượu gỗ sồi – 1 ngựa</h3>
+            <p class="desc">Phối chân ngựa kéo gỗ, đánh bóng thủ công, sang trọng làm quà biếu.</p>
+            <div class="price-row">
+              <span class="price">2.850.000₫</span>
+              <button class="cta">Đặt mua ngay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="footnote-quote">"Bác cứ gọi Zalo, chú nghệ nhân xem ảnh thực tế trước rồi mới chốt." — hỗ trợ khách như bác Thành.</p>
+    </div>
+  </section>
+
+  <!-- ============ 2. GIẤY DÓ ============ -->
+  <section class="theme" style="
+      --bg:#F7F3EC; --surface:#FFFFFF; --text:#4A4038; --text-muted:#8C8177;
+      --primary:#6E5A45; --primary-text:#FFFFFF; --secondary:#B08D57; --border:#E3DCCF;">
+    <div class="theme-header">
+      <h2>2. Giấy Dó</h2>
+      <p class="register">Nhẹ và tĩnh như giấy dó mộc — trung tính, ít màu, để sản phẩm tự lên tiếng.</p>
+    </div>
+    <div class="tokens">
+      <span class="chip"><span class="swatch" style="background:#F7F3EC"></span>Nền <code>#F7F3EC</code></span>
+      <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>Bề mặt <code>#FFFFFF</code></span>
+      <span class="chip"><span class="swatch" style="background:#4A4038"></span>Chữ <code>#4A4038</code></span>
+      <span class="chip"><span class="swatch" style="background:#6E5A45"></span>Chính <code>#6E5A45</code></span>
+      <span class="chip"><span class="swatch" style="background:#B08D57"></span>Phụ <code>#B08D57</code></span>
+      <span class="chip"><span class="swatch" style="background:#E3DCCF"></span>Viền <code>#E3DCCF</code></span>
+    </div>
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="brand">Trống <span>Đọi Tam</span></div>
+        <div class="links"><a>Trống</a><a>Thùng rượu</a><a>Bồn tắm</a><a>Liên hệ</a></div>
+      </div>
+      <div class="trust-bar"><strong>Nghệ nhân làng nghề Đọi Tam</strong> trực tiếp kiểm định từng sản phẩm trước khi xuất xưởng.</div>
+      <div class="cards">
+        <div class="card">
+          <div class="thumb">🥁</div>
+          <div class="body">
+            <span class="cat">Trống lễ hội</span>
+            <h3>Trống chùa gỗ mít nguyên khối</h3>
+            <p class="desc">Da trâu căng tay, âm vang chuẩn, làm theo đặt hàng cho đình chùa.</p>
+            <div class="price-row">
+              <span class="price contact">Liên hệ báo giá</span>
+              <button class="cta">Liên hệ báo giá</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="thumb">🛢️</div>
+          <div class="body">
+            <span class="cat">Quà Tết 2027</span>
+            <h3>Thùng rượu gỗ sồi – 1 ngựa</h3>
+            <p class="desc">Phối chân ngựa kéo gỗ, đánh bóng thủ công, sang trọng làm quà biếu.</p>
+            <div class="price-row">
+              <span class="price">2.850.000₫</span>
+              <button class="cta">Đặt mua ngay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="footnote-quote">"Bác cứ gọi Zalo, chú nghệ nhân xem ảnh thực tế trước rồi mới chốt." — hỗ trợ khách như bác Thành.</p>
+    </div>
+  </section>
+
+  <!-- ============ 3. TRẦM TÍCH ============ -->
+  <section class="theme" style="
+      --bg:#E8E0D0; --surface:#FBF8F2; --text:#2B2118; --text-muted:#6B5D4D;
+      --primary:#5C3A21; --primary-text:#F5EFE6; --secondary:#8A6D3B; --border:#C9B99A;
+      --nav-bg:#2B2118; --nav-text:#EFE6D6;">
+    <div class="theme-header">
+      <h2>3. Trầm Tích</h2>
+      <p class="register">Sâu và trang nghiêm như gian thờ gỗ lim — nặng ký hơn, hợp không khí đình chùa.</p>
+    </div>
+    <div class="tokens">
+      <span class="chip"><span class="swatch" style="background:#E8E0D0"></span>Nền <code>#E8E0D0</code></span>
+      <span class="chip"><span class="swatch" style="background:#FBF8F2"></span>Bề mặt <code>#FBF8F2</code></span>
+      <span class="chip"><span class="swatch" style="background:#2B2118"></span>Chữ <code>#2B2118</code></span>
+      <span class="chip"><span class="swatch" style="background:#5C3A21"></span>Chính <code>#5C3A21</code></span>
+      <span class="chip"><span class="swatch" style="background:#8A6D3B"></span>Phụ <code>#8A6D3B</code></span>
+      <span class="chip"><span class="swatch" style="background:#C9B99A"></span>Viền <code>#C9B99A</code></span>
+    </div>
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="brand">Trống <span>Đọi Tam</span></div>
+        <div class="links"><a>Trống</a><a>Thùng rượu</a><a>Bồn tắm</a><a>Liên hệ</a></div>
+      </div>
+      <div class="trust-bar"><strong>Nghệ nhân làng nghề Đọi Tam</strong> trực tiếp kiểm định từng sản phẩm trước khi xuất xưởng.</div>
+      <div class="cards">
+        <div class="card">
+          <div class="thumb">🥁</div>
+          <div class="body">
+            <span class="cat">Trống lễ hội</span>
+            <h3>Trống chùa gỗ mít nguyên khối</h3>
+            <p class="desc">Da trâu căng tay, âm vang chuẩn, làm theo đặt hàng cho đình chùa.</p>
+            <div class="price-row">
+              <span class="price contact">Liên hệ báo giá</span>
+              <button class="cta">Liên hệ báo giá</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="thumb">🛢️</div>
+          <div class="body">
+            <span class="cat">Quà Tết 2027</span>
+            <h3>Thùng rượu gỗ sồi – 1 ngựa</h3>
+            <p class="desc">Phối chân ngựa kéo gỗ, đánh bóng thủ công, sang trọng làm quà biếu.</p>
+            <div class="price-row">
+              <span class="price">2.850.000₫</span>
+              <button class="cta">Đặt mua ngay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="footnote-quote">"Bác cứ gọi Zalo, chú nghệ nhân xem ảnh thực tế trước rồi mới chốt." — hỗ trợ khách như bác Thành.</p>
+    </div>
+  </section>
+
+  <!-- ============ 4. ĐẤT NUNG CỔ ============ -->
+  <section class="theme" style="
+      --bg:#F6EDE4; --surface:#FFFFFF; --text:#3D2B22; --text-muted:#8A6F5E;
+      --primary:#B85C38; --primary-text:#FFFFFF; --secondary:#C98A4B; --border:#E8CBB0;">
+    <div class="theme-header">
+      <h2>4. Đất Nung Cổ</h2>
+      <p class="register">Ấm hơn hẳn, ngả đất nung/gạch cổ — có chút rộn ràng, hợp không khí lễ hội và quà Tết.</p>
+    </div>
+    <div class="tokens">
+      <span class="chip"><span class="swatch" style="background:#F6EDE4"></span>Nền <code>#F6EDE4</code></span>
+      <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>Bề mặt <code>#FFFFFF</code></span>
+      <span class="chip"><span class="swatch" style="background:#3D2B22"></span>Chữ <code>#3D2B22</code></span>
+      <span class="chip"><span class="swatch" style="background:#B85C38"></span>Chính <code>#B85C38</code></span>
+      <span class="chip"><span class="swatch" style="background:#C98A4B"></span>Phụ <code>#C98A4B</code></span>
+      <span class="chip"><span class="swatch" style="background:#E8CBB0"></span>Viền <code>#E8CBB0</code></span>
+    </div>
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="brand">Trống <span>Đọi Tam</span></div>
+        <div class="links"><a>Trống</a><a>Thùng rượu</a><a>Bồn tắm</a><a>Liên hệ</a></div>
+      </div>
+      <div class="trust-bar"><strong>Nghệ nhân làng nghề Đọi Tam</strong> trực tiếp kiểm định từng sản phẩm trước khi xuất xưởng.</div>
+      <div class="cards">
+        <div class="card">
+          <div class="thumb">🥁</div>
+          <div class="body">
+            <span class="cat">Trống lễ hội</span>
+            <h3>Trống chùa gỗ mít nguyên khối</h3>
+            <p class="desc">Da trâu căng tay, âm vang chuẩn, làm theo đặt hàng cho đình chùa.</p>
+            <div class="price-row">
+              <span class="price contact">Liên hệ báo giá</span>
+              <button class="cta">Liên hệ báo giá</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="thumb">🛢️</div>
+          <div class="body">
+            <span class="cat">Quà Tết 2027</span>
+            <h3>Thùng rượu gỗ sồi – 1 ngựa</h3>
+            <p class="desc">Phối chân ngựa kéo gỗ, đánh bóng thủ công, sang trọng làm quà biếu.</p>
+            <div class="price-row">
+              <span class="price">2.850.000₫</span>
+              <button class="cta">Đặt mua ngay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="footnote-quote">"Bác cứ gọi Zalo, chú nghệ nhân xem ảnh thực tế trước rồi mới chốt." — hỗ trợ khách như bác Thành.</p>
+    </div>
+  </section>
+
+  <!-- ============ 5. TRẦM HƯƠNG ============ -->
+  <section class="theme" style="
+      --bg:#F0EBE0; --surface:#FAF7F0; --text:#362F26; --text-muted:#7D7364;
+      --primary:#6B5B3E; --primary-text:#FFFFFF; --secondary:#9C8654; --border:#D8D0BC;">
+    <div class="theme-header">
+      <h2>5. Trầm Hương</h2>
+      <p class="register">Ngả nâu ô liu, tĩnh tại như khói trầm — điềm đạm, đáng tin, ít phô trương nhất.</p>
+    </div>
+    <div class="tokens">
+      <span class="chip"><span class="swatch" style="background:#F0EBE0"></span>Nền <code>#F0EBE0</code></span>
+      <span class="chip"><span class="swatch" style="background:#FAF7F0"></span>Bề mặt <code>#FAF7F0</code></span>
+      <span class="chip"><span class="swatch" style="background:#362F26"></span>Chữ <code>#362F26</code></span>
+      <span class="chip"><span class="swatch" style="background:#6B5B3E"></span>Chính <code>#6B5B3E</code></span>
+      <span class="chip"><span class="swatch" style="background:#9C8654"></span>Phụ <code>#9C8654</code></span>
+      <span class="chip"><span class="swatch" style="background:#D8D0BC"></span>Viền <code>#D8D0BC</code></span>
+    </div>
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="brand">Trống <span>Đọi Tam</span></div>
+        <div class="links"><a>Trống</a><a>Thùng rượu</a><a>Bồn tắm</a><a>Liên hệ</a></div>
+      </div>
+      <div class="trust-bar"><strong>Nghệ nhân làng nghề Đọi Tam</strong> trực tiếp kiểm định từng sản phẩm trước khi xuất xưởng.</div>
+      <div class="cards">
+        <div class="card">
+          <div class="thumb">🥁</div>
+          <div class="body">
+            <span class="cat">Trống lễ hội</span>
+            <h3>Trống chùa gỗ mít nguyên khối</h3>
+            <p class="desc">Da trâu căng tay, âm vang chuẩn, làm theo đặt hàng cho đình chùa.</p>
+            <div class="price-row">
+              <span class="price contact">Liên hệ báo giá</span>
+              <button class="cta">Liên hệ báo giá</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="thumb">🛢️</div>
+          <div class="body">
+            <span class="cat">Quà Tết 2027</span>
+            <h3>Thùng rượu gỗ sồi – 1 ngựa</h3>
+            <p class="desc">Phối chân ngựa kéo gỗ, đánh bóng thủ công, sang trọng làm quà biếu.</p>
+            <div class="price-row">
+              <span class="price">2.850.000₫</span>
+              <button class="cta">Đặt mua ngay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="footnote-quote">"Bác cứ gọi Zalo, chú nghệ nhân xem ảnh thực tế trước rồi mới chốt." — hỗ trợ khách như bác Thành.</p>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

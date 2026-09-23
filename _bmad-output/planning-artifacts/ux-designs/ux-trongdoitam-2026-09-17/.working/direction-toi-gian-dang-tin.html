@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>trongdoitam.net — Hướng thiết kế: Tối Giản Đáng Tin</title>
+<style>
+/*
+  HƯỚNG 4 — "TỐI GIẢN ĐÁNG TIN" (Quiet Minimal Trust, hoàn toàn tĩnh)
+  Bảng màu Mộc Trầm (đã chốt, không đổi):
+  --bg:            #F5EFE6
+  --surface:       #FFFFFF
+  --text:          #3A2E22
+  --text-muted:    #7A6A56
+  --primary:       #8B5A2B
+  --primary-text:  #FFFFFF
+  --secondary:     #A97142
+  --border:        #DCCFB8
+*/
+* { box-sizing: border-box; }
+:root{
+  --bg:#F5EFE6; --surface:#FFFFFF; --text:#3A2E22; --text-muted:#7A6A56;
+  --primary:#8B5A2B; --primary-text:#FFFFFF; --secondary:#A97142; --border:#DCCFB8;
+}
+body{
+  margin:0; padding:28px 16px 90px; background:#EAE4D8; color:var(--text);
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.page-header{ max-width:900px; margin:0 auto 30px; }
+.page-header h1{ font-size:20px; margin:0 0 8px; }
+.page-header p.rationale{ margin:0; font-size:14px; line-height:1.6; color:#6B5D4D; max-width:660px; }
+.page-header p.rationale strong{ color:#2B2118; }
+
+.frames{ max-width:900px; margin:0 auto; display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; justify-content:center; }
+.frame-block{ text-align:center; }
+.frame-label{ font-size:12px; color:#6B5D4D; margin:0 0 10px; font-weight:600; letter-spacing:.3px; }
+
+.phone{ width:348px; background:#211a13; border-radius:40px; padding:11px; box-shadow:0 10px 30px rgba(0,0,0,0.25); }
+.phone .notch{ width:88px; height:15px; background:#211a13; border-radius:0 0 11px 11px; margin:0 auto; }
+.screen{ background:var(--bg); border-radius:29px; overflow:hidden; }
+
+.nav{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; }
+.nav .brand{ font-size:15px; font-weight:700; }
+.nav .brand span{ color:var(--secondary); }
+.nav .burger{ font-size:16px; color:var(--text-muted); }
+
+.trust-line{ margin:0 20px 22px; padding:9px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); font-size:11px; color:var(--text-muted); text-align:center; }
+.trust-line strong{ color:var(--text); }
+
+.hero{ padding:0 22px 24px; text-align:left; }
+.hero h1{ font-size:22px; font-weight:700; line-height:1.4; margin:0 0 10px; }
+.hero p{ font-size:12.5px; color:var(--text-muted); line-height:1.6; margin:0 0 16px; }
+.hero .cta{ display:inline-block; background:var(--primary); color:var(--primary-text); font-size:12.5px; font-weight:700; padding:11px 20px; border-radius:5px; text-decoration:none; }
+
+.list{ margin:0 22px; }
+.list-title{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); margin:0 0 4px; }
+.row{ display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid var(--border); }
+.row .ic{ width:34px; height:34px; border-radius:6px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.row .body{ flex:1; min-width:0; }
+.row h3{ margin:0 0 2px; font-size:13.5px; font-weight:700; }
+.row p{ margin:0; font-size:11px; color:var(--text-muted); line-height:1.4; }
+.row .right{ text-align:right; flex-shrink:0; }
+.row .price{ display:block; font-size:11.5px; font-weight:700; margin-bottom:2px; }
+.row .price.muted{ color:var(--text-muted); font-weight:600; font-size:10.5px; }
+.row .chev{ color:var(--text-muted); font-size:14px; }
+.row .dot{ width:6px; height:6px; border-radius:50%; background:var(--secondary); display:inline-block; margin-right:5px; vertical-align:middle; }
+
+.story{ margin:20px 22px 0; padding-top:18px; border-top:1px solid var(--border); }
+.story p{ font-size:11.5px; color:var(--text-muted); line-height:1.65; margin:0 0 10px; }
+.story .quote{ font-size:12px; color:var(--text); line-height:1.6; margin:0; }
+.story .quote span{ display:block; margin-top:5px; font-size:10.5px; color:var(--text-muted); }
+
+.contact-row{ margin-top:22px; display:flex; border-top:1px solid var(--border); }
+.contact-row a{ flex:1; text-align:center; padding:13px 4px 12px; font-size:11px; color:var(--text); text-decoration:none; border-right:1px solid var(--border); }
+.contact-row a:last-child{ border-right:none; }
+.contact-row .ic{ display:block; font-size:15px; margin-bottom:2px; }
+
+.state-note{ margin:10px 20px 0; font-size:11px; color:var(--primary); font-weight:700; text-align:left; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Hướng 4 — "Tối Giản Đáng Tin" (Sans ấm, tĩnh tại, dạng danh sách dòng)</h1>
+  <p class="rationale"><strong>Vì sao:</strong> Bố cục gọn nhưng không dồn nén như danh mục — ba dòng sản phẩm trình bày ngang hàng dạng danh sách dòng thay vì thẻ ảnh, giảm phô trương tối đa đúng tinh thần "màu đơn giản, không phô trương". Trang hoàn toàn tĩnh, không gợi ý chuyển động hay hiệu ứng nào, giữ cảm giác điềm đạm, đáng tin.</p>
+</div>
+
+<div class="frames">
+  <div class="frame-block">
+    <p class="frame-label">Trang chủ — mặc định</p>
+    <div class="phone"><div class="notch"></div><div class="screen">
+
+      <div class="nav">
+        <div class="brand">Trống <span>Đọi Tam</span></div>
+        <div class="burger">☰</div>
+      </div>
+
+      <div class="trust-line"><strong>Nghệ nhân Đọi Tam</strong> trực tiếp kiểm định từng sản phẩm</div>
+
+      <div class="hero">
+        <h1>Trống, thùng rượu, bồn tắm gỗ — từ làng nghề Đọi Tam</h1>
+        <p>Nghệ nhân Nguyễn Văn Cường, Chủ tịch Hội làng nghề, trực tiếp kiểm định trước khi giao.</p>
+        <a class="cta" href="#">Liên hệ tư vấn</a>
+      </div>
+
+      <div class="list">
+        <div class="list-title">Sản phẩm</div>
+
+        <div class="row">
+          <div class="ic">🥁</div>
+          <div class="body">
+            <h3>Trống Đọi Tam</h3>
+            <p>Trường học, múa lân, trống hội, trống thờ, trống chùa.</p>
+          </div>
+          <div class="right"><span class="price muted">Liên hệ</span><span class="chev">›</span></div>
+        </div>
+
+        <div class="row">
+          <div class="ic">🛢️</div>
+          <div class="body">
+            <h3>Thùng rượu gỗ trang trí</h3>
+            <p>Quà Tết 2027, gỗ sồi đánh bóng thủ công.</p>
+          </div>
+          <div class="right"><span class="price">2.850.000₫</span><span class="chev">›</span></div>
+        </div>
+
+        <div class="row">
+          <div class="ic">🛁</div>
+          <div class="body">
+            <h3>Bồn tắm gỗ <span style="color:var(--secondary); font-weight:700;">· Mới</span></h3>
+            <p>Gỗ tự nhiên, chống thấm, đóng theo kích thước riêng.</p>
+          </div>
+          <div class="right"><span class="price muted">Liên hệ</span><span class="chev">›</span></div>
+        </div>
+      </div>
+
+      <div class="story">
+        <p>Xưởng do nghệ nhân đứng đầu Hội làng nghề Đọi Tam kiểm định, đã bốn đời gắn bó với nghề làm trống truyền thống.</p>
+        <p class="quote">"Bác cứ gọi Zalo, chú nghệ nhân xem ảnh thực tế trước rồi mới chốt."<span>— hỗ trợ khách như bác Thành, thủ từ đình làng</span></p>
+      </div>
+
+      <div class="contact-row">
+        <a><span class="ic">📞</span>Gọi ngay</a>
+        <a><span class="ic">💬</span>Zalo</a>
+        <a><span class="ic">📍</span>Bản đồ</a>
+      </div>
+
+    </div></div>
+  </div>
+
+  <div class="frame-block">
+    <p class="frame-label">Trạng thái: dòng sản phẩm "đã xem" (tĩnh, không hiệu ứng)</p>
+    <div class="phone"><div class="notch"></div><div class="screen">
+
+      <div class="nav">
+        <div class="brand">Trống <span>Đọi Tam</span></div>
+        <div class="burger">☰</div>
+      </div>
+
+      <div class="trust-line"><strong>Nghệ nhân Đọi Tam</strong> trực tiếp kiểm định từng sản phẩm</div>
+
+      <p class="state-note">Khách đã xem 2 trong 3 dòng sản phẩm ở lượt ghé trước:</p>
+
+      <div class="list" style="margin-top:14px;">
+        <div class="list-title">Sản phẩm</div>
+
+        <div class="row">
+          <div class="ic">🥁</div>
+          <div class="body">
+            <h3><span class="dot"></span>Trống Đọi Tam</h3>
+            <p>Đã xem — trường học, múa lân, trống hội, trống thờ.</p>
+          </div>
+          <div class="right"><span class="price muted">Liên hệ</span><span class="chev">›</span></div>
+        </div>
+
+        <div class="row">
+          <div class="ic">🛢️</div>
+          <div class="body">
+            <h3><span class="dot"></span>Thùng rượu gỗ trang trí</h3>
+            <p>Đã xem — quà Tết 2027, gỗ sồi đánh bóng thủ công.</p>
+          </div>
+          <div class="right"><span class="price">2.850.000₫</span><span class="chev">›</span></div>
+        </div>
+
+        <div class="row">
+          <div class="ic">🛁</div>
+          <div class="body">
+            <h3>Bồn tắm gỗ <span style="color:var(--secondary); font-weight:700;">· Mới</span></h3>
+            <p>Chưa xem — gỗ tự nhiên, chống thấm, đóng theo kích thước riêng.</p>
+          </div>
+          <div class="right"><span class="price muted">Liên hệ</span><span class="chev">›</span></div>
+        </div>
+      </div>
+
+      <div class="contact-row">
+        <a><span class="ic">📞</span>Gọi ngay</a>
+        <a><span class="ic">💬</span>Zalo</a>
+        <a><span class="ic">📍</span>Bản đồ</a>
+      </div>
+
+    </div></div>
+  </div>
+</div>
+
+</body>
+</html>

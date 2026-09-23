@@ -1,0 +1,119 @@
+using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Piranha;
+using TbTruongHoc.Web.Data;
+using TbTruongHoc.Web.Models;
+
+namespace TbTruongHoc.Web.Controllers;
+
+/// <summary>
+/// Story 1.4 (FR-3): the single write path for every lead. A plain JSON API
+/// controller - deliberately not shaped like <see cref="CmsController"/>
+/// (which returns MVC views) - backing the <c>_QuoteRequestForm.cshtml</c>
+/// partial's <c>fetch</c> submission.
+///
+/// Resolves the current <see cref="Piranha.Models.Site"/> the exact same way
+/// Piranha's own request pipeline does
+/// (<c>api.Sites.GetByHostnameAsync(host)</c> falling back to
+/// <c>api.Sites.GetDefaultAsync()</c> - see <c>HostnameResolutionTests</c>)
+/// rather than trusting any client-supplied site id, since this action isn't
+/// covered by Piranha's own CMS routing middleware.
+/// </summary>
+[ApiController]
+[Route("api/leads")]
+public class LeadsController : ControllerBase
+{
+    /// <summary>
+    /// Closed set of accepted <see cref="FormSubmission.FormType"/> values -
+    /// "general" (this story) and "survey" (Story 6.5's future reuse of this
+    /// same endpoint/table). Anything else the client sends, including
+    /// blank, is coerced to "general" rather than persisted verbatim - see
+    /// <see cref="LeadSubmissionRequest.FormType"/>'s doc comment, which
+    /// already described this as a closed set.
+    /// </summary>
+    private static readonly HashSet<string> AllowedFormTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "general",
+        "survey"
+    };
+
+    private readonly IApi _api;
+    private readonly LeadDbContext _leadDb;
+    private readonly ILogger<LeadsController> _logger;
+
+    public LeadsController(IApi api, LeadDbContext leadDb, ILogger<LeadsController> logger)
+    {
+        _api = api;
+        _leadDb = leadDb;
+        _logger = logger;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] LeadSubmissionRequest request)
+    {
+        // [ApiController] already short-circuits to an automatic 400
+        // ValidationProblemDetails response (field name -> error messages)
+        // when [Required]/[StringLength] on the DTO fails, before this
+        // method body ever runs - EXCEPT when the body is a literal JSON
+        // `null`, which binds `request` to null rather than failing
+        // validation (this project has no <Nullable>enable</Nullable>, so
+        // that automatic behavior doesn't kick in here). Guard explicitly.
+        if (request is null)
+        {
+            return ValidationProblem();
+        }
+
+        try
+        {
+            var host = Request.Host.Host;
+            var site = await _api.Sites.GetByHostnameAsync(host) ?? await _api.Sites.GetDefaultAsync();
+
+            if (site == null)
+            {
+                // No Site record exists at all (shouldn't happen once Story
+                // 1.1's seed has run) - fail closed rather than saving a lead
+                // with an empty/garbage SiteId.
+                _logger.LogError("Rejecting lead submission for host {Host}: no Site record resolved (not even the default site).", host);
+                return Problem(
+                    detail: "No site is configured to receive this submission.",
+                    statusCode: StatusCodes.Status500InternalServerError);
+            }
+
+            var formType = AllowedFormTypes.Contains(request.FormType ?? string.Empty)
+                ? request.FormType!.ToLowerInvariant()
+                : "general";
+
+            var submission = new FormSubmission
+            {
+                Id = Guid.NewGuid(),
+                SiteId = site.Id,
+                FormType = formType,
+                Name = request.Name!.Trim(),
+                Phone = request.Phone!.Trim(),
+                ProductOfInterest = string.IsNullOrWhiteSpace(request.ProductOfInterest) ? null : request.ProductOfInterest!.Trim(),
+                Message = string.IsNullOrWhiteSpace(request.Message) ? null : request.Message!.Trim(),
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            _leadDb.FormSubmissions.Add(submission);
+            await _leadDb.SaveChangesAsync();
+
+            return Ok(new { id = submission.Id });
+        }
+        catch (Exception ex)
+        {
+            // DB-unreachable/server-error case from the I/O matrix (covers
+            // both site resolution and SaveChangesAsync, since either can
+            // fail the same way when the database is unreachable): never let
+            // an unhandled exception reach the visitor, and never leave a
+            // half-saved row - EF Core's SaveChangesAsync is already
+            // all-or-nothing per call, so nothing further to roll back.
+            _logger.LogError(ex, "Failed to save a lead submission.");
+            return Problem(
+                detail: "We couldn't save your request right now. Please call or message us on Zalo instead.",
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
+    }
+}

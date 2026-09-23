@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/.vs/
+**/node_modules/
+media/
+_bmad-output/
+_bmad/
+.agents/
+.github/
+.claude/

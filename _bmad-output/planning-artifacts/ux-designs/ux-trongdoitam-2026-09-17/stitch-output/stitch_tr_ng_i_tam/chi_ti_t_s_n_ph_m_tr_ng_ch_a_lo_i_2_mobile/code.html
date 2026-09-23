@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trống Chùa Loại 2 - Trống Đọi Tam</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background-color: #F5EFE6;
+      color: #3A2E22;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .text-primary-brown { color: #8B5A2B; }
+    .bg-primary-brown { background-color: #8B5A2B; }
+    .text-secondary-amber { color: #A97142; }
+    .bg-secondary-amber { background-color: #A97142; }
+    .bg-sunken-be { background-color: #EFE7D8; }
+    .border-warm { border-color: #DCCFB8; }
+    .border-form-light { border-color: #EAE1CD; }
+    .text-muted { color: #7A6A56; }
+    
+    /* Gradient placeholder vân gỗ nâu - hổ phách */
+    .wood-gradient {
+      background: linear-gradient(135deg, #A97142 0%, #8B5A2B 100%);
+    }
+
+    .sticky-bar-shadow {
+      box-shadow: 0 -4px 16px rgba(58, 46, 34, 0.08);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-24">
+
+  <!-- 1. HEADER / NAV -->
+  <header class="bg-white border-b border-warm sticky top-0 z-40">
+    <div class="max-w-[430px] mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-1.5 text-lg font-bold tracking-tight">
+        <span>Trống</span>
+        <span class="text-secondary-amber">Đọi Tam</span>
+      </a>
+      <button class="p-2 text-[#3A2E22] focus:outline-none" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-[430px] mx-auto px-4 pt-3 pb-8">
+    <!-- BREADCRUMB -->
+    <nav class="text-[13px] text-muted mb-3 flex items-center flex-wrap gap-1">
+      <a href="#" class="hover:text-primary-brown">Trang chủ</a>
+      <span>/</span>
+      <a href="#" class="hover:text-primary-brown">Trống</a>
+      <span>/</span>
+      <a href="#" class="hover:text-primary-brown">Trống chùa</a>
+      <span>/</span>
+      <span class="font-medium text-[#3A2E22]">Trống chùa loại 2</span>
+    </nav>
+
+    <!-- 2. GALLERY ẢNH -->
+    <section class="mb-4">
+      <!-- Ảnh chính lớn -->
+      <div class="w-full aspect-[4/3] rounded-[10px] wood-gradient relative overflow-hidden flex flex-col items-center justify-center text-white border border-warm shadow-sm mb-2.5">
+        <div class="w-14 h-14 rounded-full border border-white/40 flex items-center justify-center bg-black/10 backdrop-blur-xs mb-2">
+          <svg class="w-7 h-7 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <span class="text-xs tracking-wider uppercase font-medium bg-black/20 px-3 py-1 rounded-full text-white/90">Ảnh chính: Mặt trống vẽ mây rồng & tang mít già</span>
+        <span class="absolute bottom-2.5 right-2.5 text-[11px] bg-black/40 text-white/90 px-2 py-0.5 rounded">1/4</span>
+      </div>
+
+      <!-- Thumbnail nhỏ bên dưới -->
+      <div class="grid grid-cols-4 gap-2">
+        <button class="aspect-square rounded-[6px] wood-gradient border-2 border-primary-brown relative overflow-hidden flex items-center justify-center text-white text-[11px] font-medium p-1 text-center shadow-xs">
+          <span>Toàn cảnh</span>
+        </button>
+        <button class="aspect-square rounded-[6px] wood-gradient border border-warm relative overflow-hidden flex items-center justify-center text-white/90 text-[11px] p-1 text-center opacity-85 hover:opacity-100">
+          <span>Da trâu mộng</span>
+        </button>
+        <button class="aspect-square rounded-[6px] wood-gradient border border-warm relative overflow-hidden flex items-center justify-center text-white/90 text-[11px] p-1 text-center opacity-85 hover:opacity-100">
+          <span>Giá chạm rồng</span>
+        </button>
+        <button class="aspect-square rounded-[6px] wood-gradient border border-warm relative overflow-hidden flex items-center justify-center text-white/90 text-[11px] p-1 text-center opacity-85 hover:opacity-100">
+          <span>Khắc bài vị</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. TIÊU ĐỀ MẪU & NHÃN DANH MỤC -->
+    <section class="bg-white rounded-[10px] p-4 border border-warm mb-4 shadow-xs">
+      <span class="inline-block text-[12px] font-semibold text-secondary-amber tracking-wider uppercase mb-1">TRỐNG CHÙA &bull; MẪU ĐẠI TỰ</span>
+      <h1 class="text-[22px] font-bold text-[#3A2E22] leading-tight mb-2">Trống đại đình chùa - Loại 2 (Đường kính 1m4 - 1m6)</h1>
+      <p class="text-sm text-muted mb-3 leading-relaxed">
+        Chế tác thủ công từ thân gỗ mít cổ thụ nguyên lõi không pha rác, bịt da trâu mộng đanh ngâm muối cổ truyền. Âm thanh đại tự trầm hùng, ngân vang sâu lắng nơi chốn tôn nghiêm.
+      </p>
+
+      <!-- 5. DÒNG GIÁ -->
+      <div class="pt-3 border-t border-form-light flex items-baseline justify-between">
+        <span class="text-sm text-muted">Giá xuất xưởng:</span>
+        <span class="text-[18px] font-bold text-muted italic">Liên hệ báo giá</span>
+      </div>
+    </section>
+
+    <!-- 4. BẢNG THÔNG SỐ KỸ THUẬT RIÊNG MẪU NÀY -->
+    <section class="bg-sunken-be rounded-[10px] p-4 border border-warm mb-4">
+      <div class="flex items-center gap-2 mb-3">
+        <svg class="w-4 h-4 text-primary-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h2 class="text-[16px] font-bold text-[#3A2E22] tracking-tight">Thông số kỹ thuật xưởng</h2>
+      </div>
+
+      <div class="bg-white rounded-[8px] border border-warm divide-y divide-form-light overflow-hidden text-sm">
+        <div class="flex px-3 py-2.5">
+          <span class="w-32 text-muted font-medium shrink-0">Kích thước</span>
+          <span class="text-[#3A2E22] font-semibold">Đường kính mặt 140cm - 160cm x Chiều cao thân 170cm - 190cm</span>
+        </div>
+        <div class="flex px-3 py-2.5">
+          <span class="w-32 text-muted font-medium shrink-0">Phân hạng</span>
+          <span class="text-[#3A2E22] font-semibold">Loại 2 (Mẫu đại đình chùa cỡ lớn)</span>
+        </div>
+        <div class="flex px-3 py-2.5">
+          <span class="w-32 text-muted font-medium shrink-0">Chất liệu thân & da</span>
+          <span class="text-[#3A2E22]">Tang gỗ mít già nguyên lõi 100%, da trâu mộng đanh tuyển chọn</span>
+        </div>
+        <div class="flex px-3 py-2.5">
+          <span class="w-32 text-muted font-medium shrink-0">Bánh xe / Giá đỡ</span>
+          <span class="text-[#3A2E22]">Kèm giá đỡ gỗ lim chạm rồng chầu, có bánh xe tiện di chuyển trong sân đình chùa</span>
+        </div>
+        <div class="flex px-3 py-2.5">
+          <span class="w-32 text-muted font-medium shrink-0">Sơn hoàn thiện</span>
+          <span class="text-[#3A2E22]">Sơn đỏ truyền thống hoặc sơn thếp vàng họa tiết mây lửa theo yêu cầu</span>
+        </div>
+        <div class="flex px-3 py-2.5">
+          <span class="w-32 text-muted font-medium shrink-0">Vẽ mặt trống</span>
+          <span class="text-[#3A2E22]">Vẽ họa tiết Rồng chầu mặt nguyệt hoặc bát quái âm dương thủ công</span>
+        </div>
+        <div class="flex px-3 py-2.5">
+          <span class="w-32 text-muted font-medium shrink-0">Bảo hành</span>
+          <span class="text-[#3A2E22]">Bảo hành âm vang & da trống 5 năm, hỗ trợ căng bịt lại tận nơi</span>
+        </div>
+      </div>
+      <p class="text-[12px] text-muted italic mt-2.5">
+        * Kích thước và hoa văn có thể đo đạc điều chỉnh chuẩn theo cung số thước Lỗ Ban của bản tự.
+      </p>
+    </section>
+
+    <!-- 6. FORM LIÊN HỆ / YÊU CẦU BÁO GIÁ NHÚNG NGAY TRONG TRANG -->
+    <section class="bg-white rounded-[10px] p-4 border border-warm mb-4 shadow-xs">
+      <div class="mb-3">
+        <h2 class="text-[17px] font-bold text-[#3A2E22]">Yêu cầu báo giá & tư vấn cấu hình</h2>
+        <p class="text-xs text-muted mt-0.5">Xưởng nghệ nhân sẽ liên hệ lại trực tiếp qua điện thoại hoặc Zalo trong vòng 15 phút.</p>
+      </div>
+
+      <form class="space-y-3" onsubmit="event.preventDefault();">
+        <!-- Họ tên -->
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1">Họ tên của quý thầy / quý khách *</label>
+          <input type="text" placeholder="Ví dụ: Thầy Thích Trí Minh hoặc Bác Nguyễn Văn An" class="w-full text-sm px-3 py-2.5 rounded-[6px] bg-[#FAF7F2] border border-form-light focus:outline-none focus:border-primary-brown focus:bg-white text-[#3A2E22] placeholder:text-[#9F9181]">
+        </div>
+
+        <!-- Số điện thoại -->
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1">Số điện thoại (hoặc Zalo) *</label>
+          <input type="tel" placeholder="098x xxx xxx (để xưởng gọi lại tư vấn)" class="w-full text-sm px-3 py-2.5 rounded-[6px] bg-[#FAF7F2] border border-form-light focus:outline-none focus:border-primary-brown focus:bg-white text-[#3A2E22] placeholder:text-[#9F9181]">
+        </div>
+
+        <!-- Sản phẩm quan tâm (ĐÃ ĐIỀN SẴN, NỀN KHÁC BIỆT) -->
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1">Sản phẩm quan tâm (đã chọn sẵn)</label>
+          <div class="relative">
+            <input type="text" readonly value="Trống chùa loại 2 (Đường kính 1m4 - 1m6)" class="w-full text-sm px-3 py-2.5 rounded-[6px] bg-[#EFE7D8] border border-warm font-semibold text-[#3A2E22] cursor-not-allowed pl-8">
+            <svg class="w-4 h-4 text-secondary-amber absolute left-2.5 top-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <span class="text-[11px] text-muted mt-1 block italic">Hệ thống đã tự động ghi nhận mẫu trống quý khách đang xem.</span>
+        </div>
+
+        <!-- Lời nhắn -->
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1">Lời nhắn / Yêu cầu kích thước Lỗ Ban riêng</label>
+          <textarea rows="3" placeholder="Ví dụ: Chùa cần đặt kèm giá gỗ lim chạm rồng, giao về Hưng Yên vào tháng 3 âm lịch..." class="w-full text-sm px-3 py-2.5 rounded-[6px] bg-[#FAF7F2] border border-form-light focus:outline-none focus:border-primary-brown focus:bg-white text-[#3A2E22] placeholder:text-[#9F9181] resize-none"></textarea>
+        </div>
+
+        <!-- Nút gửi full-width -->
+        <button type="submit" class="w-full py-3 bg-primary-brown text-white text-[16px] font-bold rounded-[6px] shadow-xs active:bg-[#724921] transition-colors flex items-center justify-center gap-2">
+          <span>Gửi yêu cầu nhận báo giá xưởng</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+
+        <p class="text-[11px] text-center text-muted">Cam kết xưởng làng nghề Đọi Tam: Không qua trung gian &bull; Bảo mật thông tin</p>
+      </form>
+    </section>
+
+    <!-- Cam kết xưởng ngắn -->
+    <div class="bg-white/80 rounded-[8px] p-3 border border-warm flex items-start gap-2.5 text-xs text-muted">
+      <div class="w-5 h-5 rounded-full bg-sunken-be text-primary-brown flex items-center justify-center shrink-0 mt-0.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <div>
+        <strong class="text-[#3A2E22]">Nghệ nhân Phạm Trí Trong trực tiếp tư vấn:</strong> Nhận đo đạc tận nơi cho các đình, chùa, tự viện trên toàn quốc. Hỗ trợ khắc bia công đức và lễ cúng nhập trống linh thiêng.
+      </div>
+    </div>
+  </main>
+
+  <!-- 7. THANH LIÊN HỆ DÍNH ĐÁY 3 PHẦN -->
+  <aside class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-warm sticky-bar-shadow">
+    <div class="max-w-[430px] mx-auto grid grid-cols-3 h-14">
+      <a href="tel:0988688888" class="flex flex-col items-center justify-center text-[#3A2E22] hover:bg-[#FAF7F2] transition-colors">
+        <svg class="w-5 h-5 text-muted mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+        </svg>
+        <span class="text-[11px] font-medium text-muted">Gọi ngay</span>
+      </a>
+
+      <a href="https://zalo.me" class="flex flex-col items-center justify-center bg-primary-brown text-white transition-colors hover:bg-[#764b22] px-1">
+        <svg class="w-5 h-5 mb-0.5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.03 2 11c0 2.87 1.5 5.43 3.84 7.07-.15.98-.6 2.6-1.34 3.73-.13.2-.02.47.21.5.88.11 2.76-.14 4.45-1.12.91.22 1.87.34 2.84.34 5.52 0 10-4.03 10-9s-4.48-9-10-9zm1 13h-2v-2h2v2zm0-4h-2V7h2v4z"/>
+        </svg>
+        <span class="text-[11px] font-semibold tracking-wide">Chat Zalo</span>
+      </a>
+
+      <a href="#" class="flex flex-col items-center justify-center text-[#3A2E22] hover:bg-[#FAF7F2] transition-colors">
+        <svg class="w-5 h-5 text-muted mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span class="text-[11px] font-medium text-muted">Bản đồ</span>
+      </a>
+    </div>
+  </aside>
+
+</body>
+</html>

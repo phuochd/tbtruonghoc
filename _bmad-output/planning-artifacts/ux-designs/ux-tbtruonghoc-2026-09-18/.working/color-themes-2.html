@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color Themes Round 2 — Thiết Bị Trường Học Ngọc Anh (Site A)</title>
+<style>
+  /*
+    =========================================================
+    COLOR THEMES — ROUND 2 — Thiết Bị Trường Học Ngọc Anh (Site A)
+    Round 1 pick: "5 · Xanh Lục Bảo Định Chế" (Deep Teal Institutional
+    + Amber Accent) — primary teal #0F5C56, cta amber #C98A2B,
+    bg #F4F9F8, text #153531, text-muted #546B67, border #DCEAE7.
+
+    Phước's feedback verbatim: "5, nhưng làm sao cho nó tươi sáng
+    với tuổi học sinh" — keep the teal+amber institutional register,
+    but make it BRIGHTER / FRESHER for a school-age context. Not
+    somber, not heavy.
+
+    Constraints still in force: B2B/institutional audience (hiệu
+    trưởng, phòng mua sắm) evaluating on desktop — must stay
+    professional/trustworthy, NOT childish or toy-like. Must NOT
+    drift into red discount-badge retail (legacy site's look). Must
+    NOT drift into warm-wood/brown heritage (sister site Mộc Trầm's
+    territory). All 4 variations below stay in the teal+amber family
+    and explore different brightening/freshening strategies.
+
+    Hex values per variation are documented in each .rN block below
+    as CSS custom properties, with a comment header restating them
+    in plain hex so they can be lifted directly.
+    =========================================================
+  */
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #E9ECEF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1B2733;
+  }
+
+  .page-head {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px 8px;
+  }
+
+  .page-head h1 {
+    font-size: 22px;
+    margin: 0 0 6px;
+  }
+
+  .page-head p {
+    font-size: 14px;
+    color: #55606B;
+    margin: 0 0 4px;
+    max-width: 940px;
+    line-height: 1.5;
+  }
+
+  .page-head .quote {
+    font-style: italic;
+    color: #33413C;
+    background: #FFFFFF;
+    border-left: 3px solid #0F5C56;
+    padding: 8px 12px;
+    margin: 10px 0;
+    max-width: 700px;
+    font-size: 13.5px;
+  }
+
+  .grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px 24px 64px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ---------- shared theme-card spine (semantic, palette-agnostic) ---------- */
+
+  .theme-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .theme-meta {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .theme-meta .name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 3px;
+  }
+
+  .theme-meta .register {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px 4px 4px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  .swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.12);
+    flex-shrink: 0;
+  }
+
+  /* ---------- UI snippet: mini homepage mock ---------- */
+
+  .snippet { padding: 0; }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--nav-bg, var(--surface));
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav .logo {
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.4px;
+    color: var(--nav-logo, var(--primary));
+  }
+
+  .nav .links {
+    display: flex;
+    gap: 14px;
+    font-size: 11.5px;
+    color: var(--nav-link, var(--text-muted));
+  }
+
+  .nav .contact-chip {
+    font-size: 10.5px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-weight: 600;
+  }
+
+  .hero {
+    padding: 26px 20px 22px;
+    background: var(--hero-bg);
+  }
+
+  .hero .eyebrow {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--eyebrow-ink, var(--hero-text));
+    background: var(--eyebrow-bg, transparent);
+    border: 1px solid var(--eyebrow-border, transparent);
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin: 0 0 10px;
+  }
+
+  .hero h2 {
+    font-size: 19px;
+    line-height: 1.32;
+    margin: 0 0 8px;
+    color: var(--hero-text);
+    max-width: 340px;
+  }
+
+  .hero p {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--hero-subtext);
+    margin: 0 0 16px;
+    max-width: 360px;
+  }
+
+  .hero .cta-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--cta);
+    color: var(--cta-text);
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 10px 16px;
+    border-radius: 6px;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--hero-text);
+    border: 1.5px solid var(--hero-border);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 9px 15px;
+    border-radius: 6px;
+  }
+
+  .categories {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 18px 20px;
+    background: var(--surface);
+  }
+
+  .cat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+  }
+
+  .cat-card .dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--cat-dot, var(--primary));
+    margin: 0 auto 6px;
+  }
+
+  .cat-card.alt .dot {
+    background: var(--cat-dot-alt, var(--cat-dot, var(--primary)));
+  }
+
+  .cat-card span {
+    font-size: 9.5px;
+    line-height: 1.3;
+    color: var(--text);
+    font-weight: 600;
+    display: block;
+  }
+
+  .trust-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 20px 18px;
+    background: var(--surface);
+  }
+
+  .trust-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--trust-ink);
+    background: var(--trust-bg);
+    border: 1px solid var(--trust-border);
+    border-radius: 20px;
+    padding: 5px 10px;
+  }
+
+  .trust-badge.alt {
+    color: var(--trust-ink-alt, var(--trust-ink));
+    background: var(--trust-bg-alt, var(--trust-bg));
+    border-color: var(--trust-border-alt, var(--trust-border));
+  }
+
+  .footer-strip {
+    padding: 10px 20px;
+    background: var(--footer-bg, var(--primary));
+    color: var(--on-primary);
+    font-size: 10.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-strip .brand {
+    font-weight: 700;
+  }
+
+  /* =========================================================
+     R2·A — Xanh Lục Bảo Rạng Rỡ (Bright Emerald Teal + Golden Amber)
+     bg:#FCFEFD surface:#FFFFFF primary(teal):#0E7A6C
+     accent/cta(amber):#E3A63B text:#123832 text-muted:#4F6E68
+     border:#D3EEE7 hero-bg:#E3F7F1 trust:#0E7A6C
+     ========================================================= */
+  .r2a {
+    --bg: #FCFEFD;
+    --surface: #FFFFFF;
+    --primary: #0E7A6C;
+    --text: #123832;
+    --text-muted: #4F6E68;
+    --border: #D3EEE7;
+    --hero-bg: #E3F7F1;
+    --hero-text: #0C4A40;
+    --hero-subtext: #3E6961;
+    --hero-border: #A9E0D1;
+    --cta: #E3A63B;
+    --cta-text: #2B1B02;
+    --accent-soft: #FCEDD1;
+    --accent-ink: #8A5F14;
+    --trust-bg: #DFF6EE;
+    --trust-ink: #0E7A6C;
+    --trust-border: #B7E7D9;
+    --on-primary: #E7FBF5;
+  }
+
+  /* =========================================================
+     R2·B — Teal Đầu Trang, Thân Trang Thoáng Sáng + Xanh Da Trời Tươi
+     bg:#FFFFFF surface:#FFFFFF primary(teal, header/footer only):#0F5C56
+     secondary(sky-blue, category tags):#2F9BC7
+     accent/cta(amber):#D89A34 text:#17302C text-muted:#5C726D
+     border:#E7EEEC hero-bg:#F7FBFA
+     ========================================================= */
+  .r2b {
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --primary: #0F5C56;
+    --text: #17302C;
+    --text-muted: #5C726D;
+    --border: #E7EEEC;
+    --hero-bg: #F7FBFA;
+    --hero-text: #123832;
+    --hero-subtext: #5A716C;
+    --hero-border: #CFE6E0;
+    --cta: #D89A34;
+    --cta-text: #2B1B02;
+    --accent-soft: #F6E9CE;
+    --accent-ink: #8A5F14;
+    --secondary: #2F9BC7;
+    --secondary-soft: #E3F3FA;
+    --secondary-ink: #1D6E90;
+    --trust-bg: #E3F3FA;
+    --trust-ink: #1D6E90;
+    --trust-border: #C7E7F2;
+    --on-primary: #E3F1EE;
+    --nav-bg: #0F5C56;
+    --nav-logo: #FFFFFF;
+    --nav-link: #CDE7E2;
+    --cat-dot: #2F9BC7;
+    --footer-bg: #0F5C56;
+  }
+
+  /* =========================================================
+     R2·C — Tương Phản Rõ, Thoáng Đãng (Punchy Teal + Amber, more whitespace)
+     bg:#FFFFFF surface:#FFFFFF primary(teal, vivid):#078577
+     accent/cta(amber, vivid):#E8A62E text:#0F2622 text-muted:#5A716C
+     border:#EAF2F0 hero-bg:#FFFFFF (no wash, color pops via CTA/badges)
+     ========================================================= */
+  .r2c {
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --primary: #078577;
+    --text: #0F2622;
+    --text-muted: #5A716C;
+    --border: #EAF2F0;
+    --hero-bg: #FFFFFF;
+    --hero-text: #0F2622;
+    --hero-subtext: #55716B;
+    --hero-border: #BFE6DC;
+    --cta: #E8A62E;
+    --cta-text: #241500;
+    --accent-soft: #FDEFD3;
+    --accent-ink: #8A5F14;
+    --trust-bg: #FFFFFF;
+    --trust-ink: #078577;
+    --trust-border: #078577;
+    --on-primary: #E7FBF6;
+  }
+
+  /* =========================================================
+     R2·D — Điểm Nhấn Học Đường (teal+amber base + one sparing sunny-yellow accent)
+     bg:#FBFEFD surface:#FFFFFF primary(teal):#10685D
+     accent/cta(amber):#D89A34 text:#143530 text-muted:#55716B
+     border:#DCEEE8 hero-bg:#E6F5F0
+     school-accent(sunny yellow, used sparingly on 1 tag + 1 icon):#F5C242
+     ========================================================= */
+  .r2d {
+    --bg: #FBFEFD;
+    --surface: #FFFFFF;
+    --primary: #10685D;
+    --text: #143530;
+    --text-muted: #55716B;
+    --border: #DCEEE8;
+    --hero-bg: #E6F5F0;
+    --hero-text: #0E463D;
+    --hero-subtext: #48655F;
+    --hero-border: #B7DED2;
+    --cta: #D89A34;
+    --cta-text: #2B1B02;
+    --accent-soft: #F6E7CB;
+    --accent-ink: #8A5F14;
+    --trust-bg: #DFF1EA;
+    --trust-ink: #10685D;
+    --trust-border: #BFE0D5;
+    --on-primary: #E6F5F0;
+    --school-accent: #F5C242;
+    --school-accent-ink: #6B4E06;
+    --eyebrow-bg: #FCEFC7;
+    --eyebrow-border: #F0D585;
+    --eyebrow-ink: #6B4E06;
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="page-head">
+    <h1>Color Themes Round 2 — Thiết Bị Trường Học Ngọc Anh (Site A)</h1>
+    <p>Round 1 pick: <strong>5 · Xanh Lục Bảo Định Chế</strong> (teal #0F5C56 + amber #C98A2B, nền trung tính nhạt #F4F9F8). Phước phản hồi:</p>
+    <p class="quote">"5, nhưng làm sao cho nó tươi sáng với tuổi học sinh"</p>
+    <p>4 phương án dưới đây giữ nguyên hệ màu teal+amber của phương án đã chọn, chỉ khai thác các cách khác nhau để làm nó sáng/tươi hơn — vẫn phải đọc là chuyên nghiệp/đáng tin cậy cho hiệu trưởng, ban giám hiệu, phòng mua sắm (desktop-first), không được ngả sang màu mè trẻ con, không dùng badge đỏ giảm giá kiểu bán lẻ, không ngả sang tông gỗ ấm/nâu heritage của site chị em (Mộc Trầm).</p>
+    <p>Mode coverage: light mode only (dark mode not in scope for this product).</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- ============ R2·A — Bright Emerald Teal + Golden Amber ============ -->
+    <section class="theme-card r2a">
+      <div class="theme-meta">
+        <p class="name">A · Xanh Lục Bảo Rạng Rỡ (Bright Emerald Teal + Golden Amber)</p>
+        <p class="register">So với bản gốc: teal sáng/bão hòa hơn (#0E7A6C thay vì #0F5C56), amber vàng ánh kim thay vì nâu-ochre, nền gần trắng tinh thay vì xám xanh — cùng một cấu trúc, chỉ "bật đèn" sáng hơn.</p>
+      </div>
+      <div class="chips">
+        <span class="chip"><span class="swatch" style="background:#FCFEFD"></span>bg #FCFEFD</span>
+        <span class="chip"><span class="swatch" style="background:#0E7A6C"></span>primary #0E7A6C</span>
+        <span class="chip"><span class="swatch" style="background:#E3A63B"></span>cta #E3A63B</span>
+        <span class="chip"><span class="swatch" style="background:#123832"></span>text #123832</span>
+        <span class="chip"><span class="swatch" style="background:#4F6E68"></span>text-muted #4F6E68</span>
+        <span class="chip"><span class="swatch" style="background:#D3EEE7"></span>border #D3EEE7</span>
+        <span class="chip"><span class="swatch" style="background:#E3F7F1"></span>hero-bg #E3F7F1</span>
+      </div>
+      <div class="snippet">
+        <div class="nav">
+          <span class="logo">NGỌC ANH</span>
+          <span class="links">Sản phẩm · Dự án · Về chúng tôi · Liên hệ</span>
+          <span class="contact-chip">Hotline 0909 123 456</span>
+        </div>
+        <div class="hero">
+          <h2>Trang bị trường học đồng bộ — từ sân chơi đến phòng học thông minh</h2>
+          <p>Tư vấn kỹ thuật miễn phí, khảo sát tận nơi, thi công đúng tiến độ năm học.</p>
+          <div class="cta-row">
+            <button class="btn-primary">Nhận báo giá</button>
+            <button class="btn-secondary">Đăng ký khảo sát miễn phí</button>
+          </div>
+        </div>
+        <div class="categories">
+          <div class="cat-card"><div class="dot"></div><span>Dù che nắng sân trường</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Nội thất mầm non</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Bảng tương tác</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị phòng thí nghiệm</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị âm thanh</span></div>
+        </div>
+        <div class="trust-row">
+          <span class="trust-badge">Bảo hành chính hãng</span>
+          <span class="trust-badge">Đội thi công riêng</span>
+          <span class="trust-badge">Giao hàng toàn quốc</span>
+          <span class="trust-badge">Hỗ trợ 24/7</span>
+        </div>
+        <div class="footer-strip">
+          <span class="brand">Ngọc Anh</span>
+          <span>Zalo tư vấn · 0909 123 456</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R2·B — Teal header only + airy body + sky-blue secondary ============ -->
+    <section class="theme-card r2b">
+      <div class="theme-meta">
+        <p class="name">B · Teal Đầu Trang, Thân Trang Thoáng Sáng + Xanh Da Trời Tươi</p>
+        <p class="register">So với bản gốc: teal đậm chỉ còn xuất hiện ở thanh nav/footer (như một "khung" định chế), toàn bộ thân trang chuyển sang nền trắng thoáng; thêm xanh da trời tươi làm màu phụ cho tag danh mục — tạo cảm giác nhẹ/mở hơn hẳn bản teal phủ toàn trang.</p>
+      </div>
+      <div class="chips">
+        <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>bg #FFFFFF</span>
+        <span class="chip"><span class="swatch" style="background:#0F5C56"></span>primary #0F5C56</span>
+        <span class="chip"><span class="swatch" style="background:#2F9BC7"></span>secondary #2F9BC7</span>
+        <span class="chip"><span class="swatch" style="background:#D89A34"></span>cta #D89A34</span>
+        <span class="chip"><span class="swatch" style="background:#17302C"></span>text #17302C</span>
+        <span class="chip"><span class="swatch" style="background:#5C726D"></span>text-muted #5C726D</span>
+        <span class="chip"><span class="swatch" style="background:#E7EEEC"></span>border #E7EEEC</span>
+      </div>
+      <div class="snippet">
+        <div class="nav">
+          <span class="logo">NGỌC ANH</span>
+          <span class="links">Sản phẩm · Dự án · Về chúng tôi · Liên hệ</span>
+          <span class="contact-chip">Hotline 0909 123 456</span>
+        </div>
+        <div class="hero">
+          <h2>Trang bị trường học đồng bộ — từ sân chơi đến phòng học thông minh</h2>
+          <p>Tư vấn kỹ thuật miễn phí, khảo sát tận nơi, thi công đúng tiến độ năm học.</p>
+          <div class="cta-row">
+            <button class="btn-primary">Nhận báo giá</button>
+            <button class="btn-secondary">Đăng ký khảo sát miễn phí</button>
+          </div>
+        </div>
+        <div class="categories">
+          <div class="cat-card"><div class="dot"></div><span>Dù che nắng sân trường</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Nội thất mầm non</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Bảng tương tác</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị phòng thí nghiệm</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị âm thanh</span></div>
+        </div>
+        <div class="trust-row">
+          <span class="trust-badge">Bảo hành chính hãng</span>
+          <span class="trust-badge">Đội thi công riêng</span>
+          <span class="trust-badge">Giao hàng toàn quốc</span>
+          <span class="trust-badge">Hỗ trợ 24/7</span>
+        </div>
+        <div class="footer-strip">
+          <span class="brand">Ngọc Anh</span>
+          <span>Zalo tư vấn · 0909 123 456</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R2·C — Punchy Teal + Amber, more whitespace ============ -->
+    <section class="theme-card r2c">
+      <div class="theme-meta">
+        <p class="name">C · Tương Phản Rõ, Thoáng Đãng (Punchy Teal + Amber, More Whitespace)</p>
+        <p class="register">So với bản gốc: bỏ hẳn lớp nền/hero tinted, mọi thứ nằm trên nền trắng tinh; teal và amber được đẩy bão hòa hơn để "nổ" tương phản ngay trên trắng, badge chuyển sang viền outline thay vì nền màu — cảm giác gọn/sáng/năng động hơn nhiều so với bản gốc phủ nền xanh nhạt khắp nơi.</p>
+      </div>
+      <div class="chips">
+        <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>bg #FFFFFF</span>
+        <span class="chip"><span class="swatch" style="background:#078577"></span>primary #078577</span>
+        <span class="chip"><span class="swatch" style="background:#E8A62E"></span>cta #E8A62E</span>
+        <span class="chip"><span class="swatch" style="background:#0F2622"></span>text #0F2622</span>
+        <span class="chip"><span class="swatch" style="background:#5A716C"></span>text-muted #5A716C</span>
+        <span class="chip"><span class="swatch" style="background:#EAF2F0"></span>border #EAF2F0</span>
+      </div>
+      <div class="snippet">
+        <div class="nav">
+          <span class="logo">NGỌC ANH</span>
+          <span class="links">Sản phẩm · Dự án · Về chúng tôi · Liên hệ</span>
+          <span class="contact-chip">Hotline 0909 123 456</span>
+        </div>
+        <div class="hero">
+          <h2>Trang bị trường học đồng bộ — từ sân chơi đến phòng học thông minh</h2>
+          <p>Tư vấn kỹ thuật miễn phí, khảo sát tận nơi, thi công đúng tiến độ năm học.</p>
+          <div class="cta-row">
+            <button class="btn-primary">Nhận báo giá</button>
+            <button class="btn-secondary">Đăng ký khảo sát miễn phí</button>
+          </div>
+        </div>
+        <div class="categories">
+          <div class="cat-card"><div class="dot"></div><span>Dù che nắng sân trường</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Nội thất mầm non</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Bảng tương tác</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị phòng thí nghiệm</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị âm thanh</span></div>
+        </div>
+        <div class="trust-row">
+          <span class="trust-badge">Bảo hành chính hãng</span>
+          <span class="trust-badge">Đội thi công riêng</span>
+          <span class="trust-badge">Giao hàng toàn quốc</span>
+          <span class="trust-badge">Hỗ trợ 24/7</span>
+        </div>
+        <div class="footer-strip">
+          <span class="brand">Ngọc Anh</span>
+          <span>Zalo tư vấn · 0909 123 456</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R2·D — Base + one sparing sunny-yellow school accent ============ -->
+    <section class="theme-card r2d">
+      <div class="theme-meta">
+        <p class="name">D · Điểm Nhấn Học Đường (Base + One Sparing Sunny-Yellow Accent)</p>
+        <p class="register">So với bản gốc: giữ gần nguyên tông teal+amber của bản gốc (chỉ sáng nhẹ), nhưng thêm đúng MỘT điểm nhấn vàng nắng — dùng cho 1 nhãn "mùa khai giảng" trong hero — để gợi không khí học đường mà không lấn át teal/amber, tránh cảm giác đồ chơi.</p>
+      </div>
+      <div class="chips">
+        <span class="chip"><span class="swatch" style="background:#FBFEFD"></span>bg #FBFEFD</span>
+        <span class="chip"><span class="swatch" style="background:#10685D"></span>primary #10685D</span>
+        <span class="chip"><span class="swatch" style="background:#D89A34"></span>cta #D89A34</span>
+        <span class="chip"><span class="swatch" style="background:#F5C242"></span>school-accent #F5C242</span>
+        <span class="chip"><span class="swatch" style="background:#143530"></span>text #143530</span>
+        <span class="chip"><span class="swatch" style="background:#55716B"></span>text-muted #55716B</span>
+        <span class="chip"><span class="swatch" style="background:#DCEEE8"></span>border #DCEEE8</span>
+      </div>
+      <div class="snippet">
+        <div class="nav">
+          <span class="logo">NGỌC ANH</span>
+          <span class="links">Sản phẩm · Dự án · Về chúng tôi · Liên hệ</span>
+          <span class="contact-chip">Hotline 0909 123 456</span>
+        </div>
+        <div class="hero">
+          <span class="eyebrow">Chương trình khai giảng 2026</span>
+          <h2>Trang bị trường học đồng bộ — từ sân chơi đến phòng học thông minh</h2>
+          <p>Tư vấn kỹ thuật miễn phí, khảo sát tận nơi, thi công đúng tiến độ năm học.</p>
+          <div class="cta-row">
+            <button class="btn-primary">Nhận báo giá</button>
+            <button class="btn-secondary">Đăng ký khảo sát miễn phí</button>
+          </div>
+        </div>
+        <div class="categories">
+          <div class="cat-card"><div class="dot"></div><span>Dù che nắng sân trường</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Nội thất mầm non</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Bảng tương tác</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị phòng thí nghiệm</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị âm thanh</span></div>
+        </div>
+        <div class="trust-row">
+          <span class="trust-badge">Bảo hành chính hãng</span>
+          <span class="trust-badge">Đội thi công riêng</span>
+          <span class="trust-badge">Giao hàng toàn quốc</span>
+          <span class="trust-badge">Hỗ trợ 24/7</span>
+        </div>
+        <div class="footer-strip">
+          <span class="brand">Ngọc Anh</span>
+          <span>Zalo tư vấn · 0909 123 456</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

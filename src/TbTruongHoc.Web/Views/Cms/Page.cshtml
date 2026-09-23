@@ -1,0 +1,47 @@
+@model StandardPage
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var hasImage = Model.PrimaryImage.HasValue;
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<header @(hasImage ? "class=has-image" : "") @(hasImage ? $"style=background-image:url({ @Url.Content(WebApp.Media.ResizeImage(Model.PrimaryImage, 1920, 400)) })" : "")>
+    <div class="dimmer"></div>
+    <div class="container text-center">
+        <h1>@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
+        {
+            <div class="row justify-content-center">
+                <div class="col-lg-8 lead">
+                    @Html.Raw(Model.Excerpt)
+                </div>
+            </div>
+        }
+    </div>
+</header>
+
+<main>
+    @foreach (var block in Model.Blocks)
+    {
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+
+    @*
+        Story 1.4 (FR-3): rendered here (rather than sitewide from
+        _Layout.cshtml, like _ContactBlock) per this story's Boundaries - a
+        dedicated PDP/category template doesn't exist yet (Epic 2/3/6), so
+        this end-to-end-testable placement on the generic Page template
+        stands in for it until then.
+    *@
+    <div class="container">
+        @await Html.PartialAsync("_QuoteRequestForm", new QuoteRequestFormViewModel())
+    </div>
+</main>
+
+<script src="~/assets/js/lead-form.js" asp-append-version="true"></script>

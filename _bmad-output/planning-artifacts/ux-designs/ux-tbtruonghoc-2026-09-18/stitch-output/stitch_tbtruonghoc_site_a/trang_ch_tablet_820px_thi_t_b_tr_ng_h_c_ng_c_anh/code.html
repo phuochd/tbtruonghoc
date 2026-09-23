@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trang chủ B2B - Thiết Bị Trường Học Ngọc Anh (Bản Tablet / iPad)</title>
+<!-- Google Fonts: Mulish -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              teal: '#0E7A6C',
+              'teal-dark': '#09544A',
+              'teal-light': '#149282',
+              mint: '#E6F6F3',
+              'mint-soft': '#EFF8F6',
+              amber: '#E3A63B',
+              'amber-hover': '#CE922C',
+              text: '#123832',
+              bg: '#FCFEFD'
+            }
+          },
+          fontFamily: {
+            sans: ['Mulish', 'sans-serif'],
+          },
+          maxWidth: {
+            'tablet': '820px',
+          }
+        }
+      }
+    }
+  </script>
+<!-- Styles for Layout and Design Consistency -->
+<style data-purpose="base-layout">
+    body {
+      background-color: #F3F6F5;
+      color: #123832;
+      font-family: 'Mulish', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .tablet-viewport {
+      max-width: 820px;
+      margin: 0 auto;
+      background-color: #FCFEFD;
+      box-shadow: 0 10px 30px -5px rgba(18, 56, 50, 0.12);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+  </style>
+<style data-purpose="custom-shadows">
+    .card-shadow {
+      box-shadow: 0 4px 16px 0 rgba(14, 122, 108, 0.07);
+      transition: all 0.25s ease-in-out;
+    }
+    .card-shadow:hover {
+      box-shadow: 0 8px 24px 0 rgba(14, 122, 108, 0.14);
+      transform: translateY(-2px);
+    }
+    .hero-glass {
+      background: linear-gradient(180deg, rgba(9, 84, 74, 0.1) 0%, rgba(9, 84, 74, 0.6) 55%, rgba(9, 84, 74, 0.95) 100%);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-brand-teal selection:text-white">
+<!-- BEGIN: TabletContainerWrapper -->
+<div class="tablet-viewport">
+<!-- BEGIN: TabletHeader -->
+<header class="bg-brand-teal text-white sticky top-0 z-50 border-b border-brand-teal-dark shadow-sm">
+<div class="px-5 py-3 flex items-center justify-between">
+<!-- Logo & Brand Identity -->
+<a aria-label="Trang chủ Ngọc Anh" class="flex items-center gap-2.5 focus:outline-none focus:ring-2 focus:ring-brand-amber rounded-lg p-0.5" href="#">
+<div class="w-9 h-9 rounded-lg bg-brand-amber flex items-center justify-center font-black text-brand-text text-xl shadow-inner">
+            M
+          </div>
+<div class="leading-tight">
+<span class="block text-base font-extrabold tracking-wide text-white uppercase">NGỌC ANH</span>
+<span class="block text-[11px] font-medium tracking-wider text-teal-100 uppercase opacity-90">THIẾT BỊ TRƯỜNG HỌC B2B</span>
+</div>
+</a>
+<!-- Right Side Tablet Controls: Compact Hotline Chip + Menu Trigger -->
+<div class="flex items-center gap-2.5">
+<!-- Compact Hotline Pill -->
+<a class="inline-flex items-center gap-1.5 bg-teal-800/80 hover:bg-teal-800 text-teal-100 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-teal-600/50 transition" href="tel:0988xxxxxx">
+<svg class="w-3.5 h-3.5 text-brand-amber" fill="currentColor" viewbox="0 0 24 24">
+<path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1zM19 12h2a9 9 0 00-9-9v2a7 7 0 017 7z"></path>
+</svg>
+<span>0988.xxx.xxx</span>
+</a>
+<!-- User Quick Icon -->
+<button aria-label="Tài khoản" class="w-8 h-8 rounded-full bg-teal-800/80 text-teal-100 hover:text-white flex items-center justify-center border border-teal-600/50 transition focus:outline-none">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Hamburger Menu for Tablet Screen -->
+<button aria-label="Mở menu danh mục" class="w-9 h-9 flex flex-col items-center justify-center gap-1 bg-brand-teal-dark hover:bg-teal-900 rounded-lg text-white transition focus:outline-none focus:ring-2 focus:ring-brand-amber">
+<span class="w-5 h-0.5 bg-white rounded-full"></span>
+<span class="w-5 h-0.5 bg-white rounded-full"></span>
+<span class="w-5 h-0.5 bg-white rounded-full"></span>
+</button>
+</div>
+</div>
+</header>
+<!-- END: TabletHeader -->
+<main class="flex-grow">
+<!-- BEGIN: HeroCarouselSection -->
+<section aria-label="Banner nổi bật" class="relative w-full overflow-hidden bg-brand-teal-dark text-white">
+<!-- Hero Background Image (Retained from DataStore, calibrated height for 820px iPad) -->
+<div class="relative w-full h-[470px]">
+<img alt="Dự án trường mầm non và liên cấp quốc tế ABC - Thiết bị sân trường Ngọc Anh" class="w-full h-full object-cover object-center" src="https://lh3.googleusercontent.com/aida/AEtjO1XcVS7tagcsoVSXc1duW1u2DZIgsF7SDJDlyNho0TGsc6q1j5XR-qxmbLZVUlslK2KrS07YDTeDheLcoTp_iTuzw46SCjkwdg6Bo3LPB9nYbWTDcjLD_imllsfHuj_7-tXot_lGB4mogIQeC0kVej-FSp64j1cDt-CFpdTxMIQTqQf_rF7MJLIt7tkDsvuS0xVHn2nNZ-qWyls1wHhLdkJ3FZPrI9p_nyl3vQHidlK74LIUMoPPRbj5"/>
+<!-- Gradient Overlay: Keeps the schoolyard architecture & canopy visible while highlighting text at bottom -->
+<div class="absolute inset-0 hero-glass flex flex-col justify-between p-6 sm:p-8">
+<!-- Top Tag in Hero -->
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-teal-900/60 backdrop-blur-md text-teal-200 border border-teal-400/30">
+<svg class="w-3.5 h-3.5 text-teal-300" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+                QUY CHUẨN CƠ SỞ VẬT CHẤT BGD&amp;ĐT
+              </span>
+<span class="text-[11px] uppercase tracking-wider text-teal-200/90 font-medium hidden sm:inline-block">
+                DỰ ÁN TRƯỜNG MẦM NON &amp; LIÊN CẤP ABC
+              </span>
+</div>
+<!-- Main Heading & CTAs for Tablet Layout -->
+<div class="max-w-2xl mt-auto">
+<h1 class="text-2xl sm:text-3xl md:text-[34px] leading-tight font-extrabold text-white tracking-tight drop-shadow-sm mb-3">
+                Thiết bị trường học chuyên nghiệp, đồng hành cùng hàng trăm ngôi trường
+              </h1>
+<p class="text-sm sm:text-base text-teal-100 font-normal leading-relaxed mb-6 max-w-xl opacity-95">
+                Cung ứng trọn gói giải pháp cơ sở vật chất, thiết bị mầm non, dù che nắng sân trường và phòng chức năng đạt chuẩn Bộ Giáo dục &amp; Đào tạo cho các trường học trên toàn quốc.
+              </p>
+<!-- Two CTAs with appropriate tablet touch-target size -->
+<div class="flex flex-wrap items-center gap-3.5">
+<a class="inline-flex items-center justify-center gap-2 bg-brand-amber hover:bg-brand-amber-hover text-brand-text font-bold text-sm sm:text-base px-5 py-3 rounded-lg shadow-md transition transform active:scale-95" href="#bao-gia">
+<span>Nhận báo giá dự án</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</a>
+<a class="inline-flex items-center justify-center gap-2 bg-teal-900/70 hover:bg-teal-900/90 text-white font-semibold text-sm sm:text-base px-5 py-3 rounded-lg border border-white/60 transition backdrop-blur-sm" href="#khao-sat">
+<span>Đăng ký khảo sát miễn phí</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</a>
+</div>
+</div>
+<!-- Bottom Carousel Indicators & Context Label -->
+<div class="flex items-center justify-between pt-4 border-t border-teal-500/20 mt-4">
+<!-- Dots -->
+<div aria-label="Bộ chuyển slide" class="flex items-center gap-2">
+<span class="w-6 h-2 rounded-full bg-brand-amber inline-block"></span>
+<span class="w-2 h-2 rounded-full bg-white/50 hover:bg-white inline-block cursor-pointer transition"></span>
+<span class="w-2 h-2 rounded-full bg-white/50 hover:bg-white inline-block cursor-pointer transition"></span>
+</div>
+<span class="text-[10px] sm:text-xs text-teal-200/80 font-medium">
+                Hình ảnh thực tế công trình lắp đặt bàn giao
+              </span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: HeroCarouselSection -->
+<!-- BEGIN: TrustStatsBand -->
+<!-- 2x2 Grid Layout for Tablet Dimensions -->
+<section aria-label="Thống kê năng lực" class="bg-brand-mint-soft border-y border-teal-100 py-6 px-4">
+<div class="grid grid-cols-2 gap-y-6 gap-x-4 max-w-2xl mx-auto">
+<!-- Metric 1 -->
+<div class="text-center px-2">
+<div class="text-3xl sm:text-4xl font-extrabold text-brand-teal tracking-tight">500+</div>
+<div class="text-xs sm:text-sm text-brand-text font-semibold mt-1">Trường học &amp; đối tác đã lắp đặt</div>
+</div>
+<!-- Metric 2 -->
+<div class="text-center px-2 border-l border-teal-200">
+<div class="text-3xl sm:text-4xl font-extrabold text-brand-teal tracking-tight">20 Năm</div>
+<div class="text-xs sm:text-sm text-brand-text font-semibold mt-1">Kinh nghiệm sản xuất &amp; thi công</div>
+</div>
+<!-- Metric 3 -->
+<div class="text-center px-2">
+<div class="text-3xl sm:text-4xl font-extrabold text-brand-teal tracking-tight">100%</div>
+<div class="text-xs sm:text-sm text-brand-text font-semibold mt-1">Bảo hành chính hãng &amp; CO-CQ đầy đủ</div>
+</div>
+<!-- Metric 4 -->
+<div class="text-center px-2 border-l border-teal-200">
+<div class="text-3xl sm:text-4xl font-extrabold text-brand-teal tracking-tight">24/7</div>
+<div class="text-xs sm:text-sm text-brand-text font-semibold mt-1">Hỗ trợ kỹ thuật &amp; khảo sát tận nơi</div>
+</div>
+</div>
+</section>
+<!-- END: TrustStatsBand -->
+<!-- BEGIN: FeaturedProductsSection -->
+<section aria-label="Nhóm sản phẩm nổi bật" class="py-10 px-5 sm:px-8 bg-[#FCFEFD]">
+<!-- Section Header -->
+<div class="text-center max-w-xl mx-auto mb-8">
+<span class="inline-block px-3 py-1 rounded-md text-[11px] font-bold tracking-wider text-brand-teal bg-teal-50 border border-teal-200/70 uppercase mb-2.5">
+            GIẢI PHÁP TỔNG THỂ
+          </span>
+<h2 class="text-2xl sm:text-3xl font-extrabold text-brand-text tracking-tight">
+            Nhóm sản phẩm nổi bật
+          </h2>
+<p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+            Danh mục thiết bị đồng bộ, kiểm định chất lượng nghiêm ngặt dành cho dự án giáo dục từ cơ sở công lập đến hệ thống tư thục cao cấp.
+          </p>
+</div>
+<!-- 6 Cards arranged in a clean 2-column Grid for Tablet (~820px) -->
+<div class="grid grid-cols-2 gap-4 sm:gap-5">
+<!-- Card 1: Dù che nắng sân trường -->
+<article class="card-shadow bg-white rounded-xl p-5 border border-slate-100 flex flex-col justify-between relative group hover:border-teal-300">
+<div>
+<div class="w-11 h-11 rounded-lg bg-brand-teal text-white flex items-center justify-center mb-3.5 shadow-sm">
+<!-- Umbrella / Shade Icon -->
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 4a8 8 0 00-8 8h16a8 8 0 00-8-8z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M12 12v6a2 2 0 002 2h0" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h3 class="text-base font-bold text-brand-text group-hover:text-brand-teal transition">
+                Dù che nắng sân trường
+              </h3>
+<p class="text-xs text-slate-600 mt-2 line-clamp-3 leading-relaxed">
+                Hệ dù cánh buồm, dù lượn sóng và bạt căng sân trường kích thước lớn kháng UV chịu lực cho các hoạt động ngoại khóa.
+              </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+<span class="text-[11px] font-bold text-brand-teal uppercase tracking-wide">
+                TIÊU CHUẨN ASTM/EN
+              </span>
+<span class="text-brand-teal group-hover:translate-x-1 transition font-bold text-sm">→</span>
+</div>
+</article>
+<!-- Card 2: Nội thất mầm non -->
+<article class="card-shadow bg-white rounded-xl p-5 border border-slate-100 flex flex-col justify-between relative group hover:border-teal-300">
+<div>
+<div class="w-11 h-11 rounded-lg bg-brand-teal text-white flex items-center justify-center mb-3.5 shadow-sm">
+<!-- Furniture / Desk Icon -->
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h3 class="text-base font-bold text-brand-text group-hover:text-brand-teal transition">
+                Nội thất mầm non
+              </h3>
+<p class="text-xs text-slate-600 mt-2 line-clamp-3 leading-relaxed">
+                Bàn ghế gỗ cao su, tủ kệ góc chơi và giường lưới mầm non bo góc chống kẹp tay, an toàn tối đa cho trẻ nhỏ.
+              </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+<span class="text-[11px] font-bold text-brand-teal uppercase tracking-wide">
+                GỖ CHUẨN CARB P2
+              </span>
+<span class="text-brand-teal group-hover:translate-x-1 transition font-bold text-sm">→</span>
+</div>
+</article>
+<!-- Card 3: Bảng tương tác thông minh -->
+<article class="card-shadow bg-white rounded-xl p-5 border border-slate-100 flex flex-col justify-between relative group hover:border-teal-300">
+<div>
+<div class="w-11 h-11 rounded-lg bg-brand-teal text-white flex items-center justify-center mb-3.5 shadow-sm">
+<!-- Smartboard / Screen Icon -->
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h3 class="text-base font-bold text-brand-text group-hover:text-brand-teal transition">
+                Bảng tương tác thông minh
+              </h3>
+<p class="text-xs text-slate-600 mt-2 line-clamp-3 leading-relaxed">
+                Màn hình cảm ứng 4K đa điểm, bảng từ gốm ceramic chống lóa cao cấp tích hợp phần mềm giảng dạy hiện đại.
+              </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+<span class="text-[11px] font-bold text-brand-teal uppercase tracking-wide">
+                KÍNH CƯỜNG LỰC 7H
+              </span>
+<span class="text-brand-teal group-hover:translate-x-1 transition font-bold text-sm">→</span>
+</div>
+</article>
+<!-- Card 4: Thiết bị âm thanh - máy chiếu -->
+<article class="card-shadow bg-white rounded-xl p-5 border border-slate-100 flex flex-col justify-between relative group hover:border-teal-300">
+<div>
+<div class="w-11 h-11 rounded-lg bg-brand-teal text-white flex items-center justify-center mb-3.5 shadow-sm">
+<!-- Speaker / Audio Icon -->
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h3 class="text-base font-bold text-brand-text group-hover:text-brand-teal transition">
+                Thiết bị âm thanh — máy chiếu
+              </h3>
+<p class="text-xs text-slate-600 mt-2 line-clamp-3 leading-relaxed">
+                Hệ thống loa phát thanh sân trường chống nước IP66, loa giảng đường chống hú và máy chiếu laser độ sáng cao.
+              </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+<span class="text-[11px] font-bold text-brand-teal uppercase tracking-wide">
+                CHUẨN CÔNG SUẤT B2B
+              </span>
+<span class="text-brand-teal group-hover:translate-x-1 transition font-bold text-sm">→</span>
+</div>
+</article>
+<!-- Card 5: Phòng thí nghiệm Lý - Hóa - Sinh -->
+<article class="card-shadow bg-white rounded-xl p-5 border border-slate-100 flex flex-col justify-between relative group hover:border-teal-300">
+<div>
+<div class="w-11 h-11 rounded-lg bg-brand-teal text-white flex items-center justify-center mb-3.5 shadow-sm">
+<!-- Science Lab Flask Icon -->
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h3 class="text-base font-bold text-brand-text group-hover:text-brand-teal transition">
+                Phòng thí nghiệm Lý - Hóa - Sinh
+              </h3>
+<p class="text-xs text-slate-600 mt-2 line-clamp-3 leading-relaxed">
+                Mặt bàn phenolic chịu acid đậm đặc, tủ hút độc khí tuần hoàn và trọn bộ kit thí nghiệm đạt chuẩn Thông tư.
+              </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+<span class="text-[11px] font-bold text-brand-teal uppercase tracking-wide">
+                THÔNG TƯ 38/39 BGDĐT
+              </span>
+<span class="text-brand-teal group-hover:translate-x-1 transition font-bold text-sm">→</span>
+</div>
+</article>
+<!-- Card 6: Thiết bị mầm non ngoài trời -->
+<article class="card-shadow bg-white rounded-xl p-5 border border-slate-100 flex flex-col justify-between relative group hover:border-teal-300">
+<div>
+<div class="w-11 h-11 rounded-lg bg-brand-teal text-white flex items-center justify-center mb-3.5 shadow-sm">
+<!-- Playground Play Complex Icon -->
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11m16-11v11M8 14v4m4-4v4m4-4v4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h3 class="text-base font-bold text-brand-text group-hover:text-brand-teal transition">
+                Thiết bị mầm non ngoài trời
+              </h3>
+<p class="text-xs text-slate-600 mt-2 line-clamp-3 leading-relaxed">
+                Cụm liên hoàn vận động đa năng nhựa LLDPE đúc nguyên khối, bập bênh lò xo và thảm cao su EPDM giảm chấn.
+              </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+<span class="text-[11px] font-bold text-brand-teal uppercase tracking-wide">
+                TIÊU CHUẨN EN 1176
+              </span>
+<span class="text-brand-teal group-hover:translate-x-1 transition font-bold text-sm">→</span>
+</div>
+</article>
+</div>
+<!-- View All Categories Link -->
+<div class="mt-8 text-center">
+<a class="inline-flex items-center gap-2 text-sm font-extrabold text-brand-teal hover:text-brand-teal-dark hover:underline transition py-2 px-4 rounded-lg" href="#tat-ca-san-pham">
+<span>Xem tất cả 11 nhóm sản phẩm</span>
+<span class="text-base font-bold">→</span>
+</a>
+</div>
+</section>
+<!-- END: FeaturedProductsSection -->
+<!-- BEGIN: ConsultationCalloutBanner -->
+<section aria-label="Khảo sát và tư vấn dự án" class="px-5 pb-8 pt-2">
+<div class="bg-teal-50 border border-teal-200 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+<!-- Icon and Text Group -->
+<div class="flex items-center gap-3.5 w-full sm:w-auto">
+<div class="w-11 h-11 rounded-lg bg-teal-200 text-brand-teal flex items-center justify-center flex-shrink-0">
+<!-- Compass / Ruler Drafting Tool Icon -->
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<h4 class="text-sm sm:text-base font-bold text-brand-text">
+                Quý trường cần lập dự toán &amp; thiết kế 3D khuôn viên?
+              </h4>
+<p class="text-xs text-slate-600 mt-0.5">
+                Đội ngũ kỹ sư Ngọc Anh trực tiếp khảo sát thực địa, lên phương án mặt bằng và bóc tách khối lượng miễn phí.
+              </p>
+</div>
+</div>
+<!-- Phone CTA Button -->
+<a class="w-full sm:w-auto flex items-center justify-center gap-2 bg-brand-amber hover:bg-brand-amber-hover text-brand-text font-extrabold text-sm px-5 py-2.5 rounded-lg shadow-sm whitespace-nowrap transition" href="tel:0988xxxxxx">
+<svg class="w-4 h-4 text-brand-text" fill="currentColor" viewbox="0 0 20 20">
+<path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 4V3z"></path>
+</svg>
+<span>0988.xxx.xxx</span>
+</a>
+</div>
+</section>
+<!-- END: ConsultationCalloutBanner -->
+</main>
+<!-- BEGIN: TabletFooter -->
+<footer class="bg-brand-teal text-teal-100 text-xs py-5 px-5 border-t border-brand-teal-dark mt-auto">
+<div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+<!-- Left Copyright Info -->
+<div>
+<span class="font-extrabold text-white uppercase tracking-wider">NGỌC ANH SCHOOL EQUIPMENT</span>
+<span class="hidden sm:inline mx-1.5 text-teal-400">|</span>
+<span class="text-teal-200 block sm:inline mt-0.5 sm:mt-0">Giải pháp trang thiết bị giáo dục toàn diện &amp; Tiêu chuẩn kiểm định CO-CQ</span>
+</div>
+<!-- Contact Links in Tablet Footer -->
+<div class="flex flex-wrap items-center justify-center gap-4 text-teal-200">
+<a class="hover:text-white flex items-center gap-1 transition" href="tel:0988xxxxxx">
+<svg class="w-3.5 h-3.5 text-brand-amber" fill="currentColor" viewbox="0 0 20 20">
+<path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 4V3z"></path>
+</svg>
+<span>0988.xxx.xxx</span>
+</a>
+<a class="hover:text-white flex items-center gap-1 transition" href="#zalo">
+<span class="font-bold text-[11px] bg-teal-800 text-brand-amber px-1 rounded">Zalo</span>
+<span>0988.xxx.xxx</span>
+</a>
+<a class="hover:text-white flex items-center gap-1 transition" href="mailto:duan@thietbingocanh.vn">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>duan@thietbingocanh.vn</span>
+</a>
+</div>
+</div>
+</footer>
+<!-- END: TabletFooter -->
+</div>
+<!-- END: TabletContainerWrapper -->
+</body></html>

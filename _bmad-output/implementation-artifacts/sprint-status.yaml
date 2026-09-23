@@ -1,0 +1,87 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 09-18-2026 17:00
+last_updated: 09-23-2026 11:15
+project: tbtruonghoc
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+development_status:
+  epic-1: in-progress
+  1-1-khởi-tạo-piranha-multi-site-scaffold-cho-site-a-site-b: done
+  1-2-trường-seo-trên-từng-trang-fr-1: done
+  1-3-thông-tin-liên-hệ-theo-từng-site-fr-2: done
+  1-4-form-liên-hệ-báo-giá-chung-lưu-trữ-lead-fr-3: review
+  1-5-quản-lý-lead-trong-piranha-manager-ad-3: backlog
+  1-6-analytics-search-console-riêng-theo-từng-site-fr-4: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-khung-trang-thanh-liên-hệ-cố-định-site-b-mộc-trầm: backlog
+  2-2-trống-hub-5-trang-phân-loại-fr-9: backlog
+  2-3-trang-danh-mục-thùng-rượu-gỗ-bồn-tắm-gỗ-fr-9: backlog
+  2-4-trang-chi-tiết-sản-phẩm-product-detail-page-cho-từng-model-f: backlog
+  2-5-trang-câu-chuyện-nghệ-nhân-trust-block-fr-10: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-landing-page-type-template-trả-phí-fr-12: backlog
+  3-2-giá-theo-biến-thể-cta-đặt-mua-ngay-fr-13: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-bảng-tham-khảo-cấu-hình-trống-fr-11: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-trang-danh-sách-blog-nội-dung-fr-14: backlog
+  5-2-trang-chi-tiết-bài-viết-article-detail-page-fr-14: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-khung-trang-site-a-nav-hero-footer-xanh-lục-bảo-rạng-rỡ: backlog
+  6-2-trang-chủ-trang-tổng-hợp-danh-mục-fr-6: backlog
+  6-3-11-trang-danh-mục-sản-phẩm-fr-6: backlog
+  6-4-trang-chi-tiết-sản-phẩm-ship-thẳng-fr-6: backlog
+  6-5-trang-chi-tiết-sản-phẩm-cần-thi-công-form-đăng-ký-khảo-sát-m: backlog
+  epic-6-retrospective: optional
+
+  epic-7: backlog
+  7-1-trang-danh-sách-blog-tin-tức-fr-7: backlog
+  7-2-trang-chi-tiết-bài-viết-site-a-fr-7: backlog
+  epic-7-retrospective: optional
+
+  epic-8: backlog
+  8-1-chuyển-hướng-url-cũ-qua-piranha-alias-ad-4: backlog
+  8-2-migrate-nội-dung-site-cũ-sang-danh-mục-mới: backlog
+  8-3-liên-kết-biên-tập-giữa-site-a-và-site-b-fr-5: backlog
+  8-4-baseline-core-web-vitals-backup-tự-động-trước-launch-nfr-1-n: backlog
+  epic-8-retrospective: optional

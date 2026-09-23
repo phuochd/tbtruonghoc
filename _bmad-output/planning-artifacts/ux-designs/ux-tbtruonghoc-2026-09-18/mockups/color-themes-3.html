@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color Themes Round 3 (Converged) — Thiết Bị Trường Học Ngọc Anh (Site A)</title>
+<style>
+  /*
+    =========================================================
+    COLOR THEMES — ROUND 3 (CONVERGED PICK) — Site A
+    Xanh Lục Bảo Rạng Rỡ — Banner Đậm
+
+    Lineage:
+    - Round 1 pick: "5 · Xanh Lục Bảo Định Chế" (teal #0F5C56 + amber #C98A2B)
+    - Round 2 pick: "A · Xanh Lục Bảo Rạng Rỡ" — brightened the round-1 teal
+      to #0E7A6C, amber to #E3A63B, near-white body bg #FCFEFD. In that
+      variation the hero/nav sat on a pale light wash (#E3F7F1), not a
+      solid color.
+    - Phước's round-3 feedback verbatim: "A nhưng banner kiểu B, tức là
+      có background color" — keep round-2 A's brightened teal+amber
+      palette everywhere, but borrow round-2 B's treatment of giving the
+      hero/nav band a SOLID teal background (white text on top), while
+      the rest of the body (category grid, trust badges, footer strip)
+      stays on A's light/near-white surface, exactly as A had it.
+
+    This file is the converged, single merged variation — not a new
+    exploration set.
+
+    Hex values used in this merge (documented as CSS custom properties
+    below, with plain-hex restatement here so they can be lifted
+    directly):
+      --bg            #FCFEFD   body background (from A)
+      --surface       #FFFFFF   card/section surface (from A)
+      --primary       #0E7A6C   brand teal — used for nav bg, hero bg,
+                                 footer-strip bg, category dot icons,
+                                 trust-badge ink (from A, unchanged hex)
+      --text          #123832   body text on light surfaces (from A)
+      --text-muted    #4F6E68   secondary body text (from A)
+      --border        #D3EEE7   hairline borders on light surfaces (from A)
+      --nav-bg        #0E7A6C   nav band — solid teal (banner treatment, from B)
+      --nav-text      #FFFFFF   nav logo/link text on teal (from B)
+      --nav-link      #CDEDE6   nav secondary link text on teal (from B)
+      --hero-bg       #0E7A6C   hero band — solid teal, same value as
+                                 --primary so nav+hero read as one
+                                 continuous banner (banner treatment, from B)
+      --hero-text     #FFFFFF   hero heading on solid teal (from B)
+      --hero-subtext  #D8F3EC   hero supporting copy on solid teal (from B)
+      --hero-border   #6FBFAE   secondary-button outline on solid teal (from B)
+      --cta           #E3A63B   amber CTA button fill (from A)
+      --cta-text      #2B1B02   text on amber CTA (from A)
+      --accent-soft   #FCEDD1   amber-tinted chip background (from A)
+      --accent-ink    #8A5F14   amber-tinted chip text (from A)
+      --trust-bg      #DFF6EE   trust badge background (from A)
+      --trust-ink     #0E7A6C   trust badge text (from A)
+      --trust-border  #B7E7D9   trust badge border (from A)
+      --on-primary    #E7FBF5   footer-strip text on teal (from A)
+    =========================================================
+  */
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #E9ECEF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1B2733;
+  }
+
+  .page-head {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px 8px;
+  }
+
+  .page-head h1 {
+    font-size: 22px;
+    margin: 0 0 6px;
+  }
+
+  .page-head p {
+    font-size: 14px;
+    color: #55606B;
+    margin: 0 0 4px;
+    line-height: 1.5;
+  }
+
+  .page-head .quote {
+    font-style: italic;
+    color: #33413C;
+    background: #FFFFFF;
+    border-left: 3px solid #0E7A6C;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 13.5px;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px 24px 64px;
+  }
+
+  /* ---------- theme card ---------- */
+
+  .theme-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .theme-meta {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .theme-meta .name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 3px;
+  }
+
+  .theme-meta .register {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px 4px 4px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  .chip .role {
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-right: 2px;
+  }
+
+  .swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.12);
+    flex-shrink: 0;
+  }
+
+  /* ---------- UI snippet: homepage mock ---------- */
+
+  .snippet { padding: 0; }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 22px;
+    background: var(--nav-bg);
+  }
+
+  .nav .logo {
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.4px;
+    color: var(--nav-text);
+  }
+
+  .nav .links {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--nav-link);
+  }
+
+  .nav .contact-chip {
+    font-size: 11px;
+    background: rgba(255,255,255,0.16);
+    color: var(--nav-text);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    padding: 4px 9px;
+    font-weight: 600;
+  }
+
+  .hero {
+    padding: 40px 22px 36px;
+    background: var(--hero-bg);
+    text-align: left;
+  }
+
+  .hero h2 {
+    font-size: 26px;
+    line-height: 1.3;
+    margin: 0 0 10px;
+    color: var(--hero-text);
+    max-width: 480px;
+  }
+
+  .hero p {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--hero-subtext);
+    margin: 0 0 20px;
+    max-width: 460px;
+  }
+
+  .hero .cta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--cta);
+    color: var(--cta-text);
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 6px;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--hero-text);
+    border: 1.5px solid var(--hero-border);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10.5px 18px;
+    border-radius: 6px;
+  }
+
+  .categories {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    padding: 24px 22px;
+    background: var(--surface);
+  }
+
+  .cat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 8px;
+    text-align: center;
+  }
+
+  .cat-card .dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: var(--primary);
+    margin: 0 auto 8px;
+  }
+
+  .cat-card span {
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--text);
+    font-weight: 600;
+    display: block;
+  }
+
+  .trust-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 22px 22px;
+    background: var(--surface);
+  }
+
+  .trust-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--trust-ink);
+    background: var(--trust-bg);
+    border: 1px solid var(--trust-border);
+    border-radius: 20px;
+    padding: 6px 12px;
+  }
+
+  .footer-strip {
+    padding: 12px 22px;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: 11.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-strip .brand {
+    font-weight: 700;
+  }
+
+  /* =========================================================
+     MERGED — Xanh Lục Bảo Rạng Rỡ — Banner Đậm
+     bg:#FCFEFD surface:#FFFFFF primary(teal):#0E7A6C
+     nav/hero bg (solid banner):#0E7A6C nav/hero text:#FFFFFF
+     cta(amber):#E3A63B text:#123832 text-muted:#4F6E68 border:#D3EEE7
+     ========================================================= */
+  .merged {
+    --bg: #FCFEFD;
+    --surface: #FFFFFF;
+    --primary: #0E7A6C;
+    --text: #123832;
+    --text-muted: #4F6E68;
+    --border: #D3EEE7;
+
+    --nav-bg: #0E7A6C;
+    --nav-text: #FFFFFF;
+    --nav-link: #CDEDE6;
+
+    --hero-bg: #0E7A6C;
+    --hero-text: #FFFFFF;
+    --hero-subtext: #D8F3EC;
+    --hero-border: #6FBFAE;
+
+    --cta: #E3A63B;
+    --cta-text: #2B1B02;
+    --accent-soft: #FCEDD1;
+    --accent-ink: #8A5F14;
+
+    --trust-bg: #DFF6EE;
+    --trust-ink: #0E7A6C;
+    --trust-border: #B7E7D9;
+
+    --on-primary: #E7FBF5;
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="page-head">
+    <h1>Color Themes Round 3 (Converged) — Thiết Bị Trường Học Ngọc Anh (Site A)</h1>
+    <p>Round 1 pick: <strong>5 · Xanh Lục Bảo Định Chế</strong> → Round 2 pick: <strong>A · Xanh Lục Bảo Rạng Rỡ</strong> (teal #0E7A6C + amber #E3A63B, nền gần trắng #FCFEFD, hero là lớp phủ nhạt). Phước phản hồi ở vòng 3:</p>
+    <p class="quote">"A nhưng banner kiểu B, tức là có background color"</p>
+    <p>Đây là phương án hợp nhất DUY NHẤT (không phải bộ 4-6 lựa chọn mới): giữ nguyên bảng màu teal+amber đã sáng hoá của A trên toàn trang, nhưng khu vực banner (nav + hero) chuyển sang nền teal đặc — đúng kiểu xử lý đã có ở phương án B của vòng 2 — trong khi phần thân trang (danh mục, trust badge, footer) vẫn giữ nền sáng/thoáng như A.</p>
+    <p>Mode coverage: light mode only (dark mode not in scope for this product).</p>
+  </div>
+
+  <div class="wrap">
+
+    <section class="theme-card merged">
+      <div class="theme-meta">
+        <p class="name">Xanh Lục Bảo Rạng Rỡ — Banner Đậm</p>
+        <p class="register">Phương án đã hội tụ: bảng màu teal+amber sáng của round-2 A, ghép với cách xử lý banner nền màu đặc của round-2 B — nav và hero đứng trên một dải teal liền mạch, chữ trắng; phần còn lại của trang (danh mục, trust badge, footer) vẫn sáng/thoáng như A.</p>
+      </div>
+      <div class="chips">
+        <span class="chip"><span class="role">bg</span><span class="swatch" style="background:#FCFEFD"></span>#FCFEFD</span>
+        <span class="chip"><span class="role">surface</span><span class="swatch" style="background:#FFFFFF"></span>#FFFFFF</span>
+        <span class="chip"><span class="role">primary</span><span class="swatch" style="background:#0E7A6C"></span>#0E7A6C</span>
+        <span class="chip"><span class="role">nav/hero bg</span><span class="swatch" style="background:#0E7A6C"></span>#0E7A6C</span>
+        <span class="chip"><span class="role">nav/hero text</span><span class="swatch" style="background:#FFFFFF"></span>#FFFFFF</span>
+        <span class="chip"><span class="role">hero subtext</span><span class="swatch" style="background:#D8F3EC"></span>#D8F3EC</span>
+        <span class="chip"><span class="role">hero border</span><span class="swatch" style="background:#6FBFAE"></span>#6FBFAE</span>
+        <span class="chip"><span class="role">cta</span><span class="swatch" style="background:#E3A63B"></span>#E3A63B</span>
+        <span class="chip"><span class="role">cta-text</span><span class="swatch" style="background:#2B1B02"></span>#2B1B02</span>
+        <span class="chip"><span class="role">text</span><span class="swatch" style="background:#123832"></span>#123832</span>
+        <span class="chip"><span class="role">text-muted</span><span class="swatch" style="background:#4F6E68"></span>#4F6E68</span>
+        <span class="chip"><span class="role">border</span><span class="swatch" style="background:#D3EEE7"></span>#D3EEE7</span>
+        <span class="chip"><span class="role">trust-bg</span><span class="swatch" style="background:#DFF6EE"></span>#DFF6EE</span>
+        <span class="chip"><span class="role">trust-ink</span><span class="swatch" style="background:#0E7A6C"></span>#0E7A6C</span>
+        <span class="chip"><span class="role">trust-border</span><span class="swatch" style="background:#B7E7D9"></span>#B7E7D9</span>
+        <span class="chip"><span class="role">on-primary</span><span class="swatch" style="background:#E7FBF5"></span>#E7FBF5</span>
+      </div>
+      <div class="snippet">
+        <div class="nav">
+          <span class="logo">NGỌC ANH</span>
+          <span class="links">Sản phẩm · Dự án · Về chúng tôi · Liên hệ</span>
+          <span class="contact-chip">Hotline 0909 123 456</span>
+        </div>
+        <div class="hero">
+          <h2>Trang bị trường học đồng bộ — từ sân chơi đến phòng học thông minh</h2>
+          <p>Tư vấn kỹ thuật miễn phí, khảo sát tận nơi, thi công đúng tiến độ năm học. Đồng hành cùng hơn 500 trường học trên toàn quốc.</p>
+          <div class="cta-row">
+            <button class="btn-primary">Nhận báo giá</button>
+            <button class="btn-secondary">Đăng ký khảo sát miễn phí</button>
+          </div>
+        </div>
+        <div class="categories">
+          <div class="cat-card"><div class="dot"></div><span>Dù che nắng sân trường</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Nội thất mầm non</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Bảng tương tác</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị phòng thí nghiệm</span></div>
+          <div class="cat-card"><div class="dot"></div><span>Thiết bị âm thanh</span></div>
+        </div>
+        <div class="trust-row">
+          <span class="trust-badge">Bảo hành chính hãng</span>
+          <span class="trust-badge">Đội thi công riêng</span>
+          <span class="trust-badge">Giao hàng toàn quốc</span>
+          <span class="trust-badge">Hỗ trợ 24/7</span>
+        </div>
+        <div class="footer-strip">
+          <span class="brand">Ngọc Anh</span>
+          <span>Zalo tư vấn · 0909 123 456</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

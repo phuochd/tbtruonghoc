@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Key Screen — Chi tiết sản phẩm ship thẳng</title>
+<style>
+  /*
+    =========================================================
+    KEY SCREEN — Product Detail Page (SHIPPABLE, no installation)
+    "Giường lưới nhựa PE mầm non" — Site A (tbtruonghoc.com)
+
+    Illustrates:
+      - EXPERIENCE.md Component Patterns > Product Detail (shippable flow — simpler
+        layout than installation-required: no service-area block, no process strip)
+      - EXPERIENCE.md State Patterns > price-present (real number shown)
+      - EXPERIENCE.md Component Patterns > Shipping note ("Giao hàng toàn quốc")
+      - PRD FR-6 category page linkage (Nội thất mầm non)
+    State shown: PRICE-PRESENT — contrast case to key-chi-tiet-can-thi-cong.html's
+    price-absent state, same spec-table + CTA pattern, minus installation-only blocks.
+    Visual register: Direction 2 "Thương Hiệu Rộng Rãi" — see .working/direction-thuong-hieu-rong-rai.html
+
+    PALETTE — fixed, unchanged:
+      primary teal #0E7A6C | amber CTA #E3A63B (ink #2B1B02)
+      body bg #FCFEFD | body text #123832
+      hero subtext #D8F3EC | secondary/outline #6FBFAE
+      trust surface #EFF8F6 / border #BFE3DA | neutral card border #E3ECE9
+    Outer wrapper (#EDEFEF) is tool chrome, not product.
+    =========================================================
+  */
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: #EDEFEF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1B2733;
+  }
+  .rationale {
+    max-width: 1200px; margin: 28px auto 8px; padding: 16px 22px;
+    background: #fff; border: 1px solid #DADFDD; border-radius: 8px;
+  }
+  .rationale h1 { font-size: 17px; margin: 0 0 6px; color: #123832; }
+  .rationale p { font-size: 13.5px; line-height: 1.55; color: #45524D; margin: 4px 0; }
+  .rationale .tag {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    background: #0E7A6C; color: #fff; border-radius: 4px;
+    padding: 2px 8px; margin-right: 8px; letter-spacing: .3px;
+  }
+
+  .browser-frame {
+    max-width: 1200px; margin: 18px auto 60px; border-radius: 10px;
+    overflow: hidden; box-shadow: 0 10px 34px rgba(0,0,0,.16);
+    border: 1px solid #D6DBD9; background: #FCFEFD;
+  }
+  .browser-chrome {
+    background: #E7ECEA; padding: 9px 14px; display: flex; align-items: center; gap: 7px;
+    border-bottom: 1px solid #D3DBD8;
+  }
+  .browser-chrome .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .browser-chrome .url {
+    margin-left: 8px; background: #fff; border: 1px solid #D3DBD8; border-radius: 6px;
+    padding: 4px 12px; font-size: 11.5px; color: #5b6b66; flex: 1; max-width: 420px;
+  }
+
+  /* ---------- nav (closed — see key-chi-tiet-can-thi-cong.html for dropdown-open state) ---------- */
+  .nav-wrap { position: relative; }
+  .nav {
+    background: #0E7A6C; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 30px;
+  }
+  .logo { font-weight: 800; font-size: 17px; letter-spacing: .6px; }
+  .main-links { display: flex; align-items: center; gap: 22px; font-size: 12.5px; font-weight: 600; }
+  .main-links a { color: #fff; text-decoration: none; opacity: .92; }
+  .contact-chip-float {
+    position: absolute; top: 68px; right: 30px;
+    background: #E3A63B; color: #2B1B02; font-size: 11px; font-weight: 700;
+    padding: 6px 12px; border-radius: 20px; box-shadow: 0 3px 10px rgba(0,0,0,.2);
+    z-index: 5;
+  }
+
+  /* ---------- breadcrumb ---------- */
+  .breadcrumb { padding: 16px 40px 0; font-size: 11.5px; color: #5b6b66; }
+  .breadcrumb span.current { color: #123832; font-weight: 700; }
+
+  /* ---------- PDP main grid ---------- */
+  .pdp-wrap {
+    padding: 18px 40px 30px; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 46px; background: #FCFEFD;
+  }
+  .gallery img.main {
+    width: 100%; height: 360px; object-fit: cover; border-radius: 10px;
+    border: 1px solid #E3ECE9; display: block;
+  }
+  .thumbs { display: flex; gap: 10px; margin-top: 12px; }
+  .thumbs img {
+    width: 78px; height: 78px; object-fit: cover; border-radius: 8px;
+    border: 2px solid transparent; cursor: pointer;
+  }
+  .thumbs img.active { border-color: #0E7A6C; }
+
+  .info h1 { font-size: 25px; line-height: 1.3; margin: 0 0 10px; color: #123832; font-weight: 800; }
+  .info .desc { font-size: 13.5px; line-height: 1.65; color: #45524D; margin: 0 0 18px; }
+
+  .price-block.present {
+    background: #EFF8F6; border: 1px solid #BFE3DA; border-radius: 10px;
+    padding: 16px 18px; margin-bottom: 20px;
+  }
+  .price-block .price-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    color: #45524D; margin-bottom: 4px;
+  }
+  .price-block .price-value { font-size: 24px; font-weight: 800; color: #0E7A6C; }
+  .price-block .price-value .unit { font-size: 14px; font-weight: 600; color: #45524D; }
+  .price-block .price-note { font-size: 12px; color: #45524D; margin-top: 6px; line-height: 1.5; }
+
+  .shipping-note {
+    display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 700;
+    color: #0E7A6C; background: #EFF8F6; border: 1px solid #BFE3DA; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 20px;
+  }
+  .shipping-note .dot-icon {
+    width: 18px; height: 18px; border-radius: 50%; background: #6FBFAE; flex-shrink: 0;
+  }
+
+  .cta-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .btn-primary {
+    background: #E3A63B; color: #2B1B02; border: none;
+    font-size: 14px; font-weight: 700; padding: 13px 22px; border-radius: 7px; cursor: pointer;
+  }
+  .btn-outline {
+    background: transparent; color: #0E7A6C; border: 1.5px solid #0E7A6C;
+    font-size: 13.5px; font-weight: 700; padding: 12px 20px; border-radius: 7px; cursor: pointer;
+  }
+
+  .mini-trust { display: flex; gap: 10px; flex-wrap: wrap; }
+  .mini-trust span {
+    font-size: 11px; font-weight: 700; color: #0E7A6C; background: #EFF8F6;
+    border: 1px solid #BFE3DA; border-radius: 20px; padding: 5px 12px;
+  }
+
+  /* ---------- specs table ---------- */
+  .specs-section { padding: 4px 40px 36px; }
+  .specs-section h2 { font-size: 17px; color: #123832; margin: 0 0 14px; }
+  table.specs { width: 100%; border-collapse: collapse; }
+  table.specs tr { border-bottom: 1px solid #E3ECE9; }
+  table.specs td { padding: 12px 16px; font-size: 13px; vertical-align: top; }
+  table.specs td.label { width: 220px; background: #FAFCFB; font-weight: 700; color: #123832; }
+  table.specs td.value { color: #2B3A36; }
+
+  .footer-strip {
+    padding: 16px 30px; background: #0E7A6C; color: #E9F5F2; font-size: 11px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-strip .brand { font-weight: 800; color: #fff; }
+</style>
+</head>
+<body>
+
+  <div class="rationale">
+    <h1><span class="tag">Key Screen 2</span>Chi tiết sản phẩm — SHIP THẲNG (price-present)</h1>
+    <p>Trang chi tiết "Giường lưới nhựa PE mầm non" — nhánh sản phẩm ship thẳng, không cần khảo sát/thi công. Bố cục gọn hơn Screen 1: bỏ khối "khu vực phục vụ" và process strip (chỉ áp dụng cho sản phẩm cần thi công), thay bằng ghi chú "Giao hàng toàn quốc". Minh họa trạng thái giá CÓ SẴN (price-present) — đối lập với price-absent ở Screen 1.</p>
+  </div>
+
+  <div class="browser-frame">
+    <div class="browser-chrome">
+      <span class="dot" style="background:#FF5F57"></span>
+      <span class="dot" style="background:#FEBC2E"></span>
+      <span class="dot" style="background:#28C840"></span>
+      <span class="url">tbtruonghoc.com/san-pham/giuong-luoi-nhua-pe-mam-non</span>
+    </div>
+
+    <div class="nav-wrap">
+      <div class="nav">
+        <span class="logo">NGỌC ANH</span>
+        <nav class="main-links">
+          <a>Trang chủ</a>
+          <a>Giới thiệu</a>
+          <a>Sản phẩm ▾</a>
+          <a>Tin tức</a>
+          <a>Liên hệ</a>
+        </nav>
+      </div>
+      <span class="contact-chip-float">Hotline 0909 123 456 · Zalo tư vấn</span>
+    </div>
+
+    <div class="breadcrumb">Trang chủ / Nội thất mầm non / <span class="current">Giường lưới nhựa PE mầm non</span></div>
+
+    <div class="pdp-wrap">
+      <div class="gallery">
+        <img class="main" alt="Giường lưới nhựa PE mầm non — ảnh thực tế"
+             src="https://tbtruonghoc.com/uploaded/1/sanpham/images/Muc%20khac/Giuong%20luoi%20PE.jpg">
+        <div class="thumbs">
+          <img class="active" alt="Ảnh 1 — toàn cảnh"
+               src="https://tbtruonghoc.com/uploaded/1/sanpham/images/Muc%20khac/Giuong%20luoi%20PE.jpg">
+          <img alt="Ảnh 2 — chi tiết mặt lưới"
+               src="https://tbtruonghoc.com/uploaded/1/sanpham/images/Muc%20khac/Giuong%20luoi%20PE.jpg">
+        </div>
+      </div>
+
+      <div class="info">
+        <h1>Giường lưới nhựa PE mầm non</h1>
+        <p class="desc">Giường ngủ trưa cho trẻ mầm non, khung nhựa PE nguyên sinh, mặt lưới thoáng khí êm ái. Thiết kế xếp chồng gọn gàng, tiết kiệm diện tích cất giữ trong lớp học, dễ vệ sinh và bền với môi trường ẩm.</p>
+
+        <div class="price-block present">
+          <div class="price-label">Giá bán</div>
+          <div class="price-value">185.000đ <span class="unit">/ chiếc</span></div>
+          <div class="price-note">Giá tham khảo — liên hệ để nhận báo giá ưu đãi khi đặt số lượng lớn (theo lớp/trường).</div>
+        </div>
+
+        <div class="shipping-note"><span class="dot-icon"></span>Giao hàng toàn quốc — 3–7 ngày làm việc tùy khu vực</div>
+
+        <div class="cta-row">
+          <button class="btn-primary">Yêu cầu báo giá</button>
+          <button class="btn-outline">Gọi 0909 123 456 · Zalo tư vấn</button>
+        </div>
+
+        <div class="mini-trust">
+          <span>Bảo hành chính hãng</span>
+          <span>Giao hàng toàn quốc</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="specs-section">
+      <h2>Thông số kỹ thuật</h2>
+      <table class="specs">
+        <tr><td class="label">Kích thước</td><td class="value">130 × 60 × 15 cm (dài × rộng × cao)</td></tr>
+        <tr><td class="label">Chất liệu</td><td class="value">Khung nhựa PE nguyên sinh, mặt lưới polyester bền chắc, chống thấm nước</td></tr>
+        <tr><td class="label">Tải trọng</td><td class="value">Tối đa 60kg/giường</td></tr>
+        <tr><td class="label">Số lượng/thùng</td><td class="value">10 giường/thùng, đóng gói xếp chồng tiết kiệm thể tích</td></tr>
+      </table>
+    </div>
+
+    <div class="footer-strip">
+      <span class="brand">Ngọc Anh — Thiết Bị Trường Học</span>
+      <span>Zalo tư vấn · 0909 123 456 · info@tbtruonghoc.com</span>
+    </div>
+  </div>
+
+</body>
+</html>

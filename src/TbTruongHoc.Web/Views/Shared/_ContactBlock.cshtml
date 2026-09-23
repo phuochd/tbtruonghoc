@@ -1,0 +1,72 @@
+@using System.Text.RegularExpressions
+@using TbTruongHoc.Web.Models
+@*
+    Story 1.3: renders the current site's own contact details (Phone/Zalo/
+    Maps/Address) - never hardcoded, never another site's values. Included
+    once from _Layout.cshtml so it appears on every published Page/Post/
+    Archive without touching per-type views.
+
+    Deliberately a hand-rolled partial using ordinary Razor @@-expressions
+    (HTML-encode by default), same convention as _MetaTags.cshtml, rather
+    than raw string interpolation - an editor-entered "&" or "\"" in Address
+    must not break the surrounding markup.
+
+    Markup here is intentionally minimal/unstyled - the polished nav-chip
+    (Site A) and sticky-contact-bar (Site B) designs are Epic 6 Story 6.1
+    and Epic 2 Story 2.1's scope, not this story's. This only proves the
+    per-site data flows correctly to a functional render.
+*@
+@{
+    var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
+    var phone = settings?.Phone?.Value;
+    var zaloUrl = settings?.ZaloUrl?.Value;
+    var address = settings?.Address?.Value;
+    var mapsUrl = settings?.MapsUrl?.Value;
+
+    // tel: href keeps only digits, plus a leading "+" when the editor
+    // entered an internationally-formatted number (e.g. "+84 90 123 4567"
+    // -> "+84901234567") - never strip the dialing prefix. If the phone
+    // strips down to fewer digits than any real phone number can have
+    // (e.g. the editor typed "N/A", or garbage text that only incidentally
+    // contains a stray digit), treat it as unset rather than rendering a
+    // dead/nonsensical "tel:" link.
+    const int MinPhoneDigits = 7;
+    string telDigits = null;
+    if (!string.IsNullOrWhiteSpace(phone))
+    {
+        var hasPlusPrefix = phone.TrimStart().StartsWith("+");
+        var digitsOnly = Regex.Replace(phone, "[^0-9]", "");
+        if (digitsOnly.Length >= MinPhoneDigits)
+        {
+            telDigits = (hasPlusPrefix ? "+" : "") + digitsOnly;
+        }
+    }
+
+    // Zalo/Maps must be an absolute http(s) URL - a "javascript:"/"data:"
+    // value must never execute on click, and a relative/malformed value
+    // must never render a broken link - so anything else is treated as
+    // unset (element omitted) rather than rendered as-is.
+    var zaloHref = SiteSettingsValidation.IsSafeAbsoluteUrl(zaloUrl) ? zaloUrl : null;
+    var mapsHref = SiteSettingsValidation.IsSafeAbsoluteUrl(mapsUrl) ? mapsUrl : null;
+}
+@if (telDigits != null || zaloHref != null || mapsHref != null || !string.IsNullOrWhiteSpace(address))
+{
+    <div class="contact-block">
+        @if (telDigits != null)
+        {
+            <a class="contact-block__phone" href="tel:@telDigits">@phone</a>
+        }
+        @if (zaloHref != null)
+        {
+            <a class="contact-block__zalo" href="@zaloHref" target="_blank" rel="noopener noreferrer">@zaloHref</a>
+        }
+        @if (mapsHref != null)
+        {
+            <a class="contact-block__maps" href="@mapsHref" target="_blank" rel="noopener noreferrer">@mapsHref</a>
+        }
+        @if (!string.IsNullOrWhiteSpace(address))
+        {
+            <span class="contact-block__address">@address</span>
+        }
+    </div>
+}

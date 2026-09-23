@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Key Screen — Chi tiết sản phẩm cần thi công</title>
+<style>
+  /*
+    =========================================================
+    KEY SCREEN — Product Detail Page (INSTALLATION-REQUIRED)
+    "Dù che sân trường học" — Site A (tbtruonghoc.com)
+
+    Illustrates:
+      - EXPERIENCE.md Component Patterns > Product Detail (installation-required flow)
+      - EXPERIENCE.md Component Patterns > Service-area statement block (Miền Bắc – Thanh Hóa)
+      - EXPERIENCE.md Component Patterns > Process strip (Khảo sát → Hợp đồng → Thi công)
+      - EXPERIENCE.md State Patterns > price-absent ("Liên hệ để nhận báo giá")
+      - DESIGN.md Nav > "Sản phẩm" simple-list dropdown (11 categories, not mega-menu)
+      - PRD FR-8 entry point: "Đăng ký khảo sát miễn phí" CTA reachable from this page
+    State shown: PRICE-ABSENT. Nav dropdown shown OPEN to illustrate the simple-list pattern.
+    Visual register: Direction 2 "Thương Hiệu Rộng Rãi" — see .working/direction-thuong-hieu-rong-rai.html
+
+    PALETTE — fixed, unchanged:
+      primary teal #0E7A6C | amber CTA #E3A63B (ink #2B1B02)
+      body bg #FCFEFD | body text #123832
+      hero subtext #D8F3EC | secondary/outline #6FBFAE
+      trust surface #EFF8F6 / border #BFE3DA | neutral card border #E3ECE9
+    Outer wrapper (#EDEFEF) is tool chrome, not product.
+    =========================================================
+  */
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: #EDEFEF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1B2733;
+  }
+  .rationale {
+    max-width: 1200px; margin: 28px auto 8px; padding: 16px 22px;
+    background: #fff; border: 1px solid #DADFDD; border-radius: 8px;
+  }
+  .rationale h1 { font-size: 17px; margin: 0 0 6px; color: #123832; }
+  .rationale p { font-size: 13.5px; line-height: 1.55; color: #45524D; margin: 4px 0; }
+  .rationale .tag {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    background: #0E7A6C; color: #fff; border-radius: 4px;
+    padding: 2px 8px; margin-right: 8px; letter-spacing: .3px;
+  }
+
+  .browser-frame {
+    max-width: 1200px; margin: 18px auto 60px; border-radius: 10px;
+    overflow: hidden; box-shadow: 0 10px 34px rgba(0,0,0,.16);
+    border: 1px solid #D6DBD9; background: #FCFEFD;
+  }
+  .browser-chrome {
+    background: #E7ECEA; padding: 9px 14px; display: flex; align-items: center; gap: 7px;
+    border-bottom: 1px solid #D3DBD8;
+  }
+  .browser-chrome .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .browser-chrome .url {
+    margin-left: 8px; background: #fff; border: 1px solid #D3DBD8; border-radius: 6px;
+    padding: 4px 12px; font-size: 11.5px; color: #5b6b66; flex: 1; max-width: 420px;
+  }
+
+  /* ---------- nav ---------- */
+  .nav-wrap { position: relative; }
+  .nav {
+    background: #0E7A6C; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 30px;
+  }
+  .logo { font-weight: 800; font-size: 17px; letter-spacing: .6px; }
+  .main-links { display: flex; align-items: center; gap: 22px; font-size: 12.5px; font-weight: 600; }
+  .main-links a { color: #fff; text-decoration: none; opacity: .92; }
+  .main-links .has-dropdown { position: relative; opacity: 1; display: flex; align-items: center; gap: 4px; }
+  .contact-chip-float {
+    position: absolute; top: 68px; right: 30px;
+    background: #E3A63B; color: #2B1B02; font-size: 11px; font-weight: 700;
+    padding: 6px 12px; border-radius: 20px; box-shadow: 0 3px 10px rgba(0,0,0,.2);
+    z-index: 5;
+  }
+
+  /* dropdown — simple single-column list of 11 categories, shown open */
+  .dropdown-panel {
+    position: absolute; top: 44px; left: -4px; width: 260px;
+    background: #fff; border: 1px solid #DDE5E2; border-radius: 10px;
+    box-shadow: 0 14px 30px rgba(0,0,0,.18); padding: 8px; z-index: 20;
+  }
+  .dropdown-panel a {
+    display: block; padding: 9px 12px; font-size: 12.5px; font-weight: 600;
+    color: #123832; text-decoration: none; border-radius: 6px;
+  }
+  .dropdown-panel a:hover, .dropdown-panel a.hi { background: #EFF8F6; }
+  .dropdown-panel .divider { height: 1px; background: #E3ECE9; margin: 6px 4px; }
+  .dropdown-panel a.viewall { color: #0E7A6C; font-weight: 700; }
+  .dropdown-callout {
+    position: absolute; top: -8px; left: 270px; background: #123832; color: #fff;
+    font-size: 10.5px; padding: 5px 9px; border-radius: 5px; white-space: nowrap;
+  }
+
+  /* ---------- breadcrumb ---------- */
+  .breadcrumb { padding: 16px 40px 0; font-size: 11.5px; color: #5b6b66; }
+  .breadcrumb span.current { color: #123832; font-weight: 700; }
+
+  /* ---------- PDP main grid ---------- */
+  .pdp-wrap {
+    padding: 18px 40px 10px; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 46px; background: #FCFEFD;
+  }
+  .gallery img.main {
+    width: 100%; height: 360px; object-fit: cover; border-radius: 10px;
+    border: 1px solid #E3ECE9; display: block;
+  }
+  .thumbs { display: flex; gap: 10px; margin-top: 12px; }
+  .thumbs img {
+    width: 78px; height: 78px; object-fit: cover; border-radius: 8px;
+    border: 2px solid transparent; cursor: pointer;
+  }
+  .thumbs img.active { border-color: #0E7A6C; }
+
+  .info h1 { font-size: 25px; line-height: 1.3; margin: 0 0 10px; color: #123832; font-weight: 800; }
+  .info .desc { font-size: 13.5px; line-height: 1.65; color: #45524D; margin: 0 0 18px; }
+
+  .price-block.absent {
+    background: #EFF8F6; border: 1px solid #BFE3DA; border-radius: 10px;
+    padding: 16px 18px; margin-bottom: 20px;
+  }
+  .price-block .price-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    color: #45524D; margin-bottom: 4px;
+  }
+  .price-block .price-value { font-size: 20px; font-weight: 800; color: #0E7A6C; }
+  .price-block .price-note { font-size: 12px; color: #45524D; margin-top: 6px; line-height: 1.5; }
+
+  .cta-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .btn-primary {
+    background: #E3A63B; color: #2B1B02; border: none;
+    font-size: 14px; font-weight: 700; padding: 13px 22px; border-radius: 7px; cursor: pointer;
+  }
+  .btn-outline {
+    background: transparent; color: #0E7A6C; border: 1.5px solid #0E7A6C;
+    font-size: 13.5px; font-weight: 700; padding: 12px 20px; border-radius: 7px; cursor: pointer;
+  }
+
+  .mini-trust { display: flex; gap: 10px; flex-wrap: wrap; }
+  .mini-trust span {
+    font-size: 11px; font-weight: 700; color: #0E7A6C; background: #EFF8F6;
+    border: 1px solid #BFE3DA; border-radius: 20px; padding: 5px 12px;
+  }
+
+  /* ---------- specs table ---------- */
+  .specs-section { padding: 12px 40px 6px; }
+  .specs-section h2 { font-size: 17px; color: #123832; margin: 0 0 14px; }
+  table.specs { width: 100%; border-collapse: collapse; }
+  table.specs tr { border-bottom: 1px solid #E3ECE9; }
+  table.specs td { padding: 12px 16px; font-size: 13px; vertical-align: top; }
+  table.specs td.label { width: 220px; background: #FAFCFB; font-weight: 700; color: #123832; }
+  table.specs td.value { color: #2B3A36; }
+
+  /* ---------- service area block ---------- */
+  .service-area {
+    margin: 26px 40px; padding: 20px 24px; background: #FCFEFD;
+    border-left: 4px solid #0E7A6C; border: 1px solid #E3ECE9; border-radius: 8px;
+  }
+  .service-area h3 { font-size: 15px; margin: 0 0 8px; color: #0E7A6C; font-weight: 800; }
+  .service-area h3 .pin { color: #123832; font-weight: 700; margin-right: 6px; }
+  .service-area p { font-size: 12.5px; line-height: 1.6; color: #45524D; margin: 0; }
+  .service-area p.warn-note {
+    margin-top: 10px; padding: 10px 12px; background: #FFF7E8; border: 1px solid #F0D7A0;
+    border-radius: 6px; color: #6B4E10;
+  }
+
+  /* ---------- process strip ---------- */
+  .process-strip {
+    margin: 6px 40px 40px; padding: 28px 30px; background: #EFF8F6;
+    border: 1px solid #BFE3DA; border-radius: 12px;
+    display: flex; justify-content: space-between; gap: 18px;
+  }
+  .process-strip h3 { width: 100%; text-align: center; font-size: 14px; color: #123832; margin: 0 0 20px; }
+  .process-strip .steps-row { display: flex; width: 100%; gap: 18px; }
+  .step { flex: 1; text-align: center; }
+  .step .num {
+    width: 32px; height: 32px; border-radius: 50%; background: #0E7A6C; color: #fff;
+    font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px;
+  }
+  .step h4 { font-size: 13.5px; margin: 0 0 5px; color: #123832; }
+  .step p { font-size: 11.5px; color: #45524D; margin: 0; line-height: 1.5; }
+  .step-arrow { align-self: center; color: #6FBFAE; font-size: 18px; font-weight: 700; }
+
+  .footer-strip {
+    padding: 16px 30px; background: #0E7A6C; color: #E9F5F2; font-size: 11px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-strip .brand { font-weight: 800; color: #fff; }
+</style>
+</head>
+<body>
+
+  <div class="rationale">
+    <h1><span class="tag">Key Screen 1</span>Chi tiết sản phẩm — CẦN THI CÔNG (price-absent)</h1>
+    <p>Trang chi tiết "Dù che sân trường học" — nhánh sản phẩm cần khảo sát/thi công. Minh họa khối "khu vực phục vụ", process strip 3 bước, CTA "Đăng ký khảo sát miễn phí" (FR-8), và trạng thái giá KHÔNG có (price-absent) → hiển thị "Liên hệ để nhận báo giá" thay vì số tiền. Nav "Sản phẩm" mở sẵn để minh họa dropdown danh sách đơn giản 11 nhóm (không phải mega-menu).</p>
+  </div>
+
+  <div class="browser-frame">
+    <div class="browser-chrome">
+      <span class="dot" style="background:#FF5F57"></span>
+      <span class="dot" style="background:#FEBC2E"></span>
+      <span class="dot" style="background:#28C840"></span>
+      <span class="url">tbtruonghoc.com/san-pham/du-che-san-truong-hoc</span>
+    </div>
+
+    <div class="nav-wrap">
+      <div class="nav">
+        <span class="logo">NGỌC ANH</span>
+        <nav class="main-links">
+          <a>Trang chủ</a>
+          <a>Giới thiệu</a>
+          <span class="has-dropdown">Sản phẩm ▾
+            <span class="dropdown-callout">Danh sách đơn giản — không mega-menu</span>
+            <div class="dropdown-panel">
+              <a class="hi">Dù che nắng sân trường</a>
+              <a>Nội thất mầm non</a>
+              <a>Quần áo nghi thức &amp; cờ đội</a>
+              <a>Thiết bị âm thanh – máy chiếu</a>
+              <a>Bảng tương tác</a>
+              <a>Màn hình LED hiển thị</a>
+              <a>Thiết bị văn phòng</a>
+              <a>Phòng thí nghiệm Lý – Hóa – Sinh</a>
+              <a>Bàn thí nghiệm</a>
+              <a>Thiết bị – đồ dùng dạy học</a>
+              <a>Thiết bị mầm non ngoài trời</a>
+              <div class="divider"></div>
+              <a class="viewall">Xem tất cả 11 nhóm sản phẩm →</a>
+            </div>
+          </span>
+          <a>Tin tức</a>
+          <a>Liên hệ</a>
+        </nav>
+      </div>
+      <span class="contact-chip-float">Hotline 0909 123 456 · Zalo tư vấn</span>
+    </div>
+
+    <div class="breadcrumb">Trang chủ / Dù che nắng sân trường / <span class="current">Dù che sân trường học</span></div>
+
+    <div class="pdp-wrap">
+      <div class="gallery">
+        <img class="main" alt="Dù che sân trường học — ảnh lắp đặt thực tế"
+             src="https://tbtruonghoc.com/uploaded/1/sanpham/images/D%C3%B9%20che%20s%C3%A2n/Du%20truong%20hoc.jpg">
+        <div class="thumbs">
+          <img class="active" alt="Ảnh 1"
+               src="https://tbtruonghoc.com/uploaded/1/sanpham/images/D%C3%B9%20che%20s%C3%A2n/Du%20truong%20hoc.jpg">
+          <img alt="Ảnh 2 — dù che ngoài trời"
+               src="https://tbtruonghoc.com/uploaded/1/sanpham/images/Muc%20khac/Du%20che%20ngoai%20troi.jpg">
+          <img alt="Ảnh 3 — chi tiết khung dù"
+               src="https://tbtruonghoc.com/uploaded/1/305_dth05_colon-1.jpg">
+        </div>
+      </div>
+
+      <div class="info">
+        <h1>Dù che sân trường học</h1>
+        <p class="desc">Mái che sân trường dạng dù cố định, che nắng che mưa cho khu vui chơi, sân tập thể dục và khu vực chờ đón trẻ. Khung thép mạ kẽm chắc chắn, bạt chống tia UV bền màu, thi công trọn gói bởi đội ngũ kỹ thuật riêng của Ngọc Anh — từ khảo sát đến nghiệm thu bàn giao.</p>
+
+        <div class="price-block absent">
+          <div class="price-label">Giá bán</div>
+          <div class="price-value">Liên hệ để nhận báo giá</div>
+          <div class="price-note">Giá phụ thuộc diện tích sân và điều kiện thi công thực tế — báo giá chính xác sau khi khảo sát hiện trường.</div>
+        </div>
+
+        <div class="cta-row">
+          <button class="btn-primary">Đăng ký khảo sát miễn phí</button>
+          <button class="btn-outline">Gọi 0909 123 456 · Zalo tư vấn</button>
+        </div>
+
+        <div class="mini-trust">
+          <span>Bảo hành chính hãng</span>
+          <span>Đội thi công riêng</span>
+          <span>Khảo sát tận nơi miễn phí</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="specs-section">
+      <h2>Thông số kỹ thuật</h2>
+      <table class="specs">
+        <tr><td class="label">Kích thước</td><td class="value">6m × 8m tiêu chuẩn (tùy chỉnh theo diện tích sân thực tế)</td></tr>
+        <tr><td class="label">Chất liệu khung</td><td class="value">Thép hộp mạ kẽm nhúng nóng, sơn tĩnh điện chống gỉ</td></tr>
+        <tr><td class="label">Chất liệu bạt</td><td class="value">Bạt HDPE chống tia UV, định mức 180gsm, chống thấm</td></tr>
+        <tr><td class="label">Màu sắc</td><td class="value">Xanh dương, xanh lá, cam — theo yêu cầu đặt hàng</td></tr>
+      </table>
+    </div>
+
+    <div class="service-area">
+      <h3><span class="pin">Khu vực phục vụ:</span>Miền Bắc – Thanh Hóa</h3>
+      <p>Đội thi công của Ngọc Anh trực tiếp khảo sát và lắp đặt trong phạm vi từ Miền Bắc đến Thanh Hóa.</p>
+      <p class="warn-note">Ngoài khu vực này, quý khách vẫn có thể gửi đăng ký khảo sát — hệ thống sẽ hiển thị cảnh báo (không chặn gửi) và đội kinh doanh sẽ liên hệ tư vấn phương án phù hợp.</p>
+    </div>
+
+    <div class="process-strip">
+      <h3>Quy trình thi công</h3>
+      <div class="steps-row">
+        <div class="step">
+          <div class="num">1</div>
+          <h4>Khảo sát</h4>
+          <p>Kỹ thuật viên khảo sát hiện trạng sân trường, đo đạc và tư vấn kích thước phù hợp.</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="num">2</div>
+          <h4>Hợp đồng</h4>
+          <p>Gửi báo giá chi tiết theo khảo sát thực tế, ký hợp đồng thi công.</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="num">3</div>
+          <h4>Thi công</h4>
+          <p>Đội ngũ riêng của Ngọc Anh lắp đặt, nghiệm thu và bàn giao bảo hành.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-strip">
+      <span class="brand">Ngọc Anh — Thiết Bị Trường Học</span>
+      <span>Zalo tư vấn · 0909 123 456 · info@tbtruonghoc.com</span>
+    </div>
+  </div>
+
+</body>
+</html>

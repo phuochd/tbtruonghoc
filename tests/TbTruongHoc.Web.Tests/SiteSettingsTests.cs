@@ -1,0 +1,534 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Piranha;
+using Piranha.Models;
+using TbTruongHoc.Web.Data;
+using TbTruongHoc.Web.Models;
+using Xunit;
+
+namespace TbTruongHoc.Web.Tests;
+
+/// <summary>
+/// Covers Story 1.3 (per-site contact info, FR-2): confirms the shared
+/// <see cref="SiteSettings"/> SiteType flows correctly to a real
+/// HTTP-rendered page on each site - each site's own Phone/ZaloUrl/Address/
+/// MapsUrl values, never the other site's and never hardcoded - against the
+/// real MariaDB-backed <see cref="IApi"/> and the real HTTP pipeline,
+/// mirroring <see cref="PerPageSeoFieldsTests"/>'s pattern. Also covers the
+/// spec's I/O &amp; Edge-Case Matrix: tel:-link digit stripping, direct Zalo/
+/// Maps links, omission of unset fields, and HTML-encoding of special
+/// characters.
+/// </summary>
+[Collection(PiranhaAppCollection.Name)]
+public class SiteSettingsTests
+{
+    /// <summary>
+    /// See <see cref="PerPageSeoFieldsTests.NonStartPageSortOrder"/> - keeps
+    /// every throwaway page this suite creates off the "home page" slot.
+    /// </summary>
+    private const int NonStartPageSortOrder = 1;
+
+    private readonly PiranhaWebApplicationFactory _factory;
+
+    public SiteSettingsTests(PiranhaWebApplicationFactory factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task Each_Site_Renders_Only_Its_Own_Contact_Values()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+
+        var siteA = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var siteB = await GetSiteAsync(api, SiteSeed.TrongDoiTamInternalId);
+
+        var suffix = Guid.NewGuid().ToString("N");
+
+        var (originalA, originalB) = (
+            await SnapshotAsync(api, siteA.Id),
+            await SnapshotAsync(api, siteB.Id));
+
+        // Fixed digit prefix (10 digits) guarantees the >= 7-digit tel:
+        // threshold regardless of how many of the hex suffix's characters
+        // happen to be digits (0-9 vs a-f).
+        var phoneA = $"090 111 0000 {suffix[..4]}";
+        var phoneB = $"090 222 0000 {suffix[..4]}";
+
+        try
+        {
+            await SaveSettingsAsync(api, siteA.Id, s =>
+            {
+                s.Phone = phoneA;
+                s.ZaloUrl = $"https://zalo.me/siteA-{suffix}";
+                s.Address = $"123 Site A Street {suffix}";
+                s.MapsUrl = $"https://maps.google.com/?q=siteA-{suffix}";
+            });
+            await SaveSettingsAsync(api, siteB.Id, s =>
+            {
+                s.Phone = phoneB;
+                s.ZaloUrl = $"https://zalo.me/siteB-{suffix}";
+                s.Address = $"456 Site B Street {suffix}";
+                s.MapsUrl = $"https://maps.google.com/?q=siteB-{suffix}";
+            });
+
+            var pageA = await CreatePublishedPageAsync(api, siteA, $"Contact Test A {suffix}", $"contact-test-a-{suffix}");
+            var pageB = await CreatePublishedPageAsync(api, siteB, $"Contact Test B {suffix}", $"contact-test-b-{suffix}");
+
+            var htmlA = await GetHtmlAsync(pageA.Permalink, HostnameOf(siteA));
+            var htmlB = await GetHtmlAsync(pageB.Permalink, HostnameOf(siteB));
+
+            // Site A's page shows Site A's own values...
+            Assert.Contains(phoneA, htmlA);
+            Assert.Contains($"https://zalo.me/siteA-{suffix}", htmlA);
+            Assert.Contains($"123 Site A Street {suffix}", htmlA);
+            Assert.Contains($"https://maps.google.com/?q=siteA-{suffix}", htmlA);
+
+            // ...and never Site B's.
+            Assert.DoesNotContain(phoneB, htmlA);
+            Assert.DoesNotContain($"https://zalo.me/siteB-{suffix}", htmlA);
+            Assert.DoesNotContain($"456 Site B Street {suffix}", htmlA);
+            Assert.DoesNotContain($"https://maps.google.com/?q=siteB-{suffix}", htmlA);
+
+            // Site B's page shows Site B's own values...
+            Assert.Contains(phoneB, htmlB);
+            Assert.Contains($"https://zalo.me/siteB-{suffix}", htmlB);
+            Assert.Contains($"456 Site B Street {suffix}", htmlB);
+            Assert.Contains($"https://maps.google.com/?q=siteB-{suffix}", htmlB);
+
+            // ...and never Site A's.
+            Assert.DoesNotContain(phoneA, htmlB);
+            Assert.DoesNotContain($"https://zalo.me/siteA-{suffix}", htmlB);
+            Assert.DoesNotContain($"123 Site A Street {suffix}", htmlB);
+            Assert.DoesNotContain($"https://maps.google.com/?q=siteA-{suffix}", htmlB);
+        }
+        finally
+        {
+            await RestoreAsync(api, siteA.Id, originalA);
+            await RestoreAsync(api, siteB.Id, originalB);
+        }
+    }
+
+    [Fact]
+    public async Task Phone_Renders_As_Real_Tel_Link_With_Digits_Only_Href_And_Unchanged_Display_Text()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        // Deliberately includes a leading "+", spaces and parens - none of
+        // these must survive into the tel: href, but the visible text must
+        // keep them exactly as entered (once decoded back from whatever
+        // Razor's @-expression HTML-encoding did to them - "+" for instance
+        // renders as the numeric entity "&#x2B;", same as _MetaTags.cshtml's
+        // convention would do to any other value with encodable characters).
+        var displayPhone = $"+84 (090) 123-{suffix}";
+
+        try
+        {
+            await SaveSettingsAsync(api, site.Id, s => s.Phone = displayPhone);
+
+            var page = await CreatePublishedPageAsync(api, site, $"Phone Test {suffix}", $"phone-test-{suffix}");
+            var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
+
+            // A leading "+" (internationally-formatted number) must survive
+            // into the href alongside the digits - only punctuation/spacing
+            // other than that leading "+" is stripped. The href attribute
+            // value goes through the same Razor @-expression HTML-encoding
+            // as the display text, so a literal "+" in the raw markup is
+            // "&#x2B;" - harmless (HTML parsers decode it back to "+" when
+            // reading the attribute), but the raw-source match below has to
+            // expect the encoded form too.
+            var digitsOnly = new string(Array.FindAll(displayPhone.ToCharArray(), char.IsDigit));
+            var expectedTelHref = (displayPhone.TrimStart().StartsWith("+") ? "+" : "") + digitsOnly;
+            var encodedTelHref = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(expectedTelHref);
+            Assert.Contains($"href=\"tel:{encodedTelHref}\"", html);
+            // Razor's @-expression encoder (System.Text.Encodings.Web.HtmlEncoder.Default)
+            // is stricter than System.Net.WebUtility.HtmlEncode used elsewhere in
+            // this suite - it also encodes "+" (as "&#x2B;"), so match with the
+            // exact encoder the partial actually goes through.
+            var encodedDisplayPhone = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(displayPhone);
+            Assert.Contains($">{encodedDisplayPhone}<", html);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Phone_With_Only_A_Stray_Digit_In_Garbage_Text_Is_Treated_As_Unset()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+
+        try
+        {
+            // "javascript:alert(1)" strips down to a single digit ("1" from
+            // "(1)") - not a real phone number. Must be treated the same as
+            // an empty phone (omitted), not rendered as href="tel:1".
+            await SaveSettingsAsync(api, site.Id, s =>
+            {
+                s.Phone = "javascript:alert(1)";
+                s.ZaloUrl = string.Empty;
+                s.Address = string.Empty;
+                s.MapsUrl = string.Empty;
+            });
+
+            var page = await CreatePublishedPageAsync(api, site, $"Garbage Phone Test {suffix}", $"garbage-phone-test-{suffix}");
+            var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
+
+            Assert.DoesNotContain("contact-block", html);
+            Assert.DoesNotContain("href=\"tel:", html);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Save_Rejects_Unsafe_Zalo_Url_Scheme_And_Does_Not_Persist()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var safeZalo = "https://zalo.me/still-safe-after-rejected-save";
+
+        try
+        {
+            await SaveSettingsAsync(api, site.Id, s => s.ZaloUrl = safeZalo);
+
+            await Assert.ThrowsAsync<ValidationException>(() =>
+                SaveSettingsAsync(api, site.Id, s => s.ZaloUrl = "javascript:alert(1)"));
+
+            // The rejected save must not have persisted - the last safe
+            // value stays in place, mirroring the defense-in-depth intent:
+            // block at save time, don't just filter at render time.
+            var afterRejectedSave = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.Equal(safeZalo, afterRejectedSave!.ZaloUrl?.Value);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Save_Rejects_Unsafe_Maps_Url_Scheme_And_Does_Not_Persist()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var safeMaps = "https://maps.google.com/?q=still-safe-after-rejected-save";
+
+        try
+        {
+            await SaveSettingsAsync(api, site.Id, s => s.MapsUrl = safeMaps);
+
+            await Assert.ThrowsAsync<ValidationException>(() =>
+                SaveSettingsAsync(api, site.Id, s => s.MapsUrl = "data:text/html,<script>alert(1)</script>"));
+
+            var afterRejectedSave = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.Equal(safeMaps, afterRejectedSave!.MapsUrl?.Value);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task ZaloUrl_Renders_As_A_Direct_Link_With_No_Rewriting()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        var zaloUrl = $"https://zalo.me/{suffix}";
+
+        try
+        {
+            await SaveSettingsAsync(api, site.Id, s => s.ZaloUrl = zaloUrl);
+
+            var page = await CreatePublishedPageAsync(api, site, $"Zalo Test {suffix}", $"zalo-test-{suffix}");
+            var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
+
+            Assert.Contains($"href=\"{zaloUrl}\"", html);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task MapsUrl_Renders_As_A_Link_To_The_Sites_Own_Location()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        var mapsUrl = $"https://maps.google.com/?q={suffix}";
+
+        try
+        {
+            await SaveSettingsAsync(api, site.Id, s => s.MapsUrl = mapsUrl);
+
+            var page = await CreatePublishedPageAsync(api, site, $"Maps Test {suffix}", $"maps-test-{suffix}");
+            var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
+
+            Assert.Contains($"href=\"{mapsUrl}\"", html);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Unset_Fields_Are_Omitted_Not_Rendered_As_Broken_Links()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+
+        try
+        {
+            // All four fields explicitly cleared - the whole contact block,
+            // and each individual element, must be omitted rather than
+            // rendered with an empty/broken href.
+            await SaveSettingsAsync(api, site.Id, s =>
+            {
+                s.Phone = string.Empty;
+                s.ZaloUrl = string.Empty;
+                s.Address = string.Empty;
+                s.MapsUrl = string.Empty;
+            });
+
+            var page = await CreatePublishedPageAsync(api, site, $"Empty Contact Test {suffix}", $"empty-contact-test-{suffix}");
+            var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
+
+            Assert.DoesNotContain("contact-block", html);
+            Assert.DoesNotContain("href=\"tel:", html);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Mixed_State_Renders_Only_The_Fields_That_Are_Set()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        // Fixed digit prefix guarantees >= 7 digits regardless of how many
+        // of the hex suffix's characters happen to be digits (0-9 vs a-f).
+        var phone = $"090 555 1234 {suffix}";
+        var address = $"789 Mixed State Ave {suffix}";
+
+        try
+        {
+            // A realistic partially-filled state: Phone and Address set,
+            // ZaloUrl/MapsUrl left blank - proves each @if block in
+            // _ContactBlock.cshtml is gated independently rather than all
+            // four rising or falling together.
+            await SaveSettingsAsync(api, site.Id, s =>
+            {
+                s.Phone = phone;
+                s.Address = address;
+                s.ZaloUrl = string.Empty;
+                s.MapsUrl = string.Empty;
+            });
+
+            var page = await CreatePublishedPageAsync(api, site, $"Mixed State Test {suffix}", $"mixed-state-test-{suffix}");
+            var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
+
+            Assert.Contains("contact-block", html);
+            Assert.Contains("href=\"tel:", html);
+            Assert.Contains(address, html);
+            Assert.DoesNotContain("contact-block__zalo", html);
+            Assert.DoesNotContain("contact-block__maps", html);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Address_With_Html_Special_Characters_Is_Encoded_Without_Breaking_Markup()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        // "&", "<", ">" and """ must all be encoded - an unescaped """ here
+        // would break out of an attribute and an unescaped "<" would break
+        // the surrounding markup, neither of which a plain substring match
+        // below would catch.
+        var address = $"123 \"Main\" St <District 1> & Ward {suffix}";
+
+        try
+        {
+            await SaveSettingsAsync(api, site.Id, s => s.Address = address);
+
+            var page = await CreatePublishedPageAsync(api, site, $"Address Escaping Test {suffix}", $"address-escaping-test-{suffix}");
+            var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
+
+            // Use the same encoder Razor's @-expressions actually go
+            // through (System.Text.Encodings.Web.HtmlEncoder.Default) -
+            // consistent with the Phone test above, and future-proof
+            // against values (like Phone's "+") where it diverges from
+            // System.Net.WebUtility.HtmlEncode.
+            Assert.Contains(System.Text.Encodings.Web.HtmlEncoder.Default.Encode(address), html);
+            Assert.DoesNotContain($">{address}<", html);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Reseeding_Twice_Produces_No_Duplicate_Or_Overwritten_SiteSettings()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        const string managerEditedPhone = "090-manager-edited";
+
+        try
+        {
+            // The app has already started once (via this same
+            // WebApplicationFactory), which already ran
+            // SiteSettingsSeed.EnsureSeededAsync as part of startup - so an
+            // empty SiteSettings instance already exists for every site.
+            var beforeReseed = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.NotNull(beforeReseed);
+
+            // Simulate a Manager-made edit between restarts.
+            await SaveSettingsAsync(api, site.Id, s => s.Phone = managerEditedPhone);
+
+            // Re-run the exact startup seed step again.
+            await SiteSettingsSeed.EnsureSeededAsync(api);
+
+            var afterReseed = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.NotNull(afterReseed);
+            Assert.Equal(managerEditedPhone, afterReseed!.Phone?.Value);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    private static async Task<Site> GetSiteAsync(IApi api, string internalId)
+    {
+        var site = await api.Sites.GetByInternalIdAsync(internalId);
+        Assert.NotNull(site);
+        return site!;
+    }
+
+    private static async Task<StandardPage> CreatePublishedPageAsync(IApi api, Site site, string title, string slug)
+    {
+        var page = await api.Pages.CreateAsync<StandardPage>();
+        page.SiteId = site.Id;
+        page.SortOrder = NonStartPageSortOrder;
+        page.Title = title;
+        page.Slug = slug;
+        page.Published = DateTime.Now;
+        await api.Pages.SaveAsync(page);
+
+        var saved = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
+        Assert.NotNull(saved);
+        return saved!;
+    }
+
+    private static async Task SaveSettingsAsync(IApi api, Guid siteId, Action<SiteSettings> mutate)
+    {
+        var settings = await api.Sites.GetContentByIdAsync<SiteSettings>(siteId)
+            ?? await api.Sites.CreateContentAsync<SiteSettings>();
+        mutate(settings);
+        await api.Sites.SaveContentAsync(siteId, settings);
+    }
+
+    /// <summary>
+    /// Captures the four field values a test is about to mutate, so they
+    /// can be restored afterward - this suite shares one real, persistent
+    /// database with every other test class in <see cref="PiranhaAppCollection"/>
+    /// (see its own doc comment).
+    /// </summary>
+    private static async Task<(string? Phone, string? ZaloUrl, string? Address, string? MapsUrl)> SnapshotAsync(IApi api, Guid siteId)
+    {
+        var settings = await api.Sites.GetContentByIdAsync<SiteSettings>(siteId);
+        return (settings?.Phone?.Value, settings?.ZaloUrl?.Value, settings?.Address?.Value, settings?.MapsUrl?.Value);
+    }
+
+    private static async Task RestoreAsync(IApi api, Guid siteId, (string? Phone, string? ZaloUrl, string? Address, string? MapsUrl) original)
+    {
+        await SaveSettingsAsync(api, siteId, s =>
+        {
+            s.Phone = original.Phone;
+            s.ZaloUrl = original.ZaloUrl;
+            s.Address = original.Address;
+            s.MapsUrl = original.MapsUrl;
+        });
+    }
+
+    /// <summary>
+    /// See <see cref="PerPageSeoFieldsTests.HostnameOf"/> - reads the site's
+    /// *current* configured hostname rather than assuming the originally-
+    /// seeded value.
+    /// </summary>
+    private static string HostnameOf(Site site)
+    {
+        var hostname = site.Hostnames?.Split(',').FirstOrDefault()?.Trim();
+        Assert.False(string.IsNullOrEmpty(hostname));
+        return hostname!;
+    }
+
+    private async Task<string> GetHtmlAsync(string permalink, string hostname)
+    {
+        var client = _factory.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, permalink);
+        request.Headers.Host = hostname;
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        return await response.Content.ReadAsStringAsync();
+    }
+}

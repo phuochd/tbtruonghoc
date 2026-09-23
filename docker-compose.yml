@@ -1,0 +1,38 @@
+services:
+  mariadb:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MARIADB_DATABASE}
+      MYSQL_USER: ${MARIADB_USER}
+      MYSQL_PASSWORD: ${MARIADB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  piranha-app:
+    build:
+      context: .
+      dockerfile: src/TbTruongHoc.Web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__piranha: "server=mariadb;port=3306;database=${MARIADB_DATABASE};uid=${MARIADB_USER};password=${MARIADB_PASSWORD}"
+    ports:
+      - "8091:8080"
+    volumes:
+      - ./media:/app/wwwroot/uploads
+
+volumes:
+  mariadb-data:

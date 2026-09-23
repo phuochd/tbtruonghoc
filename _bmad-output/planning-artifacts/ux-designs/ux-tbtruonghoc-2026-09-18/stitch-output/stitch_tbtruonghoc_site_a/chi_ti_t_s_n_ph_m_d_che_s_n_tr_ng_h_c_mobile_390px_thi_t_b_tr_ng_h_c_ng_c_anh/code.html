@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dù che sân trường học (Mobile) - Thiết Bị Trường Học Ngọc Anh</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0E7A6C',
+            'primary-dark': '#09574D',
+            'accent-amber': '#E3A63B',
+            'accent-amber-hover': '#c98e29',
+            'accent-text': '#2B1B02',
+            'page-bg': '#FCFEFD',
+            'text-main': '#123832',
+            'border-base': '#E3ECE9',
+            'block-bg': '#EFF8F6',
+            'block-border': '#BFE3DA',
+            'notice-bg': '#FFF7E8',
+            'notice-border': '#F0D7A0',
+            'notice-text': '#6B4E10',
+          },
+          fontFamily: {
+            sans: ['Mulish', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Mulish', sans-serif;
+      background-color: #FCFEFD;
+      color: #123832;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased max-w-[390px] mx-auto bg-[#FCFEFD] border-x border-[#E3ECE9]">
+
+  <!-- TOP MOBILE NAVIGATION (Thu gọn logo + hamburger + nút gọi ngay) -->
+  <header class="bg-[#0E7A6C] text-white sticky top-0 z-50 px-4 h-16 flex items-center justify-between shadow-sm">
+    
+    <!-- Logo thương hiệu -->
+    <a href="#" class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-[#E3A63B] flex items-center justify-center text-[#2B1B02] shadow-sm font-extrabold text-sm">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19V7l8 8 8-8v12"/>
+          <circle cx="12" cy="4" r="1.5" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-extrabold text-base tracking-wider leading-tight text-white">NGỌC ANH</span>
+        <span class="text-[8px] font-semibold tracking-widest text-[#D4FCF2] uppercase">THIẾT BỊ GIÁO DỤC B2B</span>
+      </div>
+    </a>
+
+    <!-- Cụm thao tác: Nút gọi nhanh & Hamburger Menu -->
+    <div class="flex items-center gap-2">
+      <a href="tel:0988xxxxxx" class="flex items-center gap-1.5 bg-[#E3A63B] text-[#2B1B02] text-xs font-bold px-2.5 py-1.5 rounded-md shadow-sm">
+        <i class="fa-solid fa-phone text-[10px]"></i>
+        <span>Gọi ngay</span>
+      </a>
+      <button class="w-9 h-9 rounded-md bg-[#09574D] text-white flex items-center justify-center text-base border border-[#D4FCF2]/20">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+
+  </header>
+
+  <!-- BREADCRUMB COMPACT MOBILE -->
+  <div class="bg-[#EFF8F6] px-4 py-2 text-[11px] text-[#123832]/80 border-b border-[#BFE3DA]/60 flex items-center gap-1.5 overflow-hidden whitespace-nowrap">
+    <a href="#" class="text-[#0E7A6C] font-semibold"><i class="fa-solid fa-house text-[10px] mr-1"></i>Trang chủ</a>
+    <span>›</span>
+    <a href="#" class="text-[#0E7A6C]">Sản phẩm</a>
+    <span>›</span>
+    <span class="text-[#123832] font-bold truncate">Dù che sân trường</span>
+  </div>
+
+  <!-- MAIN PRODUCT DETAIL 1-COLUMN STACKED (Theo yêu cầu mobile) -->
+  <main class="flex-grow p-4 flex flex-col gap-5">
+
+    <!-- 1. GALLERY ẢNH TRÊN CÙNG (Vuốt ngang để xem thumbnail) -->
+    <div class="flex flex-col gap-2.5">
+      <!-- Ảnh chính lớn -->
+      <div class="relative rounded-xl overflow-hidden border border-[#E3ECE9] bg-white shadow-sm aspect-[4/3]">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYT-ja9zJ_HxAxSfMN3Itnz_QvNxY4DlT0ZuLo_eZQF28p7Q_0I-1vO95qJz2--jzmFFtDQzeiqOXusYrG7UY058evIKveAobbA-50cvkSb2lCXkK5w5_oF3vbP-ocQy63z41uL2UIQc9q4N2Tc0Fol62yHFR3mCxrwURNQbAEppnvcy6TQTCt7vFJeYbbVWi-Whkjah_1ZSbADvGrbxvjftjPTLtzzc6q8qC8_175TrjqBU8gnyI" alt="Dù che sân trường học thực tế" class="w-full h-full object-cover">
+        
+        <div class="absolute top-2.5 left-2.5 bg-[#0E7A6C] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow flex items-center gap-1">
+          <i class="fa-solid fa-camera"></i>
+          <span>Ảnh công trình thực tế</span>
+        </div>
+
+        <div class="absolute bottom-2.5 right-2.5 bg-black/65 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded">
+          Tiểu học Đoàn Kết
+        </div>
+      </div>
+
+      <!-- Thumbnail vuốt ngang (Horizontal Scroll Strip) -->
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <!-- Thumb 1 Active -->
+        <div class="flex-shrink-0 w-20 aspect-video rounded-lg overflow-hidden border-2 border-[#0E7A6C] shadow-sm">
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYT-ja9zJ_HxAxSfMN3Itnz_QvNxY4DlT0ZuLo_eZQF28p7Q_0I-1vO95qJz2--jzmFFtDQzeiqOXusYrG7UY058evIKveAobbA-50cvkSb2lCXkK5w5_oF3vbP-ocQy63z41uL2UIQc9q4N2Tc0Fol62yHFR3mCxrwURNQbAEppnvcy6TQTCt7vFJeYbbVWi-Whkjah_1ZSbADvGrbxvjftjPTLtzzc6q8qC8_175TrjqBU8gnyI" class="w-full h-full object-cover">
+        </div>
+        <!-- Thumb 2 -->
+        <div class="flex-shrink-0 w-20 aspect-video rounded-lg overflow-hidden border border-[#E3ECE9] bg-gray-100">
+          <img src="https://lh3.googleusercontent.com/aida/AEtjO1XcVS7tagcsoVSXc1duW1u2DZIgsF7SDJDlyNho0TGsc6q1j5XR-qxmbLZVUlslK2KrS07YDTeDheLcoTp_iTuzw46SCjkwdg6Bo3LPB9nYbWTDcjLD_imllsfHuj_7-tXot_lGB4mogIQeC0kVej-FSp64j1cDt-CFpdTxMIQTqQf_rF7MJLIt7tkDsvuS0xVHn2nNZ-qWyls1wHhLdkJ3FZPrI9p_nyl3vQHidlK74LIUMoPPRbj5" class="w-full h-full object-cover">
+        </div>
+        <!-- Thumb 3 (Khung thép) -->
+        <div class="flex-shrink-0 w-20 aspect-video rounded-lg overflow-hidden border border-[#E3ECE9] bg-[#EFF8F6] flex flex-col items-center justify-center p-1 text-center">
+          <i class="fa-solid fa-cubes-stacked text-[#0E7A6C] text-sm"></i>
+          <span class="text-[8px] font-bold text-[#123832] mt-0.5">Khung thép</span>
+        </div>
+        <!-- Thumb 4 (Bản vẽ 3D) -->
+        <div class="flex-shrink-0 w-20 aspect-video rounded-lg overflow-hidden border border-[#E3ECE9] bg-[#EFF8F6] flex flex-col items-center justify-center p-1 text-center">
+          <i class="fa-solid fa-compass-drafting text-[#0E7A6C] text-sm"></i>
+          <span class="text-[8px] font-bold text-[#123832] mt-0.5">Mặt bằng 3D</span>
+        </div>
+      </div>
+      <span class="text-[10px] text-[#123832]/60 italic text-right">‹ Vuốt ngang xem thêm ảnh ›</span>
+    </div>
+
+    <!-- 2. TÊN VÀ MÔ TẢ NGẮN -->
+    <div class="flex flex-col gap-1.5">
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 rounded bg-[#0E7A6C]/10 text-[#0E7A6C] text-[10px] font-extrabold uppercase">
+          Khảo sát &amp; Thi công B2B
+        </span>
+        <span class="px-1.5 py-0.5 rounded bg-[#E3ECE9] text-[#123832] text-[10px] font-medium">
+          Mã: DCN-NA01
+        </span>
+      </div>
+
+      <h1 class="text-xl font-extrabold text-[#123832] leading-tight mt-1">
+        Dù che sân trường học
+      </h1>
+
+      <p class="text-xs text-[#123832]/80 leading-relaxed">
+        Giải pháp bạt che nắng sân trường chuyên dụng dạng dù tròn, lục giác cánh buồm hoặc bạt lượn sóng chịu lực gió bão cao, cản 99% tia UV cho học sinh vui chơi ngoài trời.
+      </p>
+    </div>
+
+    <!-- 3. KHỐI GIÁ (Không có giá cố định - Phụ thuộc khảo sát thực tế) -->
+    <div class="p-3.5 rounded-xl bg-[#EFF8F6] border border-[#BFE3DA] flex flex-col gap-1">
+      <span class="text-[10px] font-bold text-[#123832]/70 uppercase tracking-wider">Dự toán kinh phí theo mặt bằng:</span>
+      <div class="text-lg font-extrabold text-[#0E7A6C] flex items-center justify-between">
+        <span>Liên hệ để nhận báo giá</span>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-white text-[#0E7A6C] border border-[#BFE3DA]">B2B</span>
+      </div>
+      <p class="text-[11px] text-[#123832]/70 leading-normal">
+        * Báo giá chuẩn xác theo khẩu độ sân trường và chiều cao cột sau khi kỹ sư đo đạc.
+      </p>
+    </div>
+
+    <!-- BẢNG THÔNG SỐ KỸ THUẬT RÚT GỌN CHO MOBILE -->
+    <div class="rounded-xl border border-[#E3ECE9] overflow-hidden bg-white shadow-sm">
+      <div class="bg-[#FCFEFD] px-3.5 py-2.5 border-b border-[#E3ECE9] flex items-center justify-between">
+        <h3 class="text-xs font-extrabold text-[#123832] uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-sliders text-[#0E7A6C]"></i>
+          <span>Thông số kỹ thuật</span>
+        </h3>
+        <span class="text-[10px] text-[#0E7A6C] font-bold">TCVN 2025</span>
+      </div>
+      <div class="divide-y divide-[#E3ECE9] text-xs">
+        <div class="p-3">
+          <span class="font-bold text-[#123832] block text-[11px] text-gray-500 uppercase">Kích thước:</span>
+          <span class="text-[#123832] font-semibold">Đường kính Ø 10m – 25m hoặc may đo riêng</span>
+        </div>
+        <div class="p-3">
+          <span class="font-bold text-[#123832] block text-[11px] text-gray-500 uppercase">Chất liệu khung:</span>
+          <span class="text-[#123832] font-semibold">Trụ thép mạ kẽm Ø76–114mm, sơn tĩnh điện</span>
+        </div>
+        <div class="p-3">
+          <span class="font-bold text-[#123832] block text-[11px] text-gray-500 uppercase">Chất liệu bạt:</span>
+          <span class="text-[#123832] font-semibold">Polyester tráng PU / Bạt PVC Tarpaulin cản UV 99%</span>
+        </div>
+        <div class="p-3">
+          <span class="font-bold text-[#123832] block text-[11px] text-gray-500 uppercase">Màu sắc:</span>
+          <span class="text-[#123832] font-semibold">Trắng - Xanh Teal, Vàng kem, phối đa sắc</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. KHỐI KHU VỰC PHỤC VỤ (Miền Bắc - Thanh Hóa + Ghi chú hổ phách) -->
+    <div class="p-3.5 rounded-xl bg-[#EFF8F6] border border-[#BFE3DA] flex flex-col gap-2">
+      <div class="flex items-center gap-1.5">
+        <i class="fa-solid fa-map-location-dot text-[#0E7A6C] text-sm"></i>
+        <h3 class="text-xs font-extrabold text-[#0E7A6C] uppercase tracking-wider">
+          Khu vực phục vụ: Miền Bắc – Thanh Hóa
+        </h3>
+      </div>
+      <p class="text-[11px] text-[#123832]/85 leading-relaxed">
+        Kỹ thuật viên Ngọc Anh đến tận trường khảo sát miễn phí trong vòng 24–48h tại Hà Nội, Hải Phòng, Bắc Ninh, Quảng Ninh, Nam Định, Ninh Bình, Thanh Hóa,...
+      </p>
+
+      <!-- Ghi chú hổ phách -->
+      <div class="p-2.5 rounded-lg bg-[#FFF7E8] border border-[#F0D7A0] text-[#6B4E10] text-[11px] leading-relaxed">
+        <i class="fa-solid fa-circle-info text-[#E3A63B] mr-1"></i>
+        <strong>Lưu ý:</strong> Quý trường tại các tỉnh ngoài phạm vi vẫn được tiếp nhận đăng ký để tư vấn thiết kế và sắp xếp lộ trình thi công chuyên biệt.
+      </div>
+    </div>
+
+    <!-- 5. DẢI QUY TRÌNH 3 BƯỚC (Xếp dọc theo yêu cầu Mobile) -->
+    <div class="p-3.5 rounded-xl bg-[#EFF8F6] border border-[#BFE3DA]">
+      <div class="text-xs font-bold text-[#0E7A6C] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <i class="fa-solid fa-list-check"></i>
+        <span>Quy trình 3 bước trọn gói</span>
+      </div>
+
+      <!-- Bố cục dọc cho mobile -->
+      <div class="flex flex-col gap-3">
+        <!-- Bước 1 -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-[#0E7A6C] text-white flex items-center justify-center font-extrabold text-xs flex-shrink-0 shadow-sm mt-0.5">
+            1
+          </div>
+          <div>
+            <h5 class="text-xs font-extrabold text-[#123832] uppercase">Khảo sát &amp; Lên 3D</h5>
+            <p class="text-[11px] text-[#123832]/70 leading-normal">Đo đạc mặt bằng sân, hướng gió và lên bản vẽ 3D miễn phí.</p>
+          </div>
+        </div>
+
+        <!-- Bước 2 -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-[#0E7A6C] text-white flex items-center justify-center font-extrabold text-xs flex-shrink-0 shadow-sm mt-0.5">
+            2
+          </div>
+          <div>
+            <h5 class="text-xs font-extrabold text-[#123832] uppercase">Hợp đồng &amp; Dự toán</h5>
+            <p class="text-[11px] text-[#123832]/70 leading-normal">Hồ sơ pháp lý, chứng chỉ CO/CQ và bóc tách khối lượng chuẩn.</p>
+          </div>
+        </div>
+
+        <!-- Bước 3 -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-[#0E7A6C] text-white flex items-center justify-center font-extrabold text-xs flex-shrink-0 shadow-sm mt-0.5">
+            3
+          </div>
+          <div>
+            <h5 class="text-xs font-extrabold text-[#123832] uppercase">Thi công &amp; Bàn giao</h5>
+            <p class="text-[11px] text-[#123832]/70 leading-normal">Lắp đặt an toàn, thử tải kết cấu và bảo hành 36 tháng tận nơi.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. HAI NÚT CTA FULL-WIDTH XẾP CHỒNG -->
+    <div class="flex flex-col gap-2.5 pt-2">
+      <!-- Nút chính Amber -->
+      <a href="#" class="w-full bg-[#E3A63B] active:bg-[#c98e29] text-[#2B1B02] font-extrabold text-sm py-3.5 px-4 rounded-lg text-center shadow-sm flex items-center justify-center gap-2">
+        <i class="fa-solid fa-clipboard-list text-base"></i>
+        <span>Đăng ký khảo sát miễn phí</span>
+      </a>
+
+      <!-- Nút phụ Viền Teal -->
+      <a href="tel:0988xxxxxx" class="w-full bg-transparent active:bg-[#0E7A6C]/10 text-[#0E7A6C] border-2 border-[#0E7A6C] font-extrabold text-sm py-3 px-4 rounded-lg text-center flex items-center justify-center gap-2">
+        <i class="fa-solid fa-headset text-base"></i>
+        <span>Gọi ngay / Zalo tư vấn</span>
+      </a>
+    </div>
+
+    <p class="text-[10px] text-center text-[#123832]/60 pb-2">
+      Tư vấn kỹ thuật viên &amp; bóc tách dự toán: <strong>0988.xxx.xxx</strong>
+    </p>
+
+  </main>
+
+  <!-- MOBILE FOOTER XẾP CHỒNG -->
+  <footer class="bg-[#0E7A6C] text-white py-5 px-4 border-t border-[#09574D]">
+    <div class="flex flex-col items-center text-center gap-2">
+      <span class="font-extrabold tracking-wider text-xs">NGỌC ANH SCHOOL EQUIPMENT</span>
+      <p class="text-[10px] text-white/80 leading-tight">Giải pháp trang thiết bị giáo dục toàn diện &amp; Tiêu chuẩn kiểm định CO-CQ</p>
+      
+      <div class="w-full border-t border-white/15 my-1"></div>
+
+      <div class="flex flex-col gap-1 text-[11px] text-white/90">
+        <span class="flex items-center justify-center gap-1.5"><i class="fa-solid fa-phone text-[#E3A63B]"></i> Hotline: 0988.xxx.xxx</span>
+        <span class="flex items-center justify-center gap-1.5"><i class="fa-solid fa-comment-dots text-[#E3A63B]"></i> Zalo: 0988.xxx.xxx</span>
+        <span class="flex items-center justify-center gap-1.5"><i class="fa-solid fa-envelope text-[#E3A63B]"></i> duan@thietbingocanh.vn</span>
+      </div>
+
+      <span class="text-[9px] text-white/50 mt-1">© 2025 Thiết Bị Trường Học Ngọc Anh. All rights reserved.</span>
+    </div>
+  </footer>
+
+</body>
+</html>

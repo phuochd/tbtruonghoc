@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Key Screen — Danh mục sản phẩm (aggregate category page)</title>
+<style>
+  /*
+    =========================================================
+    KEY SCREEN — Danh mục sản phẩm (aggregate category page)
+    Site A (tbtruonghoc.com)
+
+    Illustrates:
+      EXPERIENCE.md Information Architecture > Danh mục sản phẩm
+      aggregate page; DESIGN.md Components > category-tile at
+      full/flexible count.
+
+    This is the full-browse complement to the nav "Sản phẩm"
+    dropdown's quick-pick list — shows all 11 PRD categories as a
+    CMS-driven flexible grid (not hardcoded to 11: the trailing
+    dashed tile illustrates a category added later without a code
+    change, per the explicit structural CMS/IA constraint in
+    EXPERIENCE.md Information Architecture).
+
+    PALETTE — fixed, unchanged from DESIGN.md:
+      primary teal #0E7A6C | amber CTA #E3A63B (ink #2B1B02)
+      body bg #FCFEFD | body text #123832
+      border-neutral #E3ECE9 | rounded.xl 12px | gutter 40px | card-gap 20px
+    Outer wrapper (#EDEFEF) is tool chrome, not product.
+    Typography: unchanged system-sans stack — a separate pass
+    handles type; do not restyle here.
+    =========================================================
+  */
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: #EDEFEF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1B2733;
+  }
+  .rationale {
+    max-width: 1200px; margin: 28px auto 8px; padding: 16px 22px;
+    background: #fff; border: 1px solid #DADFDD; border-radius: 8px;
+  }
+  .rationale h1 { font-size: 17px; margin: 0 0 6px; color: #123832; }
+  .rationale p { font-size: 13.5px; line-height: 1.55; color: #45524D; margin: 4px 0; }
+  .rationale .tag {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    background: #0E7A6C; color: #fff; border-radius: 4px;
+    padding: 2px 8px; margin-right: 8px; letter-spacing: .3px;
+  }
+
+  .browser-frame {
+    max-width: 1200px; margin: 18px auto 60px; border-radius: 10px;
+    overflow: hidden; box-shadow: 0 10px 34px rgba(0,0,0,.16);
+    border: 1px solid #D6DBD9; background: #FCFEFD;
+  }
+  .browser-chrome {
+    background: #E7ECEA; padding: 9px 14px; display: flex; align-items: center; gap: 7px;
+    border-bottom: 1px solid #D3DBD8;
+  }
+  .browser-chrome .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .browser-chrome .url {
+    margin-left: 8px; background: #fff; border: 1px solid #D3DBD8; border-radius: 6px;
+    padding: 4px 12px; font-size: 11.5px; color: #5b6b66; flex: 1; max-width: 380px;
+  }
+
+  /* ---------- nav (same pattern as other key screens) ---------- */
+  .nav-wrap { position: relative; }
+  .nav {
+    background: #0E7A6C; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 30px;
+  }
+  .logo { font-weight: 800; font-size: 17px; letter-spacing: .6px; }
+  .main-links { display: flex; align-items: center; gap: 22px; font-size: 12.5px; font-weight: 600; }
+  .main-links a { color: #fff; text-decoration: none; opacity: .92; }
+  .main-links a.current { opacity: 1; padding-bottom: 3px; border-bottom: 2px solid #E3A63B; }
+  .contact-chip-float {
+    position: absolute; top: 68px; right: 30px;
+    background: #E3A63B; color: #2B1B02; font-size: 11px; font-weight: 700;
+    padding: 6px 12px; border-radius: 20px; box-shadow: 0 3px 10px rgba(0,0,0,.2);
+    z-index: 5;
+  }
+
+  /* ---------- breadcrumb ---------- */
+  .breadcrumb { padding: 16px 40px 0; font-size: 11.5px; color: #5b6b66; }
+  .breadcrumb span.current { color: #123832; font-weight: 700; }
+
+  /* ---------- page header ---------- */
+  .page-header { padding: 18px 40px 8px; background: #FCFEFD; }
+  .page-header h1 { font-size: 25px; font-weight: 800; line-height: 1.3; margin: 0 0 8px; color: #123832; }
+  .page-header p { font-size: 13.5px; line-height: 1.6; color: #45524D; margin: 0; max-width: 640px; }
+
+  /* ---------- category grid — full 11 + placeholder, 4 columns ---------- */
+  .category-section { padding: 22px 40px 44px; background: #FCFEFD; }
+  .category-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+  }
+  .cat-tile {
+    background: #FCFEFD; border: 1px solid #E3ECE9; border-radius: 12px;
+    padding: 20px 18px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .cat-tile .icon { width: 34px; height: 34px; border-radius: 8px; background: #0E7A6C; flex-shrink: 0; }
+  .cat-tile .name { font-size: 13.5px; font-weight: 700; color: #123832; line-height: 1.35; }
+  .cat-tile .desc { font-size: 12px; color: #45524D; line-height: 1.5; margin: 0; }
+
+  .cat-tile.placeholder {
+    background: transparent; border: 1.5px dashed #BFD4CE;
+    align-items: center; justify-content: center; text-align: center;
+    gap: 8px; min-height: 128px;
+  }
+  .cat-tile.placeholder .plus-icon {
+    width: 34px; height: 34px; border-radius: 8px; background: transparent;
+    border: 1.5px dashed #9FB8B1; color: #6E8983; font-size: 17px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cat-tile.placeholder .name { font-size: 12.5px; font-weight: 600; color: #6E8983; }
+  .cat-tile.placeholder .desc { font-size: 11px; color: #8AA29B; }
+
+  .footer-strip {
+    padding: 16px 30px; background: #0E7A6C; color: #E9F5F2; font-size: 11px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-strip .brand { font-weight: 800; color: #fff; }
+</style>
+</head>
+<body>
+
+  <div class="rationale">
+    <h1><span class="tag">Key Screen</span>Danh mục sản phẩm — trang tổng hợp danh mục</h1>
+    <p>Trang liệt kê đầy đủ 11 nhóm sản phẩm cùng lúc — điểm đến của link "Xem tất cả 11 nhóm sản phẩm →" từ dropdown nav và từ trang chủ. Khác với trang chủ (chỉ 6/11 nhóm nổi bật kèm link xem thêm), đây là lưới CMS-driven đầy đủ và linh hoạt: có thể thêm nhóm sản phẩm mới mà không cần sửa code — minh họa bằng thẻ viền đứt nét cuối lưới.</p>
+    <p><strong>Trạng thái hiển thị:</strong> lưới 4 cột ở độ rộng desktop, dùng đúng component <code>category-tile</code> (DESIGN.md) ở số lượng đầy đủ/linh hoạt thay vì bản rút gọn 6 thẻ của trang chủ.</p>
+  </div>
+
+  <div class="browser-frame">
+    <div class="browser-chrome">
+      <span class="dot" style="background:#FF5F57"></span>
+      <span class="dot" style="background:#FEBC2E"></span>
+      <span class="dot" style="background:#28C840"></span>
+      <span class="url">tbtruonghoc.com/san-pham</span>
+    </div>
+
+    <div class="nav-wrap">
+      <div class="nav">
+        <span class="logo">NGỌC ANH</span>
+        <nav class="main-links">
+          <a>Trang chủ</a>
+          <a>Giới thiệu</a>
+          <a class="current">Sản phẩm ▾</a>
+          <a>Tin tức</a>
+          <a>Liên hệ</a>
+        </nav>
+      </div>
+      <span class="contact-chip-float">Hotline 0909 123 456 · Zalo tư vấn</span>
+    </div>
+
+    <div class="breadcrumb">Trang chủ / <span class="current">Danh mục sản phẩm</span></div>
+
+    <div class="page-header">
+      <h1>Danh mục sản phẩm</h1>
+      <p>Toàn bộ 11 nhóm thiết bị trường học Ngọc Anh đang cung cấp — chọn một nhóm để xem sản phẩm chi tiết, thông số kỹ thuật và yêu cầu báo giá.</p>
+    </div>
+
+    <div class="category-section">
+      <div class="category-grid">
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Dù che nắng sân trường</div>
+          <p class="desc">Dù che, mái che di động cho sân chơi và khu vực tập thể dục ngoài trời.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Nội thất mầm non</div>
+          <p class="desc">Bàn ghế, tủ kệ, giường ngủ trưa dành riêng cho lớp học mầm non.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Quần áo nghi thức &amp; cờ đội</div>
+          <p class="desc">Trang phục nghi thức, cờ đội, phụ kiện phục vụ lễ chào cờ.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Thiết bị âm thanh – máy chiếu</div>
+          <p class="desc">Loa, micro, máy chiếu phục vụ giảng dạy và hội trường.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Bảng tương tác</div>
+          <p class="desc">Bảng thông minh tương tác cho lớp học ứng dụng công nghệ.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Màn hình LED hiển thị</div>
+          <p class="desc">Màn hình LED trong nhà và ngoài trời cho sự kiện, thông báo.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Thiết bị văn phòng</div>
+          <p class="desc">Bàn ghế, tủ hồ sơ, thiết bị văn phòng cho khối hành chính nhà trường.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Phòng thí nghiệm Lý – Hóa – Sinh</div>
+          <p class="desc">Dụng cụ, mô hình thí nghiệm Vật lý – Hóa học – Sinh học.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Bàn thí nghiệm</div>
+          <p class="desc">Bàn thí nghiệm chuyên dụng, mặt chịu hóa chất và chịu nhiệt.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Thiết bị – đồ dùng dạy học</div>
+          <p class="desc">Đồ dùng trực quan, học cụ hỗ trợ giảng dạy các môn học.</p>
+        </div>
+        <div class="cat-tile">
+          <div class="icon"></div>
+          <div class="name">Thiết bị mầm non ngoài trời</div>
+          <p class="desc">Đồ chơi vận động, thiết bị sân chơi ngoài trời cho trẻ mầm non.</p>
+        </div>
+        <div class="cat-tile placeholder">
+          <div class="plus-icon">+</div>
+          <div class="name">+ Thêm nhóm sản phẩm mới (qua CMS)</div>
+          <p class="desc">Minh họa: lưới không giới hạn ở 11 nhóm — không phải nút thật.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-strip">
+      <span class="brand">Ngọc Anh — Thiết Bị Trường Học</span>
+      <span>Zalo tư vấn · 0909 123 456 · info@tbtruonghoc.com</span>
+    </div>
+  </div>
+
+</body>
+</html>

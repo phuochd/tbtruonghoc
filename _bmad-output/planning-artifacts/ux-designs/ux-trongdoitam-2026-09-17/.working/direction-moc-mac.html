@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>trongdoitam.net — Hướng thiết kế: Mộc Mạc</title>
+<style>
+/*
+  HƯỚNG 1 — "MỘC MẠC" (Rustic Serif Editorial)
+  Bảng màu Mộc Trầm (đã chốt, không đổi):
+  --bg:            #F5EFE6
+  --surface:       #FFFFFF
+  --text:          #3A2E22
+  --text-muted:    #7A6A56
+  --primary:       #8B5A2B
+  --primary-text:  #FFFFFF
+  --secondary:     #A97142
+  --border:        #DCCFB8
+*/
+* { box-sizing: border-box; }
+:root{
+  --bg:#F5EFE6; --surface:#FFFFFF; --text:#3A2E22; --text-muted:#7A6A56;
+  --primary:#8B5A2B; --primary-text:#FFFFFF; --secondary:#A97142; --border:#DCCFB8;
+}
+body{
+  margin:0; padding:28px 16px 90px; background:#EAE4D8; color:var(--text);
+  font-family: Georgia, "Times New Roman", Cambria, serif;
+}
+.page-header{ max-width:900px; margin:0 auto 30px; }
+.page-header h1{ font-size:20px; margin:0 0 8px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
+.page-header p.rationale{ margin:0; font-size:14px; line-height:1.6; color:var(--text-muted); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; max-width:640px; }
+.page-header p.rationale strong{ color:var(--text); }
+
+.frames{ max-width:900px; margin:0 auto; display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; justify-content:center; }
+.frame-block{ text-align:center; }
+.frame-label{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:12px; color:#6B5D4D; margin:0 0 10px; font-weight:600; letter-spacing:.3px; }
+
+.phone{ width:352px; background:#211a13; border-radius:42px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,0.25); }
+.phone .notch{ width:90px; height:16px; background:#211a13; border-radius:0 0 12px 12px; margin:0 auto; position:relative; z-index:2; }
+.screen{ background:var(--bg); border-radius:30px; overflow:hidden; position:relative; }
+
+/* ---- shared nav / contact bar ---- */
+.nav{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 14px; }
+.nav .brand{ font-size:17px; font-weight:700; letter-spacing:.2px; }
+.nav .brand span{ color:var(--secondary); }
+.nav .burger{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:20px; color:var(--text); line-height:1; }
+
+.contact-bar{ display:flex; border-top:1px solid var(--border); background:var(--surface); }
+.contact-bar a{ flex:1; text-align:center; padding:12px 4px 10px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:11px; color:var(--text); text-decoration:none; border-right:1px solid var(--border); }
+.contact-bar a:last-child{ border-right:none; }
+.contact-bar .ic{ display:block; font-size:16px; margin-bottom:2px; }
+
+/* ---- hero ---- */
+.hero-photo{ margin:0 20px; aspect-ratio:4/5; border-radius:6px; background:
+  linear-gradient(160deg, var(--secondary) 0%, var(--primary) 55%, #5c3d1c 100%);
+  display:flex; align-items:flex-end; padding:18px; position:relative; }
+.hero-photo .tag{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; position:absolute; top:14px; left:14px; background:rgba(255,255,255,0.18); color:#fff; font-size:10px; padding:4px 9px; border-radius:999px; letter-spacing:.3px; }
+.hero-photo .cap{ color:#fff; font-size:34px; opacity:.9; }
+.hero-copy{ padding:22px 22px 6px; }
+.hero-copy h1{ font-size:26px; line-height:1.28; margin:0 0 12px; font-weight:400; }
+.hero-copy p{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:13.5px; line-height:1.7; color:var(--text-muted); margin:0 0 18px; }
+.hero-copy .link{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:13px; color:var(--primary); font-weight:600; text-decoration:none; border-bottom:1px solid var(--secondary); padding-bottom:2px; }
+
+.trust{ margin:26px 22px 0; padding-top:20px; border-top:1px solid var(--border); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:12px; color:var(--text-muted); line-height:1.6; }
+.trust strong{ color:var(--text); }
+
+/* ---- secondary: three lines, stacked, airy ---- */
+.section-title{ margin:34px 22px 4px; font-size:20px; font-weight:400; }
+.section-sub{ margin:0 22px 20px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:12.5px; color:var(--text-muted); }
+
+.line-item{ margin:0 22px 18px; padding:18px 18px; background:var(--surface); border:1px solid var(--border); border-radius:8px; }
+.line-item .row{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.line-item .ic{ font-size:20px; }
+.line-item h3{ margin:0; font-size:16px; font-weight:400; }
+.line-item .badge{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:9.5px; background:var(--secondary); color:#fff; padding:2px 7px; border-radius:999px; letter-spacing:.3px; }
+.line-item p{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; margin:0 0 12px; font-size:12.5px; color:var(--text-muted); line-height:1.6; }
+.line-item .cta-row{ display:flex; align-items:center; justify-content:space-between; }
+.line-item .price{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:12px; font-weight:700; }
+.line-item .price.muted{ font-weight:600; color:var(--text-muted); font-size:11px; }
+.line-item .cta{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:11px; font-weight:600; color:var(--primary-text); background:var(--primary); border:none; padding:8px 13px; border-radius:5px; }
+
+.quote{ margin:30px 22px 26px; padding-left:14px; border-left:3px solid var(--secondary); font-size:15px; font-style:italic; color:var(--text); line-height:1.6; }
+.quote span{ display:block; margin-top:8px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:11px; font-style:normal; color:var(--text-muted); }
+
+/* ---- nav-open state overlay ---- */
+.overlay{ position:absolute; inset:0; background:rgba(58,46,34,0.55); }
+.menu-panel{ position:absolute; top:0; right:0; bottom:0; width:78%; background:var(--surface); padding:20px 22px; }
+.menu-panel .close{ text-align:right; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:20px; color:var(--text-muted); margin-bottom:20px; }
+.menu-panel a{ display:block; padding:13px 0; border-bottom:1px solid var(--border); font-size:17px; color:var(--text); text-decoration:none; }
+.menu-panel .cta{ margin-top:20px; display:block; text-align:center; background:var(--primary); color:var(--primary-text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:13px; font-weight:600; padding:12px; border-radius:6px; text-decoration:none; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Hướng 1 — "Mộc Mạc" (Serif cổ điển, thoáng, ưu tiên câu chuyện nghệ nhân)</h1>
+  <p class="rationale"><strong>Vì sao:</strong> Bố cục thoáng, chữ serif mang chút cổ điển, đưa câu chuyện nghệ nhân lên ngay đầu trang — hợp với bác Thành, người cần cảm nhận uy tín và tay nghề trước khi liên hệ. Trang tĩnh tại, không gợi ý chuyển động hay hiệu ứng, giống nhịp điệu chậm rãi của một xưởng mộc lâu đời.</p>
+</div>
+
+<div class="frames">
+  <div class="frame-block">
+    <p class="frame-label">Trang chủ — mặc định</p>
+    <div class="phone"><div class="notch"></div><div class="screen">
+
+      <div class="nav">
+        <div class="brand">Trống <span>Đọi Tam</span></div>
+        <div class="burger">☰</div>
+      </div>
+
+      <div class="hero-photo">
+        <span class="tag">Làng nghề Đọi Tam, Hà Nam</span>
+        <span class="cap">🥁</span>
+      </div>
+
+      <div class="hero-copy">
+        <h1>Ba đời giữ lửa nghề trống</h1>
+        <p>Nghệ nhân Nguyễn Văn Cường — Chủ tịch Hội làng nghề trống Đọi Tam, đích thân kiểm định từng chiếc trống, từng thùng rượu, từng bồn tắm gỗ trước khi rời xưởng.</p>
+        <a class="link" href="#">Xem câu chuyện làng nghề →</a>
+      </div>
+
+      <div class="trust"><strong>Cam kết chất lượng:</strong> mỗi sản phẩm đều qua tay nghệ nhân kiểm định trực tiếp, không sản xuất đại trà.</div>
+
+      <div class="section-title">Ba dòng sản phẩm</div>
+      <p class="section-sub">Mỗi dòng một câu chuyện riêng, cùng một tay nghề gia truyền.</p>
+
+      <div class="line-item">
+        <div class="row"><span class="ic">🥁</span><h3>Trống Đọi Tam</h3></div>
+        <p>Trống trường học, trống múa lân, trống hội, trống thờ, trống chùa — làm theo đặt hàng, da trâu căng tay.</p>
+        <div class="cta-row"><span class="price muted">Liên hệ báo giá</span><button class="cta">Liên hệ báo giá</button></div>
+      </div>
+
+      <div class="line-item">
+        <div class="row"><span class="ic">🛢️</span><h3>Thùng rượu gỗ trang trí</h3><span class="badge">Quà Tết 2027</span></div>
+        <p>Thùng rượu gỗ sồi đánh bóng thủ công, phối chân ngựa kéo — sang trọng làm quà biếu Tết.</p>
+        <div class="cta-row"><span class="price">2.850.000₫</span><button class="cta">Đặt mua ngay</button></div>
+      </div>
+
+      <div class="line-item">
+        <div class="row"><span class="ic">🛁</span><h3>Bồn tắm gỗ</h3><span class="badge">Mới</span></div>
+        <p>Dòng sản phẩm mới của xưởng — gỗ tự nhiên xử lý chống thấm, đóng theo kích thước riêng.</p>
+        <div class="cta-row"><span class="price muted">Liên hệ tư vấn</span><button class="cta">Tìm hiểu thêm</button></div>
+      </div>
+
+      <p class="quote">"Bác cứ gọi Zalo, chú nghệ nhân xem ảnh thực tế trước rồi mới chốt."<span>— Hỗ trợ khách như bác Thành, thủ từ đình làng</span></p>
+
+      <div class="contact-bar">
+        <a><span class="ic">📞</span>Gọi ngay</a>
+        <a><span class="ic">💬</span>Zalo</a>
+        <a><span class="ic">📍</span>Bản đồ</a>
+      </div>
+
+    </div></div>
+  </div>
+
+  <div class="frame-block">
+    <p class="frame-label">Trạng thái: menu điều hướng mở</p>
+    <div class="phone"><div class="notch"></div><div class="screen">
+
+      <div class="nav">
+        <div class="brand">Trống <span>Đọi Tam</span></div>
+        <div class="burger">☰</div>
+      </div>
+      <div class="hero-photo">
+        <span class="tag">Làng nghề Đọi Tam, Hà Nam</span>
+        <span class="cap">🥁</span>
+      </div>
+
+      <div class="overlay"></div>
+      <div class="menu-panel">
+        <div class="close">✕</div>
+        <a href="#">Trống</a>
+        <a href="#">Thùng rượu gỗ</a>
+        <a href="#">Bồn tắm gỗ</a>
+        <a href="#">Câu chuyện nghệ nhân</a>
+        <a href="#">Liên hệ</a>
+        <a class="cta" href="#">💬 Chat Zalo ngay</a>
+      </div>
+
+    </div></div>
+  </div>
+</div>
+
+</body>
+</html>

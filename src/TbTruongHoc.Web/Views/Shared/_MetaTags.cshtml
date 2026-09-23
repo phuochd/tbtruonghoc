@@ -1,0 +1,42 @@
+@model Piranha.Models.IMeta
+@*
+    Hand-rolled equivalent of Piranha's own WebApp.MetaTags(Model) helper
+    (Piranha.AspNetCore.PiranhaHtmlExtensions.MetaTags, unfixed as of Piranha
+    12.0-12.2). That helper builds this markup via raw string
+    interpolation with no HTML-encoding of MetaKeywords/MetaDescription/
+    OgTitle/OgDescription - a `"` in an editor-entered Meta Description
+    breaks the surrounding content="..." attribute. Every value below is
+    emitted through ordinary Razor @@-expressions instead, which HTML-encode
+    by default, while keeping the exact same tags/conditions/fallback logic
+    as the original so no behavior changes beyond the escaping.
+*@
+@{
+    var metaTitle = !string.IsNullOrWhiteSpace(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var ogTitle = !string.IsNullOrWhiteSpace(Model.OgTitle) ? Model.OgTitle : metaTitle;
+    var ogDescription = !string.IsNullOrWhiteSpace(Model.OgDescription) ? Model.OgDescription : Model.MetaDescription;
+    var isStartPage = Model is Piranha.Models.PageBase page && page.IsStartPage;
+}
+<meta name="robots" content="@((Model.MetaIndex ? "index," : "noindex,") + (Model.MetaFollow ? "follow" : "nofollow"))">
+@if (!string.IsNullOrWhiteSpace(Model.MetaKeywords))
+{
+    <meta name="keywords" content="@Model.MetaKeywords">
+}
+@if (!string.IsNullOrWhiteSpace(Model.MetaDescription))
+{
+    <meta name="description" content="@Model.MetaDescription">
+}
+<meta name="generator" content="Piranha CMS @(Piranha.Utils.GetAssemblyVersion(typeof(Piranha.App).Assembly))">
+<meta property="og:type" content="@(isStartPage ? "website" : "article")"/>
+<meta property="og:title" content="@ogTitle"/>
+@if (Model.OgImage != null && Model.OgImage.HasValue)
+{
+    <meta property="og:image" content="@WebApp.AbsoluteContentUrl(Model.OgImage)"/>
+}
+else if (Model is Piranha.Models.RoutedContentBase contentBase && contentBase.PrimaryImage != null && contentBase.PrimaryImage.HasValue)
+{
+    <meta property="og:image" content="@WebApp.AbsoluteContentUrl(contentBase.PrimaryImage)"/>
+}
+@if (!string.IsNullOrWhiteSpace(ogDescription))
+{
+    <meta property="og:description" content="@ogDescription"/>
+}

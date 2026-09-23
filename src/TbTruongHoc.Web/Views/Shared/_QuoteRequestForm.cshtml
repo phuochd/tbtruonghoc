@@ -1,0 +1,60 @@
+@model TbTruongHoc.Web.Models.QuoteRequestFormViewModel
+@*
+    Story 1.4 (FR-3): general contact/quote-request form, embeddable on any
+    Page/Post via @@await Html.PartialAsync("_QuoteRequestForm", ...). Submits
+    client-side only (lead-form.js's fetch handler) to POST /api/leads - no
+    full-page reload or redirect on submit (a plain <form> here would be a
+    trap: this markup deliberately has no `action`/`method`, so a JS-disabled
+    visitor's Enter-key submit is a harmless no-op rather than a broken GET).
+
+    Hand-rolled, HTML-encoded-by-default Razor (ordinary @@-expressions), same
+    convention as _ContactBlock.cshtml/_MetaTags.cshtml - an editor- or
+    caller-supplied ProductOfInterest value must not break the surrounding
+    markup.
+
+    Each field is individually labeled (not placeholder-only) and its error
+    slot is wired via aria-describedby, so lead-form.js can announce a
+    validation failure in text adjacent to the invalid field - never
+    color-only - by filling that slot's textContent.
+*@
+@{
+    var formType = string.IsNullOrWhiteSpace(Model?.FormType) ? "general" : Model.FormType;
+    var productOfInterest = Model?.ProductOfInterest;
+}
+<div class="quote-request-form" data-quote-request-form>
+    <form novalidate>
+        <input type="hidden" name="formType" value="@formType">
+
+        <div class="mb-3">
+            <label for="quoteRequestName">Họ tên <span aria-hidden="true">*</span></label>
+            <input type="text" id="quoteRequestName" name="name" required
+                   aria-describedby="quoteRequestNameError" aria-invalid="false">
+            <span id="quoteRequestNameError" class="quote-request-form__error" role="alert"></span>
+        </div>
+
+        <div class="mb-3">
+            <label for="quoteRequestPhone">Số điện thoại <span aria-hidden="true">*</span></label>
+            <input type="tel" id="quoteRequestPhone" name="phone" required
+                   aria-describedby="quoteRequestPhoneError" aria-invalid="false">
+            <span id="quoteRequestPhoneError" class="quote-request-form__error" role="alert"></span>
+        </div>
+
+        <div class="mb-3">
+            <label for="quoteRequestProduct">Sản phẩm quan tâm</label>
+            <input type="text" id="quoteRequestProduct" name="productOfInterest" value="@productOfInterest"
+                   aria-describedby="quoteRequestProductError">
+            <span id="quoteRequestProductError" class="quote-request-form__error" role="alert"></span>
+        </div>
+
+        <div class="mb-3">
+            <label for="quoteRequestMessage">Lời nhắn</label>
+            <textarea id="quoteRequestMessage" name="message" rows="4"
+                      aria-describedby="quoteRequestMessageError"></textarea>
+            <span id="quoteRequestMessageError" class="quote-request-form__error" role="alert"></span>
+        </div>
+
+        <div class="quote-request-form__submit-error" role="alert"></div>
+
+        <button type="submit">Gửi yêu cầu</button>
+    </form>
+</div>

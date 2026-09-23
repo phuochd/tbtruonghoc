@@ -1,0 +1,15 @@
+# .NET build artifacts
+bin/
+obj/
+
+# Visual Studio
+.vs/
+
+# Rider / JetBrains
+.idea/
+
+# Piranha uploaded media (bind-mounted from docker-compose.yml)
+media/
+
+# Local secrets - see .env.example for the expected keys
+.env
