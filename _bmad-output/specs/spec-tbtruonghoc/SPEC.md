@@ -85,7 +85,7 @@ Thiết Bị Trường Học Ngọc Anh's institutional-equipment business is ne
 - Product taxonomy is modeled as Archive+Post (danh mục/blog); standalone content (landing pages, craftsman story page, homepage, category hub) is a standalone Page — no ad-hoc content modeling (AD-2).
 - Lead-form submissions (CAP-3, CAP-8) write to one shared custom `FormSubmission` table plus a Piranha Manager extension — never Piranha's built-in Comment feature (AD-3).
 - All redirects, same-domain and cross-domain, route through Piranha's native Alias/AliasRouter — no custom middleware (AD-4); cross-domain aliases into Site B are created only after Site B's URL structure is frozen.
-- Stack is forced to .NET 8 + Piranha CMS 12.2.0 + MariaDB 10.11 LTS, self-hosted on CentOS Stream 9 — Piranha does not yet cross-compile for .NET 10 (architecture-spine has the full stack table and the .NET 8 EOL 2026-11-10 risk).
+- Stack is forced to .NET 8 + Piranha CMS 12.0.0 + MariaDB 10.11 LTS, self-hosted on CentOS Stream 9 — Piranha does not yet cross-compile for .NET 10 (architecture-spine has the full stack table and the .NET 8 EOL 2026-11-10 risk).
 - Site B is prioritized ahead of Site A; Site A proceeds in parallel where capacity allows but yields to Site B whenever the two compete for build time, because only Site B carries a fixed external deadline.
 - Cross-site linking (CAP-5) must stay editorial/contextual only, never a sitewide or reciprocal link block — common ownership of both domains is WHOIS/hosting-discoverable, and heavy reciprocal linking between commonly-owned domains is a Google link-scheme/PBN risk pattern.
 - Site A's installation-required products (e.g. dù che nắng) are serviceable only Miền Bắc through Thanh Hóa; shippable products on both sites serve nationwide.

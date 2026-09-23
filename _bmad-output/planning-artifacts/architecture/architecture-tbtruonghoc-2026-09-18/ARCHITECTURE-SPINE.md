@@ -95,8 +95,8 @@ graph LR
 
 | Name | Version |
 | --- | --- |
-| .NET | 8 — forced choice: Piranha 12.2.0 doesn't cross-compile for .NET 10 yet (see Deferred) |
-| Piranha CMS | 12.2.0 |
+| .NET | 8 — forced choice: Piranha 12.0.0 (the version actually pinned in this repo's packages) doesn't cross-compile for .NET 10 yet (see Deferred) |
+| Piranha CMS | 12.0.0 (the actual pinned/installed version — a later 12.2.0 exists on NuGet but was never adopted here) |
 | Piranha.Templates (scaffold: `piranha.mvc`) | 12.0.0 |
 | Piranha.Data.EF.MySql | 12.0.0 (built on Pomelo.EntityFrameworkCore.MySql — package name says "MySql" but both officially target MariaDB too, via Pomelo's `MariaDbServerVersion`) |
 | Database | MariaDB 10.11 LTS (supported into Feb 2028; ships as a CentOS Stream 9 AppStream module, no extra repo needed) |
@@ -170,7 +170,7 @@ erDiagram
 
 ## Deferred
 
-- **.NET 8 EOL risk:** .NET 8 and .NET 9 both reach End of Support on 2026-11-10 (Microsoft, confirmed) — under two months from this spine's authoring date. .NET 8 is pinned only because Piranha 12.2.0 does not yet cross-compile for .NET 10 (the current LTS, supported to Nov 2028). Track Piranha's net10.0 support and upgrade as soon as it ships; running an EOL runtime in production past Nov 2026 is a real, near-term operational risk, not a hypothetical one.
+- **.NET 8 EOL risk:** .NET 8 and .NET 9 both reach End of Support on 2026-11-10 (Microsoft, confirmed) — under two months from this spine's authoring date. .NET 8 is pinned only because Piranha 12.0.0 does not yet cross-compile for .NET 10 (the current LTS, supported to Nov 2028). Track Piranha's net10.0 support and upgrade as soon as it ships; running an EOL runtime in production past Nov 2026 is a real, near-term operational risk, not a hypothetical one.
 - **Staging/CI-CD/monitoring:** local dev is Docker-based (see Consistency Conventions), but staging and production deployment automation are not fixed here — deployment currently assumes a single production host, reached by some not-yet-decided path from a developer's Docker-based local environment. Revisit once a staging environment or automated deploy pipeline is wanted.
 - **Site C (trongngocanh.com):** joins as a third `Site` record under AD-1 when built; its own content/feature scope is untouched here (explicitly out of PRD phase-1 scope).
 - **Per-site user/content-type restriction:** Piranha's multi-site is single-tenant under the hood (confirmed: shared media library, all users see all sites). Fine while Phuoc is sole admin; revisit if a second editor needs Site-B-only access.

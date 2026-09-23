@@ -81,7 +81,7 @@ NFR-8: Editorial cross-site linking (FR-5) must never scale into an automated, s
 - **Redirects via Piranha's native Alias (AD-4)**: all 301/302 redirects (same-domain Site A restructuring and cross-domain legacy trống URLs → trongdoitam.net) use `IApi.Aliases`/`AliasRouter`, scoped (`SiteId`) to the site where the OLD URL lived. Cross-domain aliases are created only after Site B's final URL/slug structure is frozen.
 - **Pricing model split (AD-5)**: the Product Post Type carries an optional, flexible price field (blank / exact value / range / "từ X"); the Landing Page Type separately carries its own repeatable variant+price region for structured multi-variant paid pricing. A catalog product must never be modeled as a Landing Page instance merely to display a price.
 - **Per-site settings singleton**: a single `SiteSettings` SiteType (one instance per Piranha `Site`) holds GA4 measurement ID/Search Console verification (FR-4) and phone/Zalo/Maps contact details (FR-2) — every view reads from it, neither is ever hardcoded per-view.
-- **Stack**: .NET 8, Piranha CMS 12.2.0, Piranha.Templates (`piranha.mvc` scaffold) 12.0.0, Piranha.Data.EF.MySql 12.0.0 (Pomelo, `MariaDbServerVersion`), MariaDB 10.11 LTS, CentOS Stream 9 self-hosted. `.NET 8 reaches End of Support 2026-11-10 — track Piranha's net10.0 support and upgrade as soon as it ships; flagged as a near-term operational risk, not fixed in phase 1 scope.`
+- **Stack**: .NET 8, Piranha CMS 12.0.0, Piranha.Templates (`piranha.mvc` scaffold) 12.0.0, Piranha.Data.EF.MySql 12.0.0 (Pomelo, `MariaDbServerVersion`), MariaDB 10.11 LTS, CentOS Stream 9 self-hosted. `.NET 8 reaches End of Support 2026-11-10 — track Piranha's net10.0 support and upgrade as soon as it ships; flagged as a near-term operational risk, not fixed in phase 1 scope.`
 - **Legacy content migration**: content for all categories/lines on both sites must be migrated and rewritten to SEO standard from the legacy tbtruonghoc.com content as the starting dataset (delivery task, not an end-user-facing FR) — see addendum.md's legacy nav/sub-category audit and the two proven organic-search pages (bo-dong-phuc-nghi-thuc-doi, cac-loai-co) whose intent-matching content should be preserved in rewritten copy.
 - **Build sequencing**: Site B is prioritized ahead of Site A because of its fixed external Tết Âm Lịch 2027 (~mid-February 2027) deadline; Site A proceeds in parallel where capacity allows but yields to Site B when the two compete for build time. This is a priority ordering, not a fixed schedule — it should shape epic/story sequencing.
 
@@ -226,7 +226,7 @@ So that both site builds share one platform from day one instead of diverging in
 
 **Acceptance Criteria:**
 
-**Given** a fresh `piranha.mvc` scaffold (Piranha 12.2.0, .NET 8, Piranha.Data.EF.MySql 12.0.0)
+**Given** a fresh `piranha.mvc` scaffold (Piranha 12.0.0, .NET 8, Piranha.Data.EF.MySql 12.0.0)
 **When** the application starts against a MariaDB 10.11 database
 **Then** two `Site` records exist — one for `tbtruonghoc` (marked `IsDefault`), one for `trongdoitam.net`
 **And** a request to each site's hostname resolves to its own `Site` record, not a shared/ambiguous default.
@@ -315,6 +315,8 @@ So that I can ask for pricing without making a phone call first.
 **When** it renders
 **Then** each field is individually labeled (not placeholder-text-only) and, on a validation failure, the error is announced in text adjacent to the invalid field — never conveyed by color alone.
 
+> **Implementation note (2026-09-23, correct-course):** the "email notification" AC above is realized by Story 1.7, not this story. Story 1.4's shipped scope is the form + `FormSubmission` storage + inline confirmation only — the email send was split out at spec time (token-budget gate) and tracked separately.
+
 ### Story 1.5: Quản lý lead trong Piranha Manager (AD-3)
 
 As a sales/ops user,
@@ -354,6 +356,146 @@ So that I can measure each site's SEO performance independently.
 **Given** an editor needs to change a site's GA4 ID or Search Console verification value
 **When** they update it in `SiteSettings`
 **Then** the change takes effect without a code deploy.
+
+### Story 1.7: Thông báo email khi có lead mới (FR-3, AD-3)
+
+As a sales/ops user,
+I want to receive an email the moment a new lead comes in,
+So that I can follow up quickly without needing to check Piranha Manager proactively.
+
+**Acceptance Criteria:**
+
+**Given** a shared `IFormNotificationService` (single implementation, single outbound email/SMTP configuration — never per-form ad hoc SMTP/API calls)
+**When** a new `FormSubmission` row is created, from either form_type ("general" or "survey"), on either site
+**Then** an email notification is sent to the configured recipient(s) for that submission's site, containing the submission's key fields (site, form type, name, phone, product of interest/message, and location/service-area flag when present).
+
+**Given** the email send fails (SMTP unavailable, misconfigured, or any transient error)
+**When** the failure occurs
+**Then** the `FormSubmission` row itself is unaffected (already committed) and the visitor's inline success confirmation is unaffected — the failure is logged only, never retried inline, never surfaced to the visitor (fail-open, per the 2026-09-22 decision recorded in deferred-work.md).
+
+**Given** the notification recipient
+**When** a site needs a different recipient than the other
+**Then** the recipient address is configurable per site (via `SiteSettings` or equivalent), not hardcoded.
+
+**Given** no SMTP credentials or config keys currently exist in the repo
+**When** this story is implemented
+**Then** SMTP/API credentials are read from environment/`.env`-sourced configuration, never hardcoded — consistent with the existing connection-string pattern.
+
+### Story 1.8: Site switcher dạng tab trong Piranha Manager (AD-1)
+
+As an editor managing pages across both Site A and Site B,
+I want each Piranha Site to appear as its own tab in Manager's page list,
+So that I always know how many sites exist and never have to scroll through one site's pages to reach the other's.
+
+**Acceptance Criteria:**
+
+**Given** the configured Piranha `Site` records (currently Site A and Site B)
+**When** an editor opens Manager's page list
+**Then** each Site appears as its own tab, labeled with the site's name, and the number of tabs always matches the number of configured Sites — no manual tab configuration required when a Site is added or removed.
+
+**Given** an editor is viewing one Site's tab
+**When** the page list renders
+**Then** it shows only that Site's pages — pages belonging to other Sites never appear in the list, and no cross-site scrolling is required to reach them.
+
+**Given** an editor switches tabs
+**When** they select a different Site's tab
+**Then** the page list updates to that Site's pages without a full page reload.
+
+**Given** this replaces Piranha's stock site-switcher dropdown on the page-list screen
+**When** implemented
+**Then** the dropdown is replaced (not left alongside the tabs) so there is exactly one site-selection control, not two conflicting ones.
+
+**Out of scope (explicit):** search/filter of pages within a single site's tab — deferred separately; this story only isolates each site's pages into its own tab.
+
+> **Implementation note (2026-09-23, correct-course):** Piranha's stock page-list view is core Manager UI, not an explicit custom-extension point like Story 1.5's Leads module was — confirm during spec-writing whether this needs a Manager UI override rather than a clean add-on module.
+
+### Story 1.9: [SECURITY] Sửa lỗ hổng bypass validation khi lưu SiteSettings qua Piranha Manager + dọn dữ liệu test rác
+
+As a site admin,
+I want the existing Zalo/Maps/GA4/Search-Console save-time safety checks (added in Story 1.3/1.6) to actually apply when I save SiteSettings through Piranha Manager's own UI,
+So that an unsafe URL scheme or script value can never persist, not only when application code happens to save a strongly-typed object directly.
+
+**Acceptance Criteria:**
+
+**Given** the `App.Hooks.SiteContent.RegisterOnBeforeSave` hook registered in `Program.cs`
+**When** SiteSettings is saved via Piranha Manager's built-in UI — which always constructs and saves a `DynamicSiteContent` (confirmed by decompiling `Piranha.Manager.Services.SiteService.SaveContent()`: it always calls `_api.Sites.SaveContentAsync(model.Id, dynamicSiteContent)` with a `DynamicSiteContent` instance, never the app's own `SiteSettings` POCO)
+**Then** the hook still runs its Zalo/Maps/GA4/SearchConsoleVerification checks, reading field values from `DynamicSiteContent.Regions` (an `IDictionary<string, object>`) — not only from the current `model is not SiteSettings settings` path, which always short-circuits for real Manager saves.
+
+**Given** a value that fails validation is submitted through Manager (e.g. `javascript:alert(1)` in Zalo URL, `data:text/html,<script>...` in Maps URL)
+**When** save is attempted
+**Then** it is rejected with the same error behavior as today's `SiteSettings`-typed path, and no partial/poisoned save occurs.
+
+**Given** the existing `SiteSettingsTests` suite (11 tests, currently all passing but only exercising the strongly-typed direct-save path)
+**When** this fix lands
+**Then** equivalent test coverage is added that exercises the actual Manager `SaveContent`/`DynamicSiteContent` path directly, so a future refactor can't silently reintroduce this bypass.
+
+**Given** the shared dev MariaDB currently holds ~105 GUID-suffixed test-debris `Page` rows (e.g. `contact-test-a-...`, `maps-test-...`) mixed into Manager's real page list, left behind because integration tests (`SiteSettingsTests`, `PerPageSeoFieldsTests`, etc.) create real pages via `CreatePublishedPageAsync` but only ever restore the `SiteSettings`/field values they mutated, never delete the pages they create
+**When** this story is implemented
+**Then** the existing test-debris rows are deleted from the shared dev database, and the test suite itself is fixed (each test deletes the page(s) it created in a `finally` block, or the suite points at an isolated/throwaway database instead of the shared dev one) so future `dotnet test` runs stop adding new debris.
+
+> **Root-cause note (2026-09-23, correct-course):** Found live during this session — Phước reported still saving `javascript:...`/script values into Zalo/Maps URL via Manager despite Story 1.3/1.6's hook existing in code. "Stale process" was ruled out (restarted the app fresh from current source, still reproduced) and "poisoned legacy data" was ruled out separately (two invalid placeholder GA4 values — `"xxxxxxxxxx"`/`"yyyyyyyyyyy"` — found and cleared from the dev DB, unrelated to this bug). Decompiling `Piranha.Manager.dll` (via `ilspycmd`) confirmed the true cause: Manager always saves a `DynamicSiteContent`, and the hook's type-check (`model is not SiteSettings settings`) always returns early for that type, so validation never actually runs for real Manager-driven saves — only for the app's own direct-save code path, which is exactly what `SiteSettingsTests` exercises (hence all 11 tests pass while the live bug persists). **This is a live, currently-exploitable gap in already-`done` Story 1.3/1.6 work — recommend picking this up ahead of Stories 1.7/1.8 despite the story number.**
+
+### Story 1.10: GA4 script an toàn — chặn theo môi trường & cookie-consent gate trước go-live
+
+As the business owner,
+I want the GA4 tracking script to never fire real events outside production, and to ask visitor consent before firing at all,
+So that dev/staging testing never pollutes real analytics data, and the sites handle visitor tracking consent responsibly before launch.
+
+**Acceptance Criteria:**
+
+**Given** `_Analytics.cshtml` currently renders the gtag.js snippet identically regardless of `ASPNETCORE_ENVIRONMENT`
+**When** the environment is anything other than Production (e.g. Development, Staging)
+**Then** the GA4 script does not render/fire at all, even if a real GA4 Measurement ID has been entered in that environment's `SiteSettings` — env-gated in code, not left to an operational rule someone has to remember.
+
+**Given** a visitor loads any page on either site in Production
+**When** the page renders, before any analytics event fires
+**Then** a cookie-consent gate is presented, and GA4's gtag.js only fires after the visitor consents — no pageview or event is sent pre-consent.
+
+**Given** a visitor declines or has not yet responded to the consent gate
+**When** they browse the site
+**Then** no GA4 request is ever sent for that session until/unless they later consent.
+
+> **Decision note (2026-09-23, correct-course):** Both items were open product decisions in `deferred-work.md` from Story 1.6's code review — Phước decided both: env-gate in code (not just a runbook note), and yes to a consent gate before go-live (not a hard legal requirement for these Vietnamese SMB sites, but chosen as the safer default).
+
+### Story 1.11: Smoke-test script — MariaDB restart/recovery
+
+As a developer maintaining this platform,
+I want an automated (if non-xUnit) check that the app survives a MariaDB restart without creating duplicate Site rows,
+So that the live-recovery behavior verified once by hand during Story 1.1 stays verified going forward, not just trusted from memory.
+
+**Acceptance Criteria:**
+
+**Given** the running app and its `mariadb` Docker Compose service
+**When** the `mariadb` container is stopped and restarted (simulating a live outage/recovery)
+**Then** a script (`.ps1`/`.sh`, run outside normal `dotnet test` cadence — not inside the shared-DB xUnit suite) confirms the app reconnects and continues serving without manual intervention.
+
+**Given** the app reconnects after the database comes back
+**When** the script inspects the `Piranha_Sites` table
+**Then** it confirms exactly the expected `Site` rows exist — no duplicates were created during the outage/recovery cycle.
+
+> **Context (2026-09-23, correct-course):** `DockerComposeConfigTests` already statically guards the compose YAML (image pin, `depends_on: service_healthy`, `restart: unless-stopped`, volumes) but never exercises the live retry/recovery path — that was manually verified once during Story 1.1's implementation but never automated, since tearing down the shared dev MariaDB mid-suite would break other integration tests sharing it in the same run. A separate script sidesteps that conflict.
+
+### Story 1.12: Xác nhận & sửa hiệu ứng nháy màn hình rỗng ở Leads Manager
+
+As a sales/ops user opening the Leads screen in Piranha Manager,
+I want the list to never flash an incorrect "no leads yet" message before real data loads,
+So that I don't briefly think there are no leads when there actually are.
+
+**Acceptance Criteria:**
+
+**Given** the Leads Manager screen (`Leads.cshtml`/`manager-leads.js`) on first load, before `/manager/api/lead/list` resolves
+**When** a developer manually verifies (click-through in Manager, ideally throttled to a slow connection to make any flash visible)
+**Then** it is confirmed whether the empty-state message ("Chưa có khách để lại thông tin nào.") ever renders before the fetch resolves.
+
+**Given** the flash is confirmed real
+**When** fixed
+**Then** `Leads.cshtml`'s `v-if="items.length !== 0"` gets a proper loading-state check (e.g. don't show the empty-state branch until `loading` is false AND the first fetch has completed), so the empty state only ever renders when there are genuinely zero leads.
+
+**Given** the flash is confirmed NOT to happen (e.g. Piranha's own `.app:not(.ready)` CSS convention already hides content until ready)
+**When** this story is picked up
+**Then** the story is closed with that finding recorded — no code change needed, just confirmation.
+
+> **Context (2026-09-23, correct-course):** Found during Story 1.5's code review; couldn't be confirmed either way at the time since Piranha Manager's compiled CSS wasn't source-browsable in that session. Note: `ilspycmd` (a decompiler) is now known to be available in this dev environment (used to root-cause Story 1.9) — could also be used to inspect Piranha's compiled Manager CSS/JS for the `.app:not(.ready)` rule instead of relying solely on a manual click-through.
 
 ## Epic 2: Site B — Danh mục sản phẩm & Câu chuyện nghệ nhân
 

@@ -1,6 +1,6 @@
 # tbtruonghoc — Piranha multi-site platform
 
-One Piranha CMS 12.2.0 (.NET 8) instance serving two sites from a single
+One Piranha CMS 12.0.0 (.NET 8) instance serving two sites from a single
 database:
 
 - **Site A** — `tbtruonghoc` (default site)
