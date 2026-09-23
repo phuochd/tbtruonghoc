@@ -6,16 +6,15 @@ using Piranha.Models;
 namespace TbTruongHoc.Web.Models;
 
 /// <summary>
-/// Story 1.3: per-site contact details (FR-2). One instance of this
-/// <see cref="SiteType"/> exists per Piranha <see cref="Site"/> (Site A and
-/// Site B each get their own) - never hardcode these values in a view.
-/// Auto-discovered by the existing <c>ContentTypeBuilder(...).AddAssembly(...).Build()</c>
-/// call in Program.cs, same as <see cref="StandardPage"/> is for pages, and
-/// edited through Piranha Manager's built-in per-site settings UI - no
-/// custom Manager module needed.
-///
-/// Story 1.6 (GA4/Search Console) extends this same <see cref="SiteType"/>
-/// with its own fields later - treat it as one shared model, not two.
+/// Story 1.3: per-site contact details (FR-2). Story 1.6 (FR-4) extends the
+/// same type with GA4/Search Console fields - one shared model, not two.
+/// One instance of this <see cref="SiteType"/> exists per Piranha
+/// <see cref="Site"/> (Site A and Site B each get their own) - never
+/// hardcode these values in a view. Auto-discovered by the existing
+/// <c>ContentTypeBuilder(...).AddAssembly(...).Build()</c> call in
+/// Program.cs, same as <see cref="StandardPage"/> is for pages, and edited
+/// through Piranha Manager's built-in per-site settings UI - no custom
+/// Manager module needed.
 /// </summary>
 [SiteType(Title = "Site settings")]
 public class SiteSettings : SiteContent<SiteSettings>
@@ -31,4 +30,10 @@ public class SiteSettings : SiteContent<SiteSettings>
 
     [Region(Title = "Maps URL", Description = "Link that opens this location in Google Maps (share/directions link), e.g. https://maps.google.com/?q=... - not an embed/iframe URL.")]
     public StringField MapsUrl { get; set; }
+
+    [Region(Title = "GA4 Measurement ID", Description = "This site's own Google Analytics 4 measurement ID, e.g. G-XXXXXXXXXX. Leave blank to disable analytics on this site - no tracking script is emitted while empty.")]
+    public StringField Ga4MeasurementId { get; set; }
+
+    [Region(Title = "Search Console Verification", Description = "The value Google Search Console's HTML-tag verification method gives you - paste only the content value from <meta name=\"google-site-verification\" content=\"...\">, not the whole tag. Leave blank to omit the tag.")]
+    public StringField SearchConsoleVerification { get; set; }
 }

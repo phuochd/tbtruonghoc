@@ -144,20 +144,31 @@ app.UsePiranha(options =>
         var zaloUnsafe = !string.IsNullOrWhiteSpace(settings.ZaloUrl?.Value) && !SiteSettingsValidation.IsSafeAbsoluteUrl(settings.ZaloUrl.Value);
         var mapsUnsafe = !string.IsNullOrWhiteSpace(settings.MapsUrl?.Value) && !SiteSettingsValidation.IsSafeAbsoluteUrl(settings.MapsUrl.Value);
 
-        if (!zaloUnsafe && !mapsUnsafe)
+        // Story 1.6 (FR-4): same defense-in-depth for the GA4/verification
+        // fields _Analytics.cshtml embeds directly into an inline <script>
+        // and an attribute - a value crafted to break out of either must
+        // never persist.
+        var ga4Unsafe = !string.IsNullOrWhiteSpace(settings.Ga4MeasurementId?.Value) && !SiteSettingsValidation.IsValidGa4MeasurementId(settings.Ga4MeasurementId.Value);
+        var verificationUnsafe = !string.IsNullOrWhiteSpace(settings.SearchConsoleVerification?.Value) && !SiteSettingsValidation.IsValidSearchConsoleVerification(settings.SearchConsoleVerification.Value);
+
+        if (!zaloUnsafe && !mapsUnsafe && !ga4Unsafe && !verificationUnsafe)
         {
             return;
         }
 
         // Evict the poisoned in-memory copy (see siteContentCache's comment
-        // above) so the next read - Manager's own or _ContactBlock.cshtml's -
-        // falls back to the last valid, still-unmodified DB row instead of
-        // this in-place-mutated object.
+        // above) so the next read - Manager's own or _ContactBlock.cshtml's/
+        // _Analytics.cshtml's - falls back to the last valid, still-
+        // unmodified DB row instead of this in-place-mutated object.
         siteContentCache?.RemoveAsync($"SiteContent_{model.Id}").GetAwaiter().GetResult();
 
         throw new ValidationException(zaloUnsafe
             ? "Zalo URL must be a valid http:// or https:// link."
-            : "Maps URL must be a valid http:// or https:// link.");
+            : mapsUnsafe
+                ? "Maps URL must be a valid http:// or https:// link."
+                : ga4Unsafe
+                    ? "GA4 Measurement ID must look like G-XXXXXXXXXX (letters/digits only)."
+                    : "Search Console Verification must contain only letters, digits, '-' or '_'.");
     });
 
     // Build content types
