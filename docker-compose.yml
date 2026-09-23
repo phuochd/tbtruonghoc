@@ -18,21 +18,5 @@ services:
       retries: 20
       start_period: 30s
 
-  piranha-app:
-    build:
-      context: .
-      dockerfile: src/TbTruongHoc.Web/Dockerfile
-    restart: unless-stopped
-    depends_on:
-      mariadb:
-        condition: service_healthy
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__piranha: "server=mariadb;port=3306;database=${MARIADB_DATABASE};uid=${MARIADB_USER};password=${MARIADB_PASSWORD}"
-    ports:
-      - "8091:8080"
-    volumes:
-      - ./media:/app/wwwroot/uploads
-
 volumes:
   mariadb-data:
