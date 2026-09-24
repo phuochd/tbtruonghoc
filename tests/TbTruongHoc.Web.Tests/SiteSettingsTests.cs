@@ -830,7 +830,8 @@ public class SiteSettingsTests
     /// Captures every field value a test could mutate, so they can be
     /// restored afterward - this suite shares one real, persistent database
     /// with every other test class in <see cref="PiranhaAppCollection"/> (see
-    /// its own doc comment). All six fields are captured, not just the four
+    /// its own doc comment). Every field is captured (including Story 1.7's
+    /// NotificationEmails), not just the four
     /// the contact-block tests touch, so a single restore call is always
     /// enough.
     /// </summary>
@@ -843,7 +844,8 @@ public class SiteSettingsTests
             settings?.Address?.Value,
             settings?.MapsUrl?.Value,
             settings?.Ga4MeasurementId?.Value,
-            settings?.SearchConsoleVerification?.Value);
+            settings?.SearchConsoleVerification?.Value,
+            settings?.NotificationEmails?.Value);
     }
 
     private static async Task RestoreAsync(IApi api, Guid siteId, SiteSettingsSnapshot original)
@@ -856,6 +858,7 @@ public class SiteSettingsTests
             s.MapsUrl = original.MapsUrl;
             s.Ga4MeasurementId = original.Ga4MeasurementId;
             s.SearchConsoleVerification = original.SearchConsoleVerification;
+            s.NotificationEmails = original.NotificationEmails;
         });
     }
 
@@ -865,7 +868,8 @@ public class SiteSettingsTests
         string? Address,
         string? MapsUrl,
         string? Ga4MeasurementId,
-        string? SearchConsoleVerification);
+        string? SearchConsoleVerification,
+        string? NotificationEmails);
 
     /// <summary>
     /// See <see cref="PerPageSeoFieldsTests.HostnameOf"/> - reads the site's

@@ -11,6 +11,7 @@ using Piranha.Manager.Editor;
 using Piranha.Models;
 using TbTruongHoc.Web.Data;
 using TbTruongHoc.Web.Models;
+using TbTruongHoc.Web.Notifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +63,17 @@ builder.AddPiranha(options =>
     options.LoginUrl = "login";
      */
 });
+
+// Story 1.7 (FR-3, AD-3): the one shared lead-notification pipeline. The
+// controller only ever sees IFormNotificationService (a non-blocking queue);
+// the hosted worker drains it and sends through the single SMTP sender, whose
+// settings come from the "Smtp" section (user-secrets in dev, Smtp__* env
+// vars in prod - never committed).
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
+builder.Services.AddSingleton<FormNotificationService>();
+builder.Services.AddSingleton<IFormNotificationService>(sp => sp.GetRequiredService<FormNotificationService>());
+builder.Services.AddSingleton<INotificationEmailSender, SmtpNotificationEmailSender>();
+builder.Services.AddHostedService<FormNotificationWorker>();
 
 var app = builder.Build();
 
@@ -141,14 +153,19 @@ app.UsePiranha(options =>
         // GA4/verification fields _Analytics.cshtml embeds directly into an
         // inline <script> and an attribute - a value crafted to break out of
         // either must never persist.
-        void RejectUnsafeValues(string? zalo, string? maps, string? ga4, string? verification)
+        //
+        // Story 1.7 added NotificationEmails: every comma/semicolon-separated
+        // entry must be a plain address (no display name, no CR/LF), so a
+        // Manager-entered value can never inject extra mail headers.
+        void RejectUnsafeValues(string? zalo, string? maps, string? ga4, string? verification, string? notificationEmails)
         {
             var zaloUnsafe = !string.IsNullOrWhiteSpace(zalo) && !SiteSettingsValidation.IsSafeAbsoluteUrl(zalo);
             var mapsUnsafe = !string.IsNullOrWhiteSpace(maps) && !SiteSettingsValidation.IsSafeAbsoluteUrl(maps);
             var ga4Unsafe = !string.IsNullOrWhiteSpace(ga4) && !SiteSettingsValidation.IsValidGa4MeasurementId(ga4);
             var verificationUnsafe = !string.IsNullOrWhiteSpace(verification) && !SiteSettingsValidation.IsValidSearchConsoleVerification(verification);
+            var notificationEmailsUnsafe = !string.IsNullOrWhiteSpace(notificationEmails) && !SiteSettingsValidation.IsValidNotificationEmailList(notificationEmails);
 
-            if (!zaloUnsafe && !mapsUnsafe && !ga4Unsafe && !verificationUnsafe)
+            if (!zaloUnsafe && !mapsUnsafe && !ga4Unsafe && !verificationUnsafe && !notificationEmailsUnsafe)
             {
                 return;
             }
@@ -168,7 +185,9 @@ app.UsePiranha(options =>
                     ? "Maps URL must be a valid http:// or https:// link."
                     : ga4Unsafe
                         ? "GA4 Measurement ID must look like G-XXXXXXXXXX (letters/digits only)."
-                        : "Search Console Verification must contain only letters, digits, '.', '-', '_', '=' or '+'.");
+                        : verificationUnsafe
+                            ? "Search Console Verification must contain only letters, digits, '.', '-', '_', '=' or '+'."
+                            : "Notification emails must be plain email addresses (e.g. sales@example.vn), separated by commas or semicolons.");
         }
 
         if (model is SiteSettings settings)
@@ -177,7 +196,8 @@ app.UsePiranha(options =>
                 settings.ZaloUrl?.Value,
                 settings.MapsUrl?.Value,
                 settings.Ga4MeasurementId?.Value,
-                settings.SearchConsoleVerification?.Value);
+                settings.SearchConsoleVerification?.Value,
+                settings.NotificationEmails?.Value);
         }
         else if (model is DynamicSiteContent dyn)
         {
@@ -199,7 +219,8 @@ app.UsePiranha(options =>
                 Raw(nameof(SiteSettings.ZaloUrl)),
                 Raw(nameof(SiteSettings.MapsUrl)),
                 Raw(nameof(SiteSettings.Ga4MeasurementId)),
-                Raw(nameof(SiteSettings.SearchConsoleVerification)));
+                Raw(nameof(SiteSettings.SearchConsoleVerification)),
+                Raw(nameof(SiteSettings.NotificationEmails)));
         }
     });
 

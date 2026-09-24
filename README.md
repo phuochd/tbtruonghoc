@@ -88,6 +88,40 @@ The Piranha Manager is at `/manager` (credentials are seeded by Piranha's
 default identity seed on first run — see the console output on first
 startup for the generated admin login).
 
+## Lead email notifications (SMTP)
+
+Every new lead (`POST /api/leads`, any form type) sends one plain-text email
+to the addresses in that site's **Notification emails** field (Manager >
+Settings for the site; separate several with `,` or `;`). A blank field means
+no email for that site - there is no global fallback recipient.
+
+Sending is queued in the background and fail-open: the visitor always gets
+the normal confirmation, and SMTP failures are only logged (never retried).
+Manager's Leads screen stays the source of truth.
+
+SMTP settings live in the `Smtp` section, which ships empty in
+`appsettings.json`. If `Smtp:Host` or `Smtp:FromAddress` is blank, emails are
+skipped with a logged warning.
+
+Dev (user-secrets):
+
+```
+dotnet user-secrets set "Smtp:Host" "smtp.example.com" --project src/TbTruongHoc.Web
+dotnet user-secrets set "Smtp:Port" "587" --project src/TbTruongHoc.Web
+dotnet user-secrets set "Smtp:Username" "<user>" --project src/TbTruongHoc.Web
+dotnet user-secrets set "Smtp:Password" "<password>" --project src/TbTruongHoc.Web
+dotnet user-secrets set "Smtp:FromAddress" "no-reply@example.com" --project src/TbTruongHoc.Web
+dotnet user-secrets set "Smtp:FromName" "Website" --project src/TbTruongHoc.Web
+```
+
+Prod (environment variables): `Smtp__Host`, `Smtp__Port`, `Smtp__Username`,
+`Smtp__Password`, `Smtp__FromAddress`, `Smtp__FromName`. Leave `Username`
+blank for an unauthenticated relay. TLS is required, with no cleartext
+fallback: the relay, authenticated or not, must offer implicit TLS on port
+465 or STARTTLS on any other port. A plaintext-only relay is not supported:
+every lead email to it fails (the failure is logged, and the lead is still
+saved).
+
 ## Running tests
 
 `tests/TbTruongHoc.Web.Tests` boots the real app in-process against the real
