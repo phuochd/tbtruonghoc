@@ -67,20 +67,27 @@ public class PerPageSeoFieldsTests
         page.Published = DateTime.Now;
         await api.Pages.SaveAsync(page);
 
-        var saved = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
-        Assert.NotNull(saved);
+        try
+        {
+            var saved = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
+            Assert.NotNull(saved);
 
-        var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
+            var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
 
-        Assert.Contains($"<title>{metaTitle}</title>", html);
-        Assert.Contains(MetaDescriptionTag(metaDescription), html);
+            Assert.Contains($"<title>{metaTitle}</title>", html);
+            Assert.Contains(MetaDescriptionTag(metaDescription), html);
 
-        // Story 1.4 (FR-3): the quote-request form and its JS handler must
-        // actually render on every published Page - not just compile - so
-        // this feature can't silently disappear from the page while every
-        // other test here stays green.
-        Assert.Contains("data-quote-request-form", html);
-        Assert.Contains("lead-form.js", html);
+            // Story 1.4 (FR-3): the quote-request form and its JS handler must
+            // actually render on every published Page - not just compile - so
+            // this feature can't silently disappear from the page while every
+            // other test here stays green.
+            Assert.Contains("data-quote-request-form", html);
+            Assert.Contains("lead-form.js", html);
+        }
+        finally
+        {
+            await api.Pages.DeleteAsync(page.Id);
+        }
     }
 
     [Fact]
@@ -111,16 +118,23 @@ public class PerPageSeoFieldsTests
         page.Published = DateTime.Now;
         await api.Pages.SaveAsync(page);
 
-        var saved = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
-        Assert.NotNull(saved);
+        try
+        {
+            var saved = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
+            Assert.NotNull(saved);
 
-        var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
+            var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
 
-        Assert.Contains($"<title>{System.Net.WebUtility.HtmlEncode(metaTitle)}</title>", html);
-        Assert.Contains(MetaDescriptionTag(System.Net.WebUtility.HtmlEncode(metaDescription)), html);
-        // The raw, unescaped characters must never appear literally where
-        // they would break the surrounding markup/attribute.
-        Assert.DoesNotContain($"content=\"{metaDescription}\"", html);
+            Assert.Contains($"<title>{System.Net.WebUtility.HtmlEncode(metaTitle)}</title>", html);
+            Assert.Contains(MetaDescriptionTag(System.Net.WebUtility.HtmlEncode(metaDescription)), html);
+            // The raw, unescaped characters must never appear literally where
+            // they would break the surrounding markup/attribute.
+            Assert.DoesNotContain($"content=\"{metaDescription}\"", html);
+        }
+        finally
+        {
+            await api.Pages.DeleteAsync(page.Id);
+        }
     }
 
     [Fact]
@@ -143,12 +157,19 @@ public class PerPageSeoFieldsTests
         page.Published = DateTime.Now;
         await api.Pages.SaveAsync(page);
 
-        var saved = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
-        Assert.NotNull(saved);
+        try
+        {
+            var saved = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
+            Assert.NotNull(saved);
 
-        var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
+            var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
 
-        Assert.Contains($"<title>{title}</title>", html);
+            Assert.Contains($"<title>{title}</title>", html);
+        }
+        finally
+        {
+            await api.Pages.DeleteAsync(page.Id);
+        }
     }
 
     [Fact]
@@ -171,38 +192,45 @@ public class PerPageSeoFieldsTests
         page.Published = DateTime.Now;
         await api.Pages.SaveAsync(page);
 
-        var afterFirstPublish = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
-        Assert.NotNull(afterFirstPublish);
-        var oldPermalink = afterFirstPublish!.Permalink;
+        try
+        {
+            var afterFirstPublish = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
+            Assert.NotNull(afterFirstPublish);
+            var oldPermalink = afterFirstPublish!.Permalink;
 
-        var oldHtml = await GetHtmlAsync(oldPermalink, HostnameOf(site));
-        Assert.Contains($"<title>{title}</title>", oldHtml);
+            var oldHtml = await GetHtmlAsync(oldPermalink, HostnameOf(site));
+            Assert.Contains($"<title>{title}</title>", oldHtml);
 
-        // Editor changes the slug post-publish.
-        afterFirstPublish.Slug = newSlug;
-        await api.Pages.SaveAsync(afterFirstPublish);
+            // Editor changes the slug post-publish.
+            afterFirstPublish.Slug = newSlug;
+            await api.Pages.SaveAsync(afterFirstPublish);
 
-        var afterSlugChange = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
-        Assert.NotNull(afterSlugChange);
-        var newPermalink = afterSlugChange!.Permalink;
-        Assert.NotEqual(oldPermalink, newPermalink);
+            var afterSlugChange = await api.Pages.GetByIdAsync<StandardPage>(page.Id);
+            Assert.NotNull(afterSlugChange);
+            var newPermalink = afterSlugChange!.Permalink;
+            Assert.NotEqual(oldPermalink, newPermalink);
 
-        var newHtml = await GetHtmlAsync(newPermalink, HostnameOf(site));
-        Assert.Contains($"<title>{title}</title>", newHtml);
+            var newHtml = await GetHtmlAsync(newPermalink, HostnameOf(site));
+            Assert.Contains($"<title>{title}</title>", newHtml);
 
-        // The story's AC only requires the new slug to resolve and internal
-        // links (Sitemap-driven, never hardcoded) to keep resolving - it
-        // does not require the old slug to stop working, and this repo has
-        // no redirect/alias mechanism yet (that's Epic 8/AD-4's scope, not
-        // this story's). What the old slug itself does now is out of scope
-        // here and deliberately not asserted.
+            // The story's AC only requires the new slug to resolve and internal
+            // links (Sitemap-driven, never hardcoded) to keep resolving - it
+            // does not require the old slug to stop working, and this repo has
+            // no redirect/alias mechanism yet (that's Epic 8/AD-4's scope, not
+            // this story's). What the old slug itself does now is out of scope
+            // here and deliberately not asserted.
 
-        // Piranha's own Sitemap (the mechanism _Layout.cshtml's nav reads,
-        // never a hardcoded link) must reflect the new URL, not the old one.
-        var sitemap = await api.Sites.GetSitemapAsync(site.Id, false);
-        var sitemapItem = FindById(sitemap, page.Id);
-        Assert.NotNull(sitemapItem);
-        Assert.Equal(newPermalink, sitemapItem!.Permalink);
+            // Piranha's own Sitemap (the mechanism _Layout.cshtml's nav reads,
+            // never a hardcoded link) must reflect the new URL, not the old one.
+            var sitemap = await api.Sites.GetSitemapAsync(site.Id, false);
+            var sitemapItem = FindById(sitemap, page.Id);
+            Assert.NotNull(sitemapItem);
+            Assert.Equal(newPermalink, sitemapItem!.Permalink);
+        }
+        finally
+        {
+            await api.Pages.DeleteAsync(page.Id);
+        }
     }
 
     [Fact]
@@ -214,39 +242,43 @@ public class PerPageSeoFieldsTests
 
         var suffix = Guid.NewGuid().ToString("N");
 
-        var blog = await api.Pages.CreateAsync<StandardArchive>();
-        blog.SiteId = site.Id;
-        blog.SortOrder = NonStartPageSortOrder;
-        blog.Title = $"SEO Test Blog {suffix}";
-        blog.Slug = $"seo-test-blog-{suffix}";
-        blog.Published = DateTime.Now;
-        await api.Pages.SaveAsync(blog);
-
         var metaTitle = $"SEO Post Meta Title {suffix}";
         var metaDescription = $"SEO post meta description for automated test {suffix}.";
 
-        var post = await api.Posts.CreateAsync<StandardPost>();
-        post.BlogId = blog.Id;
-        post.Category = "General";
-        post.Title = $"SEO Test Post {suffix}";
-        post.MetaTitle = metaTitle;
-        post.MetaDescription = metaDescription;
-        post.Slug = $"seo-test-post-{suffix}";
-        post.Published = DateTime.Now;
-        await api.Posts.SaveAsync(post);
+        StandardArchive? blog = null;
+        StandardPost? post = null;
 
-        var saved = await api.Posts.GetByIdAsync<StandardPost>(post.Id);
-        Assert.NotNull(saved);
+        try
+        {
+            blog = await CreatePublishedBlogAsync(api, site, suffix);
 
-        var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
+            post = await api.Posts.CreateAsync<StandardPost>();
+            post.BlogId = blog.Id;
+            post.Category = "General";
+            post.Title = $"SEO Test Post {suffix}";
+            post.MetaTitle = metaTitle;
+            post.MetaDescription = metaDescription;
+            post.Slug = $"seo-test-post-{suffix}";
+            post.Published = DateTime.Now;
+            await api.Posts.SaveAsync(post);
 
-        Assert.Contains($"<title>{metaTitle}</title>", html);
-        Assert.Contains(MetaDescriptionTag(metaDescription), html);
+            var saved = await api.Posts.GetByIdAsync<StandardPost>(post.Id);
+            Assert.NotNull(saved);
 
-        // Story 1.4 (FR-3): same on-page-delivery guard as the Page test
-        // above, for StandardPost's own template.
-        Assert.Contains("data-quote-request-form", html);
-        Assert.Contains("lead-form.js", html);
+            var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
+
+            Assert.Contains($"<title>{metaTitle}</title>", html);
+            Assert.Contains(MetaDescriptionTag(metaDescription), html);
+
+            // Story 1.4 (FR-3): same on-page-delivery guard as the Page test
+            // above, for StandardPost's own template.
+            Assert.Contains("data-quote-request-form", html);
+            Assert.Contains("lead-form.js", html);
+        }
+        finally
+        {
+            await DeleteBlogAndPostAsync(api, blog, post);
+        }
     }
 
     [Fact]
@@ -258,32 +290,36 @@ public class PerPageSeoFieldsTests
 
         var suffix = Guid.NewGuid().ToString("N");
 
-        var blog = await api.Pages.CreateAsync<StandardArchive>();
-        blog.SiteId = site.Id;
-        blog.SortOrder = NonStartPageSortOrder;
-        blog.Title = $"SEO Test Blog {suffix}";
-        blog.Slug = $"seo-test-blog-{suffix}";
-        blog.Published = DateTime.Now;
-        await api.Pages.SaveAsync(blog);
-
         var title = $"Post Fallback Title {suffix}";
 
-        var post = await api.Posts.CreateAsync<StandardPost>();
-        post.BlogId = blog.Id;
-        post.Category = "General";
-        post.Title = title;
-        // MetaTitle deliberately left empty - Views/Cms/Post.cshtml must
-        // fall back to Model.Title, same as Page.cshtml.
-        post.Slug = $"seo-post-fallback-{suffix}";
-        post.Published = DateTime.Now;
-        await api.Posts.SaveAsync(post);
+        StandardArchive? blog = null;
+        StandardPost? post = null;
 
-        var saved = await api.Posts.GetByIdAsync<StandardPost>(post.Id);
-        Assert.NotNull(saved);
+        try
+        {
+            blog = await CreatePublishedBlogAsync(api, site, suffix);
 
-        var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
+            post = await api.Posts.CreateAsync<StandardPost>();
+            post.BlogId = blog.Id;
+            post.Category = "General";
+            post.Title = title;
+            // MetaTitle deliberately left empty - Views/Cms/Post.cshtml must
+            // fall back to Model.Title, same as Page.cshtml.
+            post.Slug = $"seo-post-fallback-{suffix}";
+            post.Published = DateTime.Now;
+            await api.Posts.SaveAsync(post);
 
-        Assert.Contains($"<title>{title}</title>", html);
+            var saved = await api.Posts.GetByIdAsync<StandardPost>(post.Id);
+            Assert.NotNull(saved);
+
+            var html = await GetHtmlAsync(saved!.Permalink, HostnameOf(site));
+
+            Assert.Contains($"<title>{title}</title>", html);
+        }
+        finally
+        {
+            await DeleteBlogAndPostAsync(api, blog, post);
+        }
     }
 
     [Fact]
@@ -295,6 +331,48 @@ public class PerPageSeoFieldsTests
 
         var suffix = Guid.NewGuid().ToString("N");
 
+        var title = $"Post Slug Change Test {suffix}";
+        var oldSlug = $"seo-post-old-slug-{suffix}";
+        var newSlug = $"seo-post-new-slug-{suffix}";
+
+        StandardArchive? blog = null;
+        StandardPost? post = null;
+
+        try
+        {
+            blog = await CreatePublishedBlogAsync(api, site, suffix);
+
+            post = await api.Posts.CreateAsync<StandardPost>();
+            post.BlogId = blog.Id;
+            post.Category = "General";
+            post.Title = title;
+            post.Slug = oldSlug;
+            post.Published = DateTime.Now;
+            await api.Posts.SaveAsync(post);
+
+            var afterFirstPublish = await api.Posts.GetByIdAsync<StandardPost>(post.Id);
+            Assert.NotNull(afterFirstPublish);
+
+            // Editor changes the slug post-publish.
+            afterFirstPublish!.Slug = newSlug;
+            await api.Posts.SaveAsync(afterFirstPublish);
+
+            var afterSlugChange = await api.Posts.GetByIdAsync<StandardPost>(post.Id);
+            Assert.NotNull(afterSlugChange);
+            var newPermalink = afterSlugChange!.Permalink;
+            Assert.NotEqual(afterFirstPublish.Permalink, newPermalink);
+
+            var newHtml = await GetHtmlAsync(newPermalink, HostnameOf(site));
+            Assert.Contains($"<title>{title}</title>", newHtml);
+        }
+        finally
+        {
+            await DeleteBlogAndPostAsync(api, blog, post);
+        }
+    }
+
+    private static async Task<StandardArchive> CreatePublishedBlogAsync(IApi api, Site site, string suffix)
+    {
         var blog = await api.Pages.CreateAsync<StandardArchive>();
         blog.SiteId = site.Id;
         blog.SortOrder = NonStartPageSortOrder;
@@ -302,33 +380,24 @@ public class PerPageSeoFieldsTests
         blog.Slug = $"seo-test-blog-{suffix}";
         blog.Published = DateTime.Now;
         await api.Pages.SaveAsync(blog);
+        return blog;
+    }
 
-        var title = $"Post Slug Change Test {suffix}";
-        var oldSlug = $"seo-post-old-slug-{suffix}";
-        var newSlug = $"seo-post-new-slug-{suffix}";
-
-        var post = await api.Posts.CreateAsync<StandardPost>();
-        post.BlogId = blog.Id;
-        post.Category = "General";
-        post.Title = title;
-        post.Slug = oldSlug;
-        post.Published = DateTime.Now;
-        await api.Posts.SaveAsync(post);
-
-        var afterFirstPublish = await api.Posts.GetByIdAsync<StandardPost>(post.Id);
-        Assert.NotNull(afterFirstPublish);
-
-        // Editor changes the slug post-publish.
-        afterFirstPublish!.Slug = newSlug;
-        await api.Posts.SaveAsync(afterFirstPublish);
-
-        var afterSlugChange = await api.Posts.GetByIdAsync<StandardPost>(post.Id);
-        Assert.NotNull(afterSlugChange);
-        var newPermalink = afterSlugChange!.Permalink;
-        Assert.NotEqual(afterFirstPublish.Permalink, newPermalink);
-
-        var newHtml = await GetHtmlAsync(newPermalink, HostnameOf(site));
-        Assert.Contains($"<title>{title}</title>", newHtml);
+    /// <summary>
+    /// Post deleted before its parent blog Page - Piranha's own FK
+    /// relationship between a Post and its owning blog archive Page. Either
+    /// may be null when creation failed partway through.
+    /// </summary>
+    private static async Task DeleteBlogAndPostAsync(IApi api, StandardArchive? blog, StandardPost? post)
+    {
+        if (post != null)
+        {
+            await api.Posts.DeleteAsync(post.Id);
+        }
+        if (blog != null)
+        {
+            await api.Pages.DeleteAsync(blog.Id);
+        }
     }
 
     private static string MetaDescriptionTag(string metaDescription) =>

@@ -9,20 +9,21 @@ namespace TbTruongHoc.Web.Tests;
 /// ("docker compose up on a clean checkout"). This test only guards the
 /// *configuration* that makes the described resilience behavior possible -
 /// it is a regression check against someone accidentally loosening the
-/// pinned image tag, dropping the healthcheck gate, or losing the media/DB
-/// volumes - not a live test of the actual crash/retry/recovery behavior
+/// pinned image tag, dropping the healthcheck, or losing the database
+/// volume - not a live test of the actual crash/retry/recovery behavior
 /// itself.
 ///
-/// The live behavior (mariadb not ready yet -> piranha-app retries/waits
-/// rather than permanently crash-looping; media persists across a real
-/// container restart) is deliberately NOT exercised here. Simulating it
-/// faithfully means stopping/restarting the shared docker-compose "mariadb"
-/// container that this same test run's other integration tests
-/// (HostnameResolutionTests, SiteSeedIdempotencyTests) depend on, waiting out
-/// real healthcheck/retry timers (many tens of seconds), and asserting on
-/// Docker's own "restart: unless-stopped" policy rather than any code this
-/// story wrote - see the final task report for the full rationale for
-/// leaving that part manual/ops-verified.
+/// Only mariadb runs under Compose: the app itself is started with
+/// `dotnet run` against the Compose-exposed port, so there is no app
+/// service here to assert a depends_on gate or a media mount on.
+///
+/// The live behavior (the app reconnecting after mariadb restarts, data
+/// surviving a real container restart) is deliberately NOT exercised here.
+/// Simulating it faithfully means stopping/restarting the shared
+/// docker-compose "mariadb" container that this same test run's other
+/// integration tests (HostnameResolutionTests, SiteSeedIdempotencyTests)
+/// depend on, and waiting out real healthcheck/retry timers (many tens of
+/// seconds) - that belongs in a standalone script outside this suite.
 /// </summary>
 public class DockerComposeConfigTests
 {
@@ -36,45 +37,42 @@ public class DockerComposeConfigTests
     }
 
     [Fact]
-    public void PiranhaApp_Waits_For_MariaDb_Healthcheck_Before_Starting()
+    public void MariaDb_Exposes_A_Healthcheck_Callers_Can_Wait_On()
     {
         var compose = ReadDockerComposeYaml();
-
-        // depends_on with condition: service_healthy is what makes a *clean*
-        // `docker compose up` wait for mariadb's healthcheck instead of racing
-        // it - the first half of matrix row 5's requirement.
-        Assert.Contains("condition: service_healthy", compose);
-
         var mariadbSection = ExtractServiceBlock(compose, "mariadb:");
+
+        // `docker compose up -d mariadb` only reports "healthy" once this
+        // healthcheck passes, which is what a developer (and Story 1.11's
+        // recovery script) waits on before starting the app against it.
         Assert.Contains("healthcheck:", mariadbSection);
         Assert.Contains("retries:", mariadbSection);
     }
 
     [Fact]
-    public void PiranhaApp_Has_Restart_Policy_So_It_Does_Not_Permanently_Crash_Loop()
+    public void MariaDb_Has_Restart_Policy_So_It_Comes_Back_After_A_Restart()
     {
         var compose = ReadDockerComposeYaml();
-        var appSection = ExtractServiceBlock(compose, "piranha-app:");
+        var mariadbSection = ExtractServiceBlock(compose, "mariadb:");
 
-        // If mariadb becomes unavailable *after* piranha-app has already
-        // started (i.e. outside the depends_on gate), this restart policy is
-        // what makes the container come back instead of staying dead - it
-        // must not be "no" or missing.
-        Assert.Contains("restart: unless-stopped", appSection);
+        // If the container or the Docker daemon goes down, this policy is
+        // what brings the database back instead of leaving it dead - it must
+        // not be "no" or missing.
+        Assert.Contains("restart: unless-stopped", mariadbSection);
     }
 
     [Fact]
-    public void Media_And_Database_Data_Persist_Via_Mounted_Volumes()
+    public void Database_Data_Persists_Via_A_Mounted_Volume()
     {
         var compose = ReadDockerComposeYaml();
 
         var mariadbSection = ExtractServiceBlock(compose, "mariadb:");
         Assert.Contains("mariadb-data:/var/lib/mysql", mariadbSection);
 
-        var appSection = ExtractServiceBlock(compose, "piranha-app:");
-        Assert.Contains("./media:/app/wwwroot/uploads", appSection);
-
-        Assert.Contains("mariadb-data:", compose);
+        // The named volume must also be declared at the top level, or the
+        // mount above silently becomes an anonymous volume that a
+        // `docker compose down` discards along with the database.
+        Assert.Matches(@"(?m)^volumes:\s*$(\s|\S)*?^\s+mariadb-data:", compose);
     }
 
     private static string ReadDockerComposeYaml()

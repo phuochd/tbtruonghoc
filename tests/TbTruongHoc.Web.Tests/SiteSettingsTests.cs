@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
@@ -6,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Piranha;
+using Piranha.Extend.Fields;
 using Piranha.Models;
 using TbTruongHoc.Web.Data;
 using TbTruongHoc.Web.Models;
@@ -61,6 +63,9 @@ public class SiteSettingsTests
         var phoneA = $"090 111 0000 {suffix[..4]}";
         var phoneB = $"090 222 0000 {suffix[..4]}";
 
+        StandardPage? pageA = null;
+        StandardPage? pageB = null;
+
         try
         {
             await SaveSettingsAsync(api, siteA.Id, s =>
@@ -78,8 +83,8 @@ public class SiteSettingsTests
                 s.MapsUrl = $"https://maps.google.com/?q=siteB-{suffix}";
             });
 
-            var pageA = await CreatePublishedPageAsync(api, siteA, $"Contact Test A {suffix}", $"contact-test-a-{suffix}");
-            var pageB = await CreatePublishedPageAsync(api, siteB, $"Contact Test B {suffix}", $"contact-test-b-{suffix}");
+            pageA = await CreatePublishedPageAsync(api, siteA, $"Contact Test A {suffix}", $"contact-test-a-{suffix}");
+            pageB = await CreatePublishedPageAsync(api, siteB, $"Contact Test B {suffix}", $"contact-test-b-{suffix}");
 
             var htmlA = await GetHtmlAsync(pageA.Permalink, HostnameOf(siteA));
             var htmlB = await GetHtmlAsync(pageB.Permalink, HostnameOf(siteB));
@@ -110,8 +115,18 @@ public class SiteSettingsTests
         }
         finally
         {
+            // Settings restored before the page deletes: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, siteA.Id, originalA);
             await RestoreAsync(api, siteB.Id, originalB);
+            if (pageA != null)
+            {
+                await api.Pages.DeleteAsync(pageA.Id);
+            }
+            if (pageB != null)
+            {
+                await api.Pages.DeleteAsync(pageB.Id);
+            }
         }
     }
 
@@ -132,11 +147,13 @@ public class SiteSettingsTests
         // convention would do to any other value with encodable characters).
         var displayPhone = $"+84 (090) 123-{suffix}";
 
+        StandardPage? page = null;
+
         try
         {
             await SaveSettingsAsync(api, site.Id, s => s.Phone = displayPhone);
 
-            var page = await CreatePublishedPageAsync(api, site, $"Phone Test {suffix}", $"phone-test-{suffix}");
+            page = await CreatePublishedPageAsync(api, site, $"Phone Test {suffix}", $"phone-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
             // A leading "+" (internationally-formatted number) must survive
@@ -160,7 +177,13 @@ public class SiteSettingsTests
         }
         finally
         {
+            // Settings restored before the page delete: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, site.Id, original);
+            if (page != null)
+            {
+                await api.Pages.DeleteAsync(page.Id);
+            }
         }
     }
 
@@ -173,6 +196,8 @@ public class SiteSettingsTests
         var original = await SnapshotAsync(api, site.Id);
 
         var suffix = Guid.NewGuid().ToString("N")[..6];
+
+        StandardPage? page = null;
 
         try
         {
@@ -187,7 +212,7 @@ public class SiteSettingsTests
                 s.MapsUrl = string.Empty;
             });
 
-            var page = await CreatePublishedPageAsync(api, site, $"Garbage Phone Test {suffix}", $"garbage-phone-test-{suffix}");
+            page = await CreatePublishedPageAsync(api, site, $"Garbage Phone Test {suffix}", $"garbage-phone-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
             Assert.DoesNotContain("contact-block", html);
@@ -195,7 +220,13 @@ public class SiteSettingsTests
         }
         finally
         {
+            // Settings restored before the page delete: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, site.Id, original);
+            if (page != null)
+            {
+                await api.Pages.DeleteAsync(page.Id);
+            }
         }
     }
 
@@ -254,6 +285,228 @@ public class SiteSettingsTests
         }
     }
 
+    // --- Story 1.9 (security fix): Piranha Manager's built-in UI never saves
+    // SiteSettings as the strongly-typed POCO above - it always round-trips
+    // a DynamicSiteContent built from the same stored regions (see
+    // App.Hooks.SiteContent.RegisterOnBeforeSave in Program.cs). The facts
+    // above only ever exercise the app's own typed SaveSettingsAsync path,
+    // so they passed even while the real Manager save path stayed wide
+    // open. These facts save through a real DynamicSiteContent - loaded and
+    // saved the same way Manager's own save path does - to prove the fix
+    // and guard against the bypass reopening.
+
+    [Fact]
+    public async Task Manager_Save_Path_Rejects_Unsafe_Zalo_Url_Via_DynamicSiteContent()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var safeZalo = "https://zalo.me/still-safe-after-rejected-manager-save";
+
+        try
+        {
+            // Known-safe baseline saved through the typed path, so the
+            // rejected Manager-shaped save below can be proven not to have
+            // overwritten it.
+            await SaveSettingsAsync(api, site.Id, s => s.ZaloUrl = safeZalo);
+
+            var dyn = await LoadDynamicContentAsync(api, site.Id);
+            SetRegionValue(dyn, nameof(SiteSettings.ZaloUrl), "javascript:alert(1)");
+
+            var rejection = await Assert.ThrowsAsync<ValidationException>(() => api.Sites.SaveContentAsync(site.Id, dyn));
+            // Same message the typed path produces - the two paths must not
+            // drift into reporting the same fault differently.
+            Assert.Equal("Zalo URL must be a valid http:// or https:// link.", rejection.Message);
+
+            var afterRejectedSave = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.Equal(safeZalo, afterRejectedSave!.ZaloUrl?.Value);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Manager_Save_Path_Rejects_Unsafe_Maps_Url_Via_DynamicSiteContent()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var safeMaps = "https://maps.google.com/?q=still-safe-after-rejected-manager-save";
+
+        try
+        {
+            await SaveSettingsAsync(api, site.Id, s => s.MapsUrl = safeMaps);
+
+            var dyn = await LoadDynamicContentAsync(api, site.Id);
+            SetRegionValue(dyn, nameof(SiteSettings.MapsUrl), "data:text/html,<script>alert(1)</script>");
+
+            var rejection = await Assert.ThrowsAsync<ValidationException>(() => api.Sites.SaveContentAsync(site.Id, dyn));
+            Assert.Equal("Maps URL must be a valid http:// or https:// link.", rejection.Message);
+
+            var afterRejectedSave = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.Equal(safeMaps, afterRejectedSave!.MapsUrl?.Value);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Manager_Save_Path_Rejects_Malformed_Ga4_Id_Via_DynamicSiteContent()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        const string safeGa4Id = "G-STILLSAFE1";
+
+        try
+        {
+            await SaveSettingsAsync(api, site.Id, s => s.Ga4MeasurementId = safeGa4Id);
+
+            var dyn = await LoadDynamicContentAsync(api, site.Id);
+            // Below the "G-" + 4-char minimum length floor - a truncated/
+            // mistyped paste, same shape as AnalyticsSearchConsoleTests's
+            // typed-path regression fact.
+            SetRegionValue(dyn, nameof(SiteSettings.Ga4MeasurementId), "G-X");
+
+            var rejection = await Assert.ThrowsAsync<ValidationException>(() => api.Sites.SaveContentAsync(site.Id, dyn));
+            Assert.Equal("GA4 Measurement ID must look like G-XXXXXXXXXX (letters/digits only).", rejection.Message);
+
+            var afterRejectedSave = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.Equal(safeGa4Id, afterRejectedSave!.Ga4MeasurementId?.Value);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Manager_Save_Path_Rejects_Invalid_Search_Console_Verification_Via_DynamicSiteContent()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        const string safeVerification = "still-safe-after-rejected-manager-save";
+
+        try
+        {
+            await SaveSettingsAsync(api, site.Id, s => s.SearchConsoleVerification = safeVerification);
+
+            var dyn = await LoadDynamicContentAsync(api, site.Id);
+            SetRegionValue(dyn, nameof(SiteSettings.SearchConsoleVerification), "\"><script>alert(1)</script>");
+
+            var rejection = await Assert.ThrowsAsync<ValidationException>(() => api.Sites.SaveContentAsync(site.Id, dyn));
+            Assert.Equal("Search Console Verification must contain only letters, digits, '.', '-', '_', '=' or '+'.", rejection.Message);
+
+            var afterRejectedSave = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.Equal(safeVerification, afterRejectedSave!.SearchConsoleVerification?.Value);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Manager_Save_Path_Accepts_Valid_Values_Via_DynamicSiteContent()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        var suffix = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+        var validZalo = $"https://zalo.me/manager-valid-{suffix}";
+        var validMaps = $"https://maps.google.com/?q=manager-valid-{suffix}";
+        var validGa4 = $"G-{suffix}AAAA";
+        var validVerification = $"manager-valid-verify-{suffix}";
+
+        try
+        {
+            var dyn = await LoadDynamicContentAsync(api, site.Id);
+            SetRegionValue(dyn, nameof(SiteSettings.ZaloUrl), validZalo);
+            SetRegionValue(dyn, nameof(SiteSettings.MapsUrl), validMaps);
+            SetRegionValue(dyn, nameof(SiteSettings.Ga4MeasurementId), validGa4);
+            SetRegionValue(dyn, nameof(SiteSettings.SearchConsoleVerification), validVerification);
+
+            // No exception - a real Manager save of valid values must
+            // succeed exactly as the typed path already does.
+            await api.Sites.SaveContentAsync(site.Id, dyn);
+
+            var afterSave = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.Equal(validZalo, afterSave!.ZaloUrl?.Value);
+            Assert.Equal(validMaps, afterSave.MapsUrl?.Value);
+            Assert.Equal(validGa4, afterSave.Ga4MeasurementId?.Value);
+            Assert.Equal(validVerification, afterSave.SearchConsoleVerification?.Value);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
+    [Fact]
+    public async Task Manager_Save_Path_Treats_Empty_Or_Missing_Fields_As_Unset_Via_DynamicSiteContent()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var original = await SnapshotAsync(api, site.Id);
+
+        try
+        {
+            // Seed known-valid values first, so an empty/whitespace/absent
+            // value below can only be explained by the "always accepted"
+            // rule, not by there being nothing to validate either way.
+            await SaveSettingsAsync(api, site.Id, s =>
+            {
+                s.ZaloUrl = "https://zalo.me/before-clearing";
+                s.MapsUrl = "https://maps.google.com/?q=before-clearing";
+                s.Ga4MeasurementId = "G-BEFORECLEAR1";
+            });
+
+            var dyn = await LoadDynamicContentAsync(api, site.Id);
+            // Empty string, per the matrix's "field empty" case.
+            SetRegionValue(dyn, nameof(SiteSettings.ZaloUrl), string.Empty);
+            // Whitespace-only, the other half of the "empty/whitespace is
+            // always accepted" rule - IsNullOrWhiteSpace is what implements
+            // both, so neither should reach a validator.
+            SetRegionValue(dyn, nameof(SiteSettings.MapsUrl), "   ");
+            // Region key entirely absent from Regions, per the matrix's
+            // "region key missing from Regions" case - RemoveRegion actually
+            // removes the dictionary entry, not just blanking its value.
+            RemoveRegion(dyn, nameof(SiteSettings.Ga4MeasurementId));
+
+            // No exception - all three must be treated as unset, not validated.
+            await api.Sites.SaveContentAsync(site.Id, dyn);
+
+            var afterSave = await api.Sites.GetContentByIdAsync<SiteSettings>(site.Id);
+            Assert.True(string.IsNullOrEmpty(afterSave!.ZaloUrl?.Value));
+            Assert.True(string.IsNullOrWhiteSpace(afterSave.MapsUrl?.Value));
+            // An absent region is not part of the save payload at all, so its
+            // stored value is left exactly as it was. What matters here is
+            // that the hook accepted the save rather than validating a field
+            // that was never submitted.
+            Assert.Equal("G-BEFORECLEAR1", afterSave.Ga4MeasurementId?.Value);
+        }
+        finally
+        {
+            await RestoreAsync(api, site.Id, original);
+        }
+    }
+
     [Fact]
     public async Task ZaloUrl_Renders_As_A_Direct_Link_With_No_Rewriting()
     {
@@ -265,18 +518,26 @@ public class SiteSettingsTests
         var suffix = Guid.NewGuid().ToString("N")[..6];
         var zaloUrl = $"https://zalo.me/{suffix}";
 
+        StandardPage? page = null;
+
         try
         {
             await SaveSettingsAsync(api, site.Id, s => s.ZaloUrl = zaloUrl);
 
-            var page = await CreatePublishedPageAsync(api, site, $"Zalo Test {suffix}", $"zalo-test-{suffix}");
+            page = await CreatePublishedPageAsync(api, site, $"Zalo Test {suffix}", $"zalo-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
             Assert.Contains($"href=\"{zaloUrl}\"", html);
         }
         finally
         {
+            // Settings restored before the page delete: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, site.Id, original);
+            if (page != null)
+            {
+                await api.Pages.DeleteAsync(page.Id);
+            }
         }
     }
 
@@ -291,18 +552,26 @@ public class SiteSettingsTests
         var suffix = Guid.NewGuid().ToString("N")[..6];
         var mapsUrl = $"https://maps.google.com/?q={suffix}";
 
+        StandardPage? page = null;
+
         try
         {
             await SaveSettingsAsync(api, site.Id, s => s.MapsUrl = mapsUrl);
 
-            var page = await CreatePublishedPageAsync(api, site, $"Maps Test {suffix}", $"maps-test-{suffix}");
+            page = await CreatePublishedPageAsync(api, site, $"Maps Test {suffix}", $"maps-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
             Assert.Contains($"href=\"{mapsUrl}\"", html);
         }
         finally
         {
+            // Settings restored before the page delete: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, site.Id, original);
+            if (page != null)
+            {
+                await api.Pages.DeleteAsync(page.Id);
+            }
         }
     }
 
@@ -315,6 +584,8 @@ public class SiteSettingsTests
         var original = await SnapshotAsync(api, site.Id);
 
         var suffix = Guid.NewGuid().ToString("N")[..6];
+
+        StandardPage? page = null;
 
         try
         {
@@ -329,7 +600,7 @@ public class SiteSettingsTests
                 s.MapsUrl = string.Empty;
             });
 
-            var page = await CreatePublishedPageAsync(api, site, $"Empty Contact Test {suffix}", $"empty-contact-test-{suffix}");
+            page = await CreatePublishedPageAsync(api, site, $"Empty Contact Test {suffix}", $"empty-contact-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
             Assert.DoesNotContain("contact-block", html);
@@ -337,7 +608,13 @@ public class SiteSettingsTests
         }
         finally
         {
+            // Settings restored before the page delete: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, site.Id, original);
+            if (page != null)
+            {
+                await api.Pages.DeleteAsync(page.Id);
+            }
         }
     }
 
@@ -355,6 +632,8 @@ public class SiteSettingsTests
         var phone = $"090 555 1234 {suffix}";
         var address = $"789 Mixed State Ave {suffix}";
 
+        StandardPage? page = null;
+
         try
         {
             // A realistic partially-filled state: Phone and Address set,
@@ -369,7 +648,7 @@ public class SiteSettingsTests
                 s.MapsUrl = string.Empty;
             });
 
-            var page = await CreatePublishedPageAsync(api, site, $"Mixed State Test {suffix}", $"mixed-state-test-{suffix}");
+            page = await CreatePublishedPageAsync(api, site, $"Mixed State Test {suffix}", $"mixed-state-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
             Assert.Contains("contact-block", html);
@@ -380,7 +659,13 @@ public class SiteSettingsTests
         }
         finally
         {
+            // Settings restored before the page delete: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, site.Id, original);
+            if (page != null)
+            {
+                await api.Pages.DeleteAsync(page.Id);
+            }
         }
     }
 
@@ -399,11 +684,13 @@ public class SiteSettingsTests
         // below would catch.
         var address = $"123 \"Main\" St <District 1> & Ward {suffix}";
 
+        StandardPage? page = null;
+
         try
         {
             await SaveSettingsAsync(api, site.Id, s => s.Address = address);
 
-            var page = await CreatePublishedPageAsync(api, site, $"Address Escaping Test {suffix}", $"address-escaping-test-{suffix}");
+            page = await CreatePublishedPageAsync(api, site, $"Address Escaping Test {suffix}", $"address-escaping-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
             // Use the same encoder Razor's @-expressions actually go
@@ -416,7 +703,13 @@ public class SiteSettingsTests
         }
         finally
         {
+            // Settings restored before the page delete: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, site.Id, original);
+            if (page != null)
+            {
+                await api.Pages.DeleteAsync(page.Id);
+            }
         }
     }
 
@@ -486,18 +779,74 @@ public class SiteSettingsTests
     }
 
     /// <summary>
-    /// Captures the four field values a test is about to mutate, so they
-    /// can be restored afterward - this suite shares one real, persistent
-    /// database with every other test class in <see cref="PiranhaAppCollection"/>
-    /// (see its own doc comment).
+    /// Loads the site's current settings the same shape Piranha Manager's
+    /// own save path always round-trips - a generic <see cref="DynamicSiteContent"/>
+    /// built from the stored regions (Piranha.Services.ContentFactory), never
+    /// the app's own strongly-typed <see cref="SiteSettings"/> POCO. This is
+    /// the real construction the Story 1.9 fix in Program.cs's
+    /// <c>RegisterOnBeforeSave</c> hook must run its checks against.
     /// </summary>
-    private static async Task<(string? Phone, string? ZaloUrl, string? Address, string? MapsUrl)> SnapshotAsync(IApi api, Guid siteId)
+    private static async Task<DynamicSiteContent> LoadDynamicContentAsync(IApi api, Guid siteId)
     {
-        var settings = await api.Sites.GetContentByIdAsync<SiteSettings>(siteId);
-        return (settings?.Phone?.Value, settings?.ZaloUrl?.Value, settings?.Address?.Value, settings?.MapsUrl?.Value);
+        var dyn = await api.Sites.GetContentByIdAsync(siteId);
+        Assert.NotNull(dyn);
+        return dyn!;
     }
 
-    private static async Task RestoreAsync(IApi api, Guid siteId, (string? Phone, string? ZaloUrl, string? Address, string? MapsUrl) original)
+    /// <summary>
+    /// A single-field region's value in <see cref="DynamicSiteContent.Regions"/>
+    /// (an ExpandoObject) is the raw <see cref="StringField"/> instance
+    /// itself, not further wrapped - so setting it means mutating that
+    /// field's <c>Value</c> in place (or inserting a new one, if the region
+    /// somehow isn't present yet).
+    /// </summary>
+    private static void SetRegionValue(DynamicSiteContent dyn, string regionKey, string? value)
+    {
+        var regions = (IDictionary<string, object>)dyn.Regions;
+        if (regions.TryGetValue(regionKey, out var existing) && existing is StringField field)
+        {
+            field.Value = value;
+        }
+        else
+        {
+            regions[regionKey] = new StringField { Value = value };
+        }
+    }
+
+    /// <summary>
+    /// Simulates the region key being entirely absent from <see cref="DynamicSiteContent.Regions"/>
+    /// (the I/O matrix's "region key missing from Regions" case) - distinct
+    /// from <see cref="SetRegionValue"/> with an empty string, which leaves
+    /// the key present with a blank value. Asserts the key really was there
+    /// to remove, so the "missing key" case can't quietly degrade into
+    /// "key that was never present anyway".
+    /// </summary>
+    private static void RemoveRegion(DynamicSiteContent dyn, string regionKey) =>
+        Assert.True(
+            ((IDictionary<string, object>)dyn.Regions).Remove(regionKey),
+            $"Expected region '{regionKey}' to be present before removing it.");
+
+    /// <summary>
+    /// Captures every field value a test could mutate, so they can be
+    /// restored afterward - this suite shares one real, persistent database
+    /// with every other test class in <see cref="PiranhaAppCollection"/> (see
+    /// its own doc comment). All six fields are captured, not just the four
+    /// the contact-block tests touch, so a single restore call is always
+    /// enough.
+    /// </summary>
+    private static async Task<SiteSettingsSnapshot> SnapshotAsync(IApi api, Guid siteId)
+    {
+        var settings = await api.Sites.GetContentByIdAsync<SiteSettings>(siteId);
+        return new SiteSettingsSnapshot(
+            settings?.Phone?.Value,
+            settings?.ZaloUrl?.Value,
+            settings?.Address?.Value,
+            settings?.MapsUrl?.Value,
+            settings?.Ga4MeasurementId?.Value,
+            settings?.SearchConsoleVerification?.Value);
+    }
+
+    private static async Task RestoreAsync(IApi api, Guid siteId, SiteSettingsSnapshot original)
     {
         await SaveSettingsAsync(api, siteId, s =>
         {
@@ -505,8 +854,18 @@ public class SiteSettingsTests
             s.ZaloUrl = original.ZaloUrl;
             s.Address = original.Address;
             s.MapsUrl = original.MapsUrl;
+            s.Ga4MeasurementId = original.Ga4MeasurementId;
+            s.SearchConsoleVerification = original.SearchConsoleVerification;
         });
     }
+
+    private sealed record SiteSettingsSnapshot(
+        string? Phone,
+        string? ZaloUrl,
+        string? Address,
+        string? MapsUrl,
+        string? Ga4MeasurementId,
+        string? SearchConsoleVerification);
 
     /// <summary>
     /// See <see cref="PerPageSeoFieldsTests.HostnameOf"/> - reads the site's
