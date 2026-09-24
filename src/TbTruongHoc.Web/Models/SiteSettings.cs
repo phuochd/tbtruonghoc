@@ -36,4 +36,11 @@ public class SiteSettings : SiteContent<SiteSettings>
 
     [Region(Title = "Search Console Verification", Description = "The value Google Search Console's HTML-tag verification method gives you - paste only the content value from <meta name=\"google-site-verification\" content=\"...\">, not the whole tag. Leave blank to omit the tag.")]
     public StringField SearchConsoleVerification { get; set; }
+
+    /// <summary>
+    /// Story 1.7 (FR-3, AD-3): who gets the new-lead email for this site.
+    /// Per site, never a global fallback - left blank, no email is sent.
+    /// </summary>
+    [Region(Title = "Notification emails", Description = "Email address(es) that receive a notification for every new lead on this site. Separate several addresses with a comma or semicolon, e.g. sales@example.vn; manager@example.vn. Plain addresses only (no display names). Leave blank to send no notification.")]
+    public StringField NotificationEmails { get; set; }
 }

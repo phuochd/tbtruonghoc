@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Piranha;
 using TbTruongHoc.Web.Data;
 using TbTruongHoc.Web.Models;
+using TbTruongHoc.Web.Notifications;
 
 namespace TbTruongHoc.Web.Controllers;
 
@@ -42,12 +43,14 @@ public class LeadsController : ControllerBase
     private readonly IApi _api;
     private readonly LeadDbContext _leadDb;
     private readonly ILogger<LeadsController> _logger;
+    private readonly IFormNotificationService _notifications;
 
-    public LeadsController(IApi api, LeadDbContext leadDb, ILogger<LeadsController> logger)
+    public LeadsController(IApi api, LeadDbContext leadDb, ILogger<LeadsController> logger, IFormNotificationService notifications)
     {
         _api = api;
         _leadDb = leadDb;
         _logger = logger;
+        _notifications = notifications;
     }
 
     [HttpPost]
@@ -64,6 +67,8 @@ public class LeadsController : ControllerBase
         {
             return ValidationProblem();
         }
+
+        FormSubmission savedSubmission;
 
         try
         {
@@ -100,7 +105,7 @@ public class LeadsController : ControllerBase
             _leadDb.FormSubmissions.Add(submission);
             await _leadDb.SaveChangesAsync();
 
-            return Ok(new { id = submission.Id });
+            savedSubmission = submission;
         }
         catch (Exception ex)
         {
@@ -115,5 +120,21 @@ public class LeadsController : ControllerBase
                 detail: "We couldn't save your request right now. Please call or message us on Zalo instead.",
                 statusCode: StatusCodes.Status500InternalServerError);
         }
+
+        // Story 1.7 (FR-3, AD-3): notify only after the row is committed, and
+        // deliberately outside the try/catch above - a notification failure
+        // must never turn an already-saved lead into a 500. The service only
+        // queues (never waits on SMTP) and never throws; the extra guard here
+        // keeps the visitor's 200 intact even if a future implementation did.
+        try
+        {
+            _notifications.NotifyNewSubmission(savedSubmission);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to queue the notification for lead {SubmissionId}; the lead itself is saved.", savedSubmission.Id);
+        }
+
+        return Ok(new { id = savedSubmission.Id });
     }
 }

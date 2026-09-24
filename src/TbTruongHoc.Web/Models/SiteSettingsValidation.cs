@@ -1,4 +1,9 @@
+#nullable enable
+
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mail;
 using System.Text.RegularExpressions;
 
 namespace TbTruongHoc.Web.Models;
@@ -47,4 +52,57 @@ public static class SiteSettingsValidation
 
     public static bool IsValidSearchConsoleVerification(string value) =>
         !string.IsNullOrWhiteSpace(value) && SearchConsoleVerificationPattern.IsMatch(value);
+
+    private static readonly char[] NotificationEmailSeparators = { ',', ';' };
+
+    /// <summary>
+    /// Story 1.7: splits a <see cref="SiteSettings.NotificationEmails"/> value
+    /// on ',' / ';', trims each entry and drops blanks. Does not validate -
+    /// see <see cref="IsValidNotificationEmail"/>.
+    /// </summary>
+    public static IReadOnlyList<string> ParseNotificationEmails(string? value) =>
+        string.IsNullOrWhiteSpace(value)
+            ? Array.Empty<string>()
+            : value.Split(NotificationEmailSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    /// <summary>
+    /// A single entry is valid only when <see cref="MailAddress"/> parses it
+    /// and its normalized <c>.Address</c> equals the entry verbatim - which
+    /// rules out display names ("Sales &lt;a@x.vn&gt;") and any CR/LF or other
+    /// header-injection payload riding along with an otherwise valid address.
+    /// </summary>
+    public static bool IsValidNotificationEmail(string? entry)
+    {
+        if (string.IsNullOrWhiteSpace(entry) || entry.Any(char.IsControl))
+        {
+            return false;
+        }
+
+        try
+        {
+            return new MailAddress(entry).Address == entry;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// True when the value holds at least one entry and every entry is a
+    /// valid plain address. Callers treat a blank value as "not set" before
+    /// calling this (same convention as the other validators here).
+    /// </summary>
+    public static bool IsValidNotificationEmailList(string? value)
+    {
+        // Checked on the raw value, not per entry: trimming would otherwise
+        // silently accept a trailing CR/LF that is still persisted verbatim.
+        if (value is null || value.Any(char.IsControl))
+        {
+            return false;
+        }
+
+        var entries = ParseNotificationEmails(value);
+        return entries.Count > 0 && entries.All(IsValidNotificationEmail);
+    }
 }
