@@ -6,6 +6,7 @@ using Piranha.AttributeBuilder;
 using Piranha.AspNetCore.Identity.MySQL;
 using Piranha.Cache;
 using Piranha.Data.EF.MySql;
+using Piranha.Extend.Fields;
 using Piranha.Manager.Editor;
 using Piranha.Models;
 using TbTruongHoc.Web.Data;
@@ -136,39 +137,70 @@ app.UsePiranha(options =>
     // actually invokes the hook with) so it fires for SiteSettings saves.
     App.Hooks.SiteContent.RegisterOnBeforeSave(model =>
     {
-        if (model is not SiteSettings settings)
+        // Story 1.6 (FR-4) extended the original Zalo/Maps checks to the
+        // GA4/verification fields _Analytics.cshtml embeds directly into an
+        // inline <script> and an attribute - a value crafted to break out of
+        // either must never persist.
+        void RejectUnsafeValues(string? zalo, string? maps, string? ga4, string? verification)
         {
-            return;
+            var zaloUnsafe = !string.IsNullOrWhiteSpace(zalo) && !SiteSettingsValidation.IsSafeAbsoluteUrl(zalo);
+            var mapsUnsafe = !string.IsNullOrWhiteSpace(maps) && !SiteSettingsValidation.IsSafeAbsoluteUrl(maps);
+            var ga4Unsafe = !string.IsNullOrWhiteSpace(ga4) && !SiteSettingsValidation.IsValidGa4MeasurementId(ga4);
+            var verificationUnsafe = !string.IsNullOrWhiteSpace(verification) && !SiteSettingsValidation.IsValidSearchConsoleVerification(verification);
+
+            if (!zaloUnsafe && !mapsUnsafe && !ga4Unsafe && !verificationUnsafe)
+            {
+                return;
+            }
+
+            // Evict the poisoned in-memory copy (see siteContentCache's comment
+            // above) so the next read - Manager's own or _ContactBlock.cshtml's/
+            // _Analytics.cshtml's - falls back to the last valid, still-
+            // unmodified DB row instead of this in-place-mutated object. Only
+            // the typed path can actually poison that entry (Piranha's
+            // SiteService neither reads nor writes it for DynamicSiteContent),
+            // but evicting on both keeps the two paths from diverging.
+            siteContentCache?.RemoveAsync($"SiteContent_{model.Id}").GetAwaiter().GetResult();
+
+            throw new ValidationException(zaloUnsafe
+                ? "Zalo URL must be a valid http:// or https:// link."
+                : mapsUnsafe
+                    ? "Maps URL must be a valid http:// or https:// link."
+                    : ga4Unsafe
+                        ? "GA4 Measurement ID must look like G-XXXXXXXXXX (letters/digits only)."
+                        : "Search Console Verification must contain only letters, digits, '.', '-', '_', '=' or '+'.");
         }
 
-        var zaloUnsafe = !string.IsNullOrWhiteSpace(settings.ZaloUrl?.Value) && !SiteSettingsValidation.IsSafeAbsoluteUrl(settings.ZaloUrl.Value);
-        var mapsUnsafe = !string.IsNullOrWhiteSpace(settings.MapsUrl?.Value) && !SiteSettingsValidation.IsSafeAbsoluteUrl(settings.MapsUrl.Value);
-
-        // Story 1.6 (FR-4): same defense-in-depth for the GA4/verification
-        // fields _Analytics.cshtml embeds directly into an inline <script>
-        // and an attribute - a value crafted to break out of either must
-        // never persist.
-        var ga4Unsafe = !string.IsNullOrWhiteSpace(settings.Ga4MeasurementId?.Value) && !SiteSettingsValidation.IsValidGa4MeasurementId(settings.Ga4MeasurementId.Value);
-        var verificationUnsafe = !string.IsNullOrWhiteSpace(settings.SearchConsoleVerification?.Value) && !SiteSettingsValidation.IsValidSearchConsoleVerification(settings.SearchConsoleVerification.Value);
-
-        if (!zaloUnsafe && !mapsUnsafe && !ga4Unsafe && !verificationUnsafe)
+        if (model is SiteSettings settings)
         {
-            return;
+            RejectUnsafeValues(
+                settings.ZaloUrl?.Value,
+                settings.MapsUrl?.Value,
+                settings.Ga4MeasurementId?.Value,
+                settings.SearchConsoleVerification?.Value);
         }
+        else if (model is DynamicSiteContent dyn)
+        {
+            // Story 1.9 (security fix): Piranha Manager's built-in settings UI
+            // never saves the app's own strongly-typed SiteSettings above - it
+            // always saves a generic DynamicSiteContent region model, which the
+            // branch above silently ignores (model is SiteSettings is false for
+            // it). Without this branch, every real Manager save bypassed all
+            // four checks regardless of value. Region values live in an
+            // ExpandoObject, accessed via the IDictionary<string, object>
+            // indexer - a single-field region's value is the raw StringField
+            // instance itself, not further wrapped (Code Map).
+            var regions = (IDictionary<string, object>)dyn.Regions;
 
-        // Evict the poisoned in-memory copy (see siteContentCache's comment
-        // above) so the next read - Manager's own or _ContactBlock.cshtml's/
-        // _Analytics.cshtml's - falls back to the last valid, still-
-        // unmodified DB row instead of this in-place-mutated object.
-        siteContentCache?.RemoveAsync($"SiteContent_{model.Id}").GetAwaiter().GetResult();
+            string? Raw(string key) =>
+                regions.TryGetValue(key, out var value) && value is StringField field ? field.Value : null;
 
-        throw new ValidationException(zaloUnsafe
-            ? "Zalo URL must be a valid http:// or https:// link."
-            : mapsUnsafe
-                ? "Maps URL must be a valid http:// or https:// link."
-                : ga4Unsafe
-                    ? "GA4 Measurement ID must look like G-XXXXXXXXXX (letters/digits only)."
-                    : "Search Console Verification must contain only letters, digits, '-' or '_'.");
+            RejectUnsafeValues(
+                Raw(nameof(SiteSettings.ZaloUrl)),
+                Raw(nameof(SiteSettings.MapsUrl)),
+                Raw(nameof(SiteSettings.Ga4MeasurementId)),
+                Raw(nameof(SiteSettings.SearchConsoleVerification)));
+        }
     });
 
     // Build content types

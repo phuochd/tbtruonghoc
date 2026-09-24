@@ -55,6 +55,9 @@ public class AnalyticsSearchConsoleTests
         var verificationA = $"verify-{suffix}-a";
         var verificationB = $"verify-{suffix}-b";
 
+        StandardPage? pageA = null;
+        StandardPage? pageB = null;
+
         try
         {
             await SaveSettingsAsync(api, siteA.Id, s =>
@@ -68,8 +71,8 @@ public class AnalyticsSearchConsoleTests
                 s.SearchConsoleVerification = verificationB;
             });
 
-            var pageA = await CreatePublishedPageAsync(api, siteA, $"Analytics Test A {suffix}", $"analytics-test-a-{suffix}");
-            var pageB = await CreatePublishedPageAsync(api, siteB, $"Analytics Test B {suffix}", $"analytics-test-b-{suffix}");
+            pageA = await CreatePublishedPageAsync(api, siteA, $"Analytics Test A {suffix}", $"analytics-test-a-{suffix}");
+            pageB = await CreatePublishedPageAsync(api, siteB, $"Analytics Test B {suffix}", $"analytics-test-b-{suffix}");
 
             var htmlA = await GetHtmlAsync(pageA.Permalink, HostnameOf(siteA));
             var htmlB = await GetHtmlAsync(pageB.Permalink, HostnameOf(siteB));
@@ -88,8 +91,18 @@ public class AnalyticsSearchConsoleTests
         }
         finally
         {
+            // Settings restored before the page deletes: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, siteA.Id, originalA);
             await RestoreAsync(api, siteB.Id, originalB);
+            if (pageA != null)
+            {
+                await api.Pages.DeleteAsync(pageA.Id);
+            }
+            if (pageB != null)
+            {
+                await api.Pages.DeleteAsync(pageB.Id);
+            }
         }
     }
 
@@ -103,6 +116,8 @@ public class AnalyticsSearchConsoleTests
 
         var suffix = Guid.NewGuid().ToString("N")[..6];
 
+        StandardPage? page = null;
+
         try
         {
             await SaveSettingsAsync(api, site.Id, s =>
@@ -111,7 +126,7 @@ public class AnalyticsSearchConsoleTests
                 s.SearchConsoleVerification = string.Empty;
             });
 
-            var page = await CreatePublishedPageAsync(api, site, $"Empty Analytics Test {suffix}", $"empty-analytics-test-{suffix}");
+            page = await CreatePublishedPageAsync(api, site, $"Empty Analytics Test {suffix}", $"empty-analytics-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
             Assert.DoesNotContain("googletagmanager.com/gtag/js", html);
@@ -119,7 +134,13 @@ public class AnalyticsSearchConsoleTests
         }
         finally
         {
+            // Settings restored before the page delete: a delete failure must
+            // not leave this test's mutated values behind for the next one.
             await RestoreAsync(api, site.Id, original);
+            if (page != null)
+            {
+                await api.Pages.DeleteAsync(page.Id);
+            }
         }
     }
 
@@ -188,17 +209,34 @@ public class AnalyticsSearchConsoleTests
         var slugA = $"sitemap-scope-a-{suffix}";
         var slugB = $"sitemap-scope-b-{suffix}";
 
-        await CreatePublishedPageAsync(api, siteA, $"Sitemap Scope A {suffix}", slugA);
-        await CreatePublishedPageAsync(api, siteB, $"Sitemap Scope B {suffix}", slugB);
+        StandardPage? pageA = null;
+        StandardPage? pageB = null;
 
-        var sitemapA = await GetSitemapXmlAsync(HostnameOf(siteA));
-        var sitemapB = await GetSitemapXmlAsync(HostnameOf(siteB));
+        try
+        {
+            pageA = await CreatePublishedPageAsync(api, siteA, $"Sitemap Scope A {suffix}", slugA);
+            pageB = await CreatePublishedPageAsync(api, siteB, $"Sitemap Scope B {suffix}", slugB);
 
-        Assert.Contains(slugA, sitemapA);
-        Assert.DoesNotContain(slugB, sitemapA);
+            var sitemapA = await GetSitemapXmlAsync(HostnameOf(siteA));
+            var sitemapB = await GetSitemapXmlAsync(HostnameOf(siteB));
 
-        Assert.Contains(slugB, sitemapB);
-        Assert.DoesNotContain(slugA, sitemapB);
+            Assert.Contains(slugA, sitemapA);
+            Assert.DoesNotContain(slugB, sitemapA);
+
+            Assert.Contains(slugB, sitemapB);
+            Assert.DoesNotContain(slugA, sitemapB);
+        }
+        finally
+        {
+            if (pageA != null)
+            {
+                await api.Pages.DeleteAsync(pageA.Id);
+            }
+            if (pageB != null)
+            {
+                await api.Pages.DeleteAsync(pageB.Id);
+            }
+        }
     }
 
     private static async Task<Site> GetSiteAsync(IApi api, string internalId)
