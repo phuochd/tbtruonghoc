@@ -52,30 +52,33 @@ Docker is only for MariaDB — the app itself always runs via `dotnet run`,
 no container build needed.
 
 `appsettings.json` deliberately ships with an empty `ConnectionStrings:piranha`
-value (no credentials are hardcoded in tracked files), so supply it via an
-environment variable using the same values as your `.env`:
+value (no credentials are hardcoded in tracked files). Store it once per
+machine in .NET user-secrets instead, using the same values as your `.env`:
 
 1. Start the database: `docker compose up -d mariadb`
-2. Set the connection string and environment for your shell session, e.g. in
-   PowerShell:
+2. One-time: save the connection string to user-secrets (kept outside the
+   repo, under `%APPDATA%\Microsoft\UserSecrets\`):
    ```
-   $env:ConnectionStrings__piranha = "server=localhost;port=3307;database=piranha;uid=piranha;password=<value from .env>"
-   $env:ASPNETCORE_ENVIRONMENT = "Development"
+   dotnet user-secrets set "ConnectionStrings:piranha" "server=localhost;port=3307;database=piranha;uid=piranha;password=<value from .env>" --project src/TbTruongHoc.Web
    ```
-   (or the bash equivalent: `export ConnectionStrings__piranha="..."` /
-   `export ASPNETCORE_ENVIRONMENT="Development"`)
 3. `dotnet run --project src/TbTruongHoc.Web` (talks to the Compose-exposed
    `mariadb` port on `localhost:3307` — mapped off the default `3306` in
    case another local MySQL/MariaDB is already using it)
 
-`ASPNETCORE_ENVIRONMENT=Development` is required for the `.local` hostname
-mapping above (`appsettings.Development.json`) to apply — without it, the
-app falls back to `appsettings.json`'s production hostnames
-(`tbtruonghoc.com` / `trongdoitam.net`) and won't match your hosts-file
-entries.
+`Properties/launchSettings.json` makes `dotnet run` start in the
+`Development` environment on `http://localhost:5236`. That matters twice:
+user-secrets are only loaded in `Development`, and so is the `.local`
+hostname mapping above (`appsettings.Development.json`). If you launch the
+app some other way (e.g. `dotnet run --no-launch-profile`), set
+`ASPNETCORE_ENVIRONMENT=Development` yourself — without it the connection
+string is empty and startup fails, and the app falls back to
+`appsettings.json`'s production hostnames (`tbtruonghoc.com` /
+`trongdoitam.net`).
 
-By default `dotnet run` listens on its own Kestrel port (printed to the
-console, e.g. `http://localhost:5236`) — visit:
+A `ConnectionStrings__piranha` environment variable still works too, and
+overrides user-secrets.
+
+Then visit:
 
 - `http://tbtruonghoc.local:<port>/` — Site A (default)
 - `http://trongdoitam.local:<port>/` — Site B
@@ -92,8 +95,8 @@ MariaDB (no mocked/in-memory provider), so the database must already be
 running and reachable the same way as "Running the app" above:
 
 1. `docker compose up -d mariadb`
-2. Set `ConnectionStrings__piranha` in your shell session (same as step 2
-   above)
+2. Make sure the connection string is in user-secrets (step 2 above) — the
+   test host runs as `Development`, so it reads the same secret
 3. `dotnet test`
 
 ## Notes
