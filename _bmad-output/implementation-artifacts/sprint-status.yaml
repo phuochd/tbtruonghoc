@@ -44,7 +44,7 @@ development_status:
   1-6-analytics-search-console-riêng-theo-từng-site-fr-4: done
   1-7-thông-báo-email-khi-có-lead-mới-fr-3: backlog
   1-8-site-switcher-dạng-tab-trong-piranha-manager-ad-1: backlog
-  1-9-security-sửa-lỗ-hổng-bypass-validation-sitesettings-manager-dọn-rác: review
+  1-9-security-sửa-lỗ-hổng-bypass-validation-sitesettings-manager-dọn-rác: done
   1-10-ga4-env-gating-cookie-consent-gate: backlog
   1-11-smoke-test-mariadb-restart-recovery: backlog
   1-12-xác-nhận-sửa-nháy-màn-hình-rỗng-leads-manager: backlog
