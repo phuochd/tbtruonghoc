@@ -67,6 +67,8 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-1-context.m
 
 ## Spec Change Log
 
+- 2026-09-25, walkthrough manual check: the Pages screen rendered nothing ("Cannot read properties of undefined (reading 'isActive')"). Vue 2 in-DOM templates resolve identifiers against the instance, not `window`, so the global `managerPageTabs` was undefined. Fix: `manager-page-tabs.js` also sets `Vue.prototype.managerPageTabs`, and a script test pins it. The Jint stub could not catch this because it has no template scoping. After the fix, all five manual checks and a site add/delete passed in the browser.
+
 ## Review Triage Log
 
 - **[medium, patch]** (verification-gap + blind-hunter, one root cause: the JS-state-to-template wiring has no automated guard) The `Vue.observable` stub is the identity function, so dropping reactivity would fail no test. Script order (tabs script before `piranha.pagelist.min.js`) and `v-show` (not `v-if`) on the site `<li>` exist only in comments. Fix: the stub records the `observable` call, plus a static markup test on the `.cshtml`. The real logged-in render stays with the manual check.

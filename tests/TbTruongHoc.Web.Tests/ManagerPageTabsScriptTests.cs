@@ -31,6 +31,7 @@ public class ManagerPageTabsScriptTests
             var focusedId = null;
             var observed = null;
             var Vue = {
+                prototype: {},
                 observable: function (o) { observed = o; return o; },
                 nextTick: function (fn) { fn(); }
             };
@@ -149,6 +150,15 @@ public class ManagerPageTabsScriptTests
             "manager-page-tabs.js must create its state with Vue.observable({ activeId: ... }) so tab switches re-render.");
         Assert.True(_js.Evaluate("window.managerPageTabs === observed").AsBoolean(),
             "window.managerPageTabs must be the exact object returned by Vue.observable.");
+    }
+
+    [Fact]
+    public void State_Is_Exposed_On_Vue_Prototype_For_The_Template()
+    {
+        // Vue 2 in-DOM templates cannot see window globals; without this the
+        // Pages screen throws "Cannot read properties of undefined (reading 'isActive')".
+        Assert.True(_js.Evaluate("Vue.prototype.managerPageTabs === observed").AsBoolean(),
+            "manager-page-tabs.js must set Vue.prototype.managerPageTabs so piranha.pagelist's template can reach it.");
     }
 
     [Fact]

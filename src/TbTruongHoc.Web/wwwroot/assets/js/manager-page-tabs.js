@@ -99,5 +99,9 @@
         });
     };
 
+    // Vue 2 templates resolve identifiers against the instance, not window
+    // (a bare global renders as undefined). Putting it on Vue.prototype makes
+    // `managerPageTabs` visible to piranha.pagelist's in-DOM template.
+    Vue.prototype.managerPageTabs = tabs;
     window.managerPageTabs = tabs;
 })(window, Vue);
