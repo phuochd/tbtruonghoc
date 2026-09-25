@@ -133,6 +133,35 @@ running and reachable the same way as "Running the app" above:
    test host runs as `Development`, so it reads the same secret
 3. `dotnet test`
 
+## Smoke test: MariaDB restart/recovery
+
+`scripts/smoke-mariadb-restart.ps1` (PowerShell 7) checks that the app keeps
+serving after the database goes down and comes back, and that the outage
+creates no duplicate `Site` rows. It stops the shared `mariadb` container, so
+run it by hand, never alongside `dotnet test`:
+
+1. `docker compose up -d mariadb` (it must already be healthy)
+2. Connection string in user-secrets, as for "Running the app"
+3. `pwsh scripts/smoke-mariadb-restart.ps1`
+
+The script builds the app into `bin/smoke-mariadb-restart/` (so your own
+`dotnet run` holding `bin/Debug` is not a problem) and starts its own
+instance on a free port. It then:
+
+1. Probes both sites.
+2. Stops mariadb and confirms the app sees the outage without crashing.
+3. Starts mariadb and waits for its healthcheck.
+4. Confirms the same app process serves both sites again.
+5. Confirms `Piranha_Sites` holds exactly `tbtruonghoc` and `trongdoitam-net`,
+   as it did before the outage.
+
+It prints `SMOKE TEST PASSED` and exits 0, or prints the failure and the
+app's last log lines and exits 1. The script itself only reads the
+database. The app it starts still runs its usual startup migrate/seed, which
+is a no-op on an already-seeded database. On the way out it always starts
+mariadb again and waits for it to be healthy. Any other app talking to the
+same database, such as your own `dotnet run`, also sees the short outage.
+
 ## Notes
 
 - Never a second Piranha instance/deployment for Site B — one instance, one
