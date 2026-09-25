@@ -4,7 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Piranha;
 using Piranha.Models;
 using TbTruongHoc.Web.Data;
@@ -37,7 +39,7 @@ public class AnalyticsSearchConsoleTests
     }
 
     [Fact]
-    public async Task Each_Site_Renders_Only_Its_Own_Ga4_And_Verification_Values()
+    public async Task Each_Site_Renders_Only_Its_Own_Ga4_And_Verification_Values_In_Production()
     {
         using var scope = _factory.Services.CreateScope();
         var api = scope.ServiceProvider.GetRequiredService<IApi>();
@@ -74,17 +76,20 @@ public class AnalyticsSearchConsoleTests
             pageA = await CreatePublishedPageAsync(api, siteA, $"Analytics Test A {suffix}", $"analytics-test-a-{suffix}");
             pageB = await CreatePublishedPageAsync(api, siteB, $"Analytics Test B {suffix}", $"analytics-test-b-{suffix}");
 
-            var htmlA = await GetHtmlAsync(pageA.Permalink, HostnameOf(siteA));
-            var htmlB = await GetHtmlAsync(pageB.Permalink, HostnameOf(siteB));
+            var (htmlA, htmlB) = await InProductionAsync(async () => (
+                await GetHtmlAsync(pageA.Permalink, HostnameOf(siteA)),
+                await GetHtmlAsync(pageB.Permalink, HostnameOf(siteB))));
 
-            Assert.Contains($"id={ga4A}", htmlA);
-            Assert.Contains($"gtag('config', '{ga4A}')", htmlA);
+            // Story 1.10: in Production the server emits only the consent
+            // script carrying this site's ID - never gtag.js itself.
+            AssertConsentMarkup(htmlA, ga4A);
+            Assert.DoesNotContain("googletagmanager.com", htmlA);
             Assert.Contains($"content=\"{verificationA}\"", htmlA);
             Assert.DoesNotContain(ga4B, htmlA);
             Assert.DoesNotContain(verificationB, htmlA);
 
-            Assert.Contains($"id={ga4B}", htmlB);
-            Assert.Contains($"gtag('config', '{ga4B}')", htmlB);
+            AssertConsentMarkup(htmlB, ga4B);
+            Assert.DoesNotContain("googletagmanager.com", htmlB);
             Assert.Contains($"content=\"{verificationB}\"", htmlB);
             Assert.DoesNotContain(ga4A, htmlB);
             Assert.DoesNotContain(verificationA, htmlB);
@@ -107,7 +112,7 @@ public class AnalyticsSearchConsoleTests
     }
 
     [Fact]
-    public async Task Ga4_Script_And_Verification_Meta_Are_Omitted_When_Unset()
+    public async Task Ga4_Consent_And_Verification_Meta_Are_Omitted_In_Production_When_Unset()
     {
         using var scope = _factory.Services.CreateScope();
         var api = scope.ServiceProvider.GetRequiredService<IApi>();
@@ -127,9 +132,13 @@ public class AnalyticsSearchConsoleTests
             });
 
             page = await CreatePublishedPageAsync(api, site, $"Empty Analytics Test {suffix}", $"empty-analytics-test-{suffix}");
-            var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
+            var html = await InProductionAsync(() => GetHtmlAsync(page.Permalink, HostnameOf(site)));
 
-            Assert.DoesNotContain("googletagmanager.com/gtag/js", html);
+            // Story 1.10: no tracking, so no consent banner/link either.
+            Assert.DoesNotContain("googletagmanager.com", html);
+            Assert.DoesNotContain("analytics-consent.js", html);
+            Assert.DoesNotContain("data-consent-banner", html);
+            Assert.DoesNotContain("data-consent-reopen", html);
             Assert.DoesNotContain("google-site-verification", html);
         }
         finally
@@ -140,6 +149,77 @@ public class AnalyticsSearchConsoleTests
             if (page != null)
             {
                 await api.Pages.DeleteAsync(page.Id);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Outside_Production_A_Valid_Ga4_Id_Emits_No_Ga4_Or_Consent_Markup()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+
+        var siteA = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+        var siteB = await GetSiteAsync(api, SiteSeed.TrongDoiTamInternalId);
+
+        var (originalA, originalB) = (
+            await SnapshotAsync(api, siteA.Id),
+            await SnapshotAsync(api, siteB.Id));
+
+        var suffix = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+        var ga4A = $"G-{suffix}AAAA";
+        var ga4B = $"G-{suffix}BBBB";
+        var verificationA = $"verify-{suffix}-a";
+
+        StandardPage? pageA = null;
+        StandardPage? pageB = null;
+
+        try
+        {
+            await SaveSettingsAsync(api, siteA.Id, s =>
+            {
+                s.Ga4MeasurementId = ga4A;
+                s.SearchConsoleVerification = verificationA;
+            });
+            await SaveSettingsAsync(api, siteB.Id, s => s.Ga4MeasurementId = ga4B);
+
+            pageA = await CreatePublishedPageAsync(api, siteA, $"Dev Analytics Test A {suffix}", $"dev-analytics-test-a-{suffix}");
+            pageB = await CreatePublishedPageAsync(api, siteB, $"Dev Analytics Test B {suffix}", $"dev-analytics-test-b-{suffix}");
+
+            foreach (var environment in new[] { Environments.Development, Environments.Staging })
+            {
+                var (htmlA, htmlB) = await InEnvironmentAsync(environment, async () => (
+                    await GetHtmlAsync(pageA.Permalink, HostnameOf(siteA)),
+                    await GetHtmlAsync(pageB.Permalink, HostnameOf(siteB))));
+
+                foreach (var html in new[] { htmlA, htmlB })
+                {
+                    Assert.DoesNotContain("googletagmanager.com", html);
+                    Assert.DoesNotContain("gtag", html);
+                    Assert.DoesNotContain(ga4A, html);
+                    Assert.DoesNotContain(ga4B, html);
+                    Assert.DoesNotContain("analytics-consent.js", html);
+                    Assert.DoesNotContain("data-consent-banner", html);
+                    Assert.DoesNotContain("data-consent-reopen", html);
+                }
+
+                // Search Console verification is not tracking - still rendered.
+                Assert.Contains($"content=\"{verificationA}\"", htmlA);
+            }
+        }
+        finally
+        {
+            // Settings restored before the page deletes: a delete failure must
+            // not leave this test's mutated values behind for the next one.
+            await RestoreAsync(api, siteA.Id, originalA);
+            await RestoreAsync(api, siteB.Id, originalB);
+            if (pageA != null)
+            {
+                await api.Pages.DeleteAsync(pageA.Id);
+            }
+            if (pageB != null)
+            {
+                await api.Pages.DeleteAsync(pageB.Id);
             }
         }
     }
@@ -236,6 +316,47 @@ public class AnalyticsSearchConsoleTests
             {
                 await api.Pages.DeleteAsync(pageB.Id);
             }
+        }
+    }
+
+    /// <summary>
+    /// Story 1.10: the hooks analytics-consent.js looks up by selector, and the
+    /// initial hidden state it relies on (it only ever reveals), must be in
+    /// the rendered HTML - the Jint tests stub the DOM and cannot catch a
+    /// renamed hook or a dropped attribute.
+    /// </summary>
+    private static void AssertConsentMarkup(string html, string ga4Id)
+    {
+        Assert.Matches($"<script[^>]*src=\"/assets/js/analytics-consent\\.js\\?v=[^\"]+\"[^>]*data-ga4-id=\"{ga4Id}\"[^>]*\\bdefer\\b", html);
+        Assert.Matches("<div[^>]*role=\"region\"[^>]*aria-label=\"[^\"]+\"[^>]*data-consent-banner[^>]*\\bhidden\\b[^>]*>", html);
+        Assert.Matches("<button type=\"button\"[^>]*data-consent-accept[^>]*>", html);
+        Assert.Matches("<button type=\"button\"[^>]*data-consent-decline[^>]*>", html);
+        Assert.Matches("<button type=\"button\"[^>]*data-consent-reopen[^>]*\\bhidden\\b[^>]*>", html);
+    }
+
+    private Task<T> InProductionAsync<T>(Func<Task<T>> render) =>
+        InEnvironmentAsync(Environments.Production, render);
+
+    /// <summary>
+    /// Story 1.10: only one app host can exist per test process (see
+    /// <see cref="PiranhaAppCollection"/>), so a Production-env factory is
+    /// impossible. The analytics partials read the environment from the
+    /// shared <see cref="IWebHostEnvironment"/> singleton on every render, so
+    /// it is switched for the duration of the request(s) and always restored.
+    /// The collection runs serially, so no other test observes the change.
+    /// </summary>
+    private async Task<T> InEnvironmentAsync<T>(string environmentName, Func<Task<T>> render)
+    {
+        var env = _factory.Services.GetRequiredService<IWebHostEnvironment>();
+        var previous = env.EnvironmentName;
+        env.EnvironmentName = environmentName;
+        try
+        {
+            return await render();
+        }
+        finally
+        {
+            env.EnvironmentName = previous;
         }
     }
 
