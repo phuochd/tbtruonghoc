@@ -1,0 +1,129 @@
+@page "~/manager/pages"
+@model Piranha.Manager.Models.PageListViewModel
+@using Piranha
+@using Piranha.Manager
+@using Piranha.Manager.Editor
+@using Piranha.Manager.Extend
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject ManagerLocalizer Localizer
+@*
+    Story 1.8 (AD-1): app-local override of Piranha.Manager 12.0.0's own
+    Areas/Manager/Pages/PageList.cshtml (same path, so this compiled page
+    replaces the RCL one - no second route claiming ~/manager/pages).
+
+    The markup is Piranha's own (reproduced from the decompiled
+    AspNetCoreGeneratedDocument.Areas_Manager_Pages_PageList), with two
+    additions only:
+      1. a tab strip, one tab per entry in piranha.pagelist's `sites` array
+         (from GET manager/api/page/list, default site first), and
+      2. v-show on each site's <li>, so only the active site's header row
+         and page tree are visible.
+    v-show (never v-if) keeps every .sitemap-container in the DOM, because
+    piranha.pagelist's bind() attaches nestable drag-drop only to containers
+    present when a load finishes. Active-tab state lives in
+    manager-page-tabs.js (window.managerPageTabs); piranha.pagelist.js is not
+    modified or copied.
+
+    The RCL's _ViewStart does not reach app files, so Layout is set here.
+*@
+@{
+    Layout = "~/Areas/Manager/Shared/_Layout.cshtml";
+    ViewBag.Title = Localizer.Page["Pages"];
+    ViewBag.MenuItem = "Pages";
+}
+@section script
+{
+    <script src="@Url.Content(EditorScripts.MainScriptUrl)"></script>
+    <script src="@Url.Content(EditorScripts.EditorScriptUrl)"></script>
+    <script src="~/manager/assets/js/piranha.components.min.js?v=@Utils.GetAssemblyVersionHash(typeof(Piranha.Manager.Module).Assembly)"></script>
+    <script src="~/assets/js/manager-page-tabs.js" asp-append-version="true"></script>
+    <script src="~/manager/assets/js/piranha.pagelist.min.js?v=@Utils.GetAssemblyVersionHash(typeof(Piranha.Manager.Module).Assembly)"></script>
+    <script src="~/manager/assets/js/piranha.siteedit.min.js?v=@Utils.GetAssemblyVersionHash(typeof(Piranha.Manager.Module).Assembly)"></script>
+
+    <script type="text/javascript">
+        piranha.pagelist.load();
+    </script>
+}
+@section partials
+{
+    @foreach (var action in Actions.Toolbars.PageList)
+    {
+        if (!string.IsNullOrWhiteSpace(action.PartialView))
+        {
+            <partial name="@action.PartialView" />
+        }
+    }
+}
+<div id="pagelist">
+    <div class="top">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">@Localizer.Menu["Content"]</li>
+                <li class="breadcrumb-item active" aria-current="page">@Localizer.Menu["Pages"]</li>
+            </ol>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="top-nav">
+                @foreach (var action in Actions.Toolbars.PageList)
+                {
+                    <partial name="@action.ActionView" />
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid app" :class="{ ready: !loading }">
+        <div class="row">
+            <div class="col">
+                <ul v-if="sites.length > 0" class="nav nav-tabs mb-3" role="tablist" aria-label="@Localizer.Menu["Sites"]">
+                    <li v-for="site in sites" v-bind:key="'tab-' + site.id" class="nav-item" role="presentation">
+                        <a v-bind:id="'site-tab-' + site.id"
+                           class="nav-link"
+                           v-bind:class="{ active: managerPageTabs.isActive(site.id, sites) }"
+                           href="#"
+                           role="tab"
+                           v-bind:aria-selected="managerPageTabs.isActive(site.id, sites) ? 'true' : 'false'"
+                           v-bind:aria-controls="'site-panel-' + site.id"
+                           v-bind:tabindex="managerPageTabs.isActive(site.id, sites) ? 0 : -1"
+                           v-on:click.prevent="managerPageTabs.select(site.id)"
+                           v-on:keydown="managerPageTabs.onKeydown($event, sites)">
+                            <i class="fas fa-globe"></i> {{ site.title }}
+                        </a>
+                    </li>
+                </ul>
+                <div class="sitemap">
+                    <ol>
+                        <li v-for="site in sites"
+                            v-show="managerPageTabs.isActive(site.id, sites)"
+                            v-bind:id="'site-panel-' + site.id"
+                            role="tabpanel"
+                            v-bind:aria-labelledby="'site-tab-' + site.id">
+                            <div class="sitemap-item" v-bind:key="site.id">
+                                <div class="handle"><i class="fas fa-globe"></i></div>
+                                <div class="link">
+                                    <a v-if="piranha.permissions.sites.edit" v-on:click.prevent="piranha.siteedit.open(site.id, load)" href="#">{{ site.title }} <small style="display:none">(<code>{{ site.slug }}</code>)</small></a>
+                                    <span v-else class="title">{{ site.title }} <small style="display:none">(<code>{{ site.slug }}</code>)</small></span>
+                                </div>
+                                <div>
+                                    <button v-if="piranha.permissions.pages.add" id="pageGroup" type="button" v-on:click.prevent="piranha.pagelist.add(site.id, null, false)" class="btn btn-sm btn-primary btn-labeled">
+                                        <i class="fas fa-plus"></i>
+                                        @Localizer.Page["Add page"]
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="sitemap sitemap-container dd" data-id="{ site.id }">
+                                <ol class="dd-list">
+                                    <sitemap-item v-for="item in site.pages" v-bind:key="item.id" v-bind:item="item"></sitemap-item>
+                                </ol>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <partial name="Partial/_PageAddModal" />
+</div>
+
+<partial name="~/Areas/Manager/Shared/Partial/_SiteModal.cshtml" />
