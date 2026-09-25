@@ -23,7 +23,8 @@ namespace TbTruongHoc.Web.Tests;
 /// docker-compose "mariadb" container that this same test run's other
 /// integration tests (HostnameResolutionTests, SiteSeedIdempotencyTests)
 /// depend on, and waiting out real healthcheck/retry timers (many tens of
-/// seconds) - that belongs in a standalone script outside this suite.
+/// seconds) - that belongs in a standalone script outside this suite:
+/// scripts/smoke-mariadb-restart.ps1 (Story 1.11, see README).
 /// </summary>
 public class DockerComposeConfigTests
 {
