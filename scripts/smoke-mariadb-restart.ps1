@@ -206,6 +206,17 @@ try {
     $dll = Get-ChildItem (Join-Path $ArtifactsDir 'bin') -Recurse -Filter 'TbTruongHoc.Web.dll' |
         Sort-Object LastWriteTime -Descending | Select-Object -First 1
     if (-not $dll) { throw "Build succeeded but TbTruongHoc.Web.dll was not found under $ArtifactsDir/bin." }
+    # An incremental build has been seen to "succeed" into an output folder
+    # missing every NuGet dependency, so the app then dies at startup with
+    # "Could not load file or assembly 'Piranha'". Rebuild once from scratch.
+    if (-not (Test-Path (Join-Path $dll.DirectoryName 'Piranha.dll'))) {
+        Write-Host '    Package DLLs missing from the build output - rebuilding without incremental build'
+        $buildOutput = & dotnet build $ProjectDir --artifacts-path $ArtifactsDir --nologo -v quiet --no-incremental 2>&1
+        if ($LASTEXITCODE -ne 0) { throw "dotnet build --no-incremental failed:`n$($buildOutput | Out-String)" }
+        if (-not (Test-Path (Join-Path $dll.DirectoryName 'Piranha.dll'))) {
+            throw "Piranha.dll is still missing from $($dll.DirectoryName). Delete $ArtifactsDir and retry."
+        }
+    }
 
     $port = Get-FreePort
     $baseUrl = "http://127.0.0.1:$port"
