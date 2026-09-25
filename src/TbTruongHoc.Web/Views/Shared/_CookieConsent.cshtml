@@ -1,0 +1,37 @@
+@using TbTruongHoc.Web.Models
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
+@*
+    Story 1.10: GA4 cookie-consent banner plus the footer "Cài đặt cookie"
+    link that reopens it. Rendered under the same AnalyticsGate as
+    _Analytics.cshtml's script include - with no tracking there is nothing
+    to consent to. Starts hidden; analytics-consent.js reveals it only when
+    no unexpired choice is stored. The footer link also starts hidden and is
+    revealed by the script, so it never shows up dead when JS is blocked.
+
+    Styling is Bootstrap utilities only, like the rest of the current
+    scaffold - per-site visual design is Epic 2 Story 2.1 / Epic 6 Story
+    6.1's scope. The banner root deliberately carries no d-* display
+    utility: those are !important and would override the hidden attribute.
+*@
+@{
+    var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
+}
+@if (AnalyticsGate.ShouldLoadGa4(Env, settings?.Ga4MeasurementId?.Value))
+{
+    <footer class="container py-3 small">
+        <button type="button" class="btn btn-link btn-sm p-0" data-consent-reopen hidden>Cài đặt cookie</button>
+    </footer>
+
+    <div class="cookie-consent position-fixed bottom-0 start-0 end-0 z-3 bg-dark text-white shadow" role="region" aria-label="Thông báo cookie" data-consent-banner hidden>
+        <div class="container py-3 d-flex flex-column flex-md-row align-items-md-center gap-3">
+            <p class="mb-0 flex-grow-1">
+                Chúng tôi dùng cookie Google Analytics để hiểu cách khách truy cập website và cải thiện nội dung.
+                Bạn có đồng ý cho phép không?
+            </p>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <button type="button" class="btn btn-light" data-consent-accept>Đồng ý</button>
+                <button type="button" class="btn btn-light" data-consent-decline>Từ chối</button>
+            </div>
+        </div>
+    </div>
+}
