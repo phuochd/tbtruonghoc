@@ -82,3 +82,10 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-12-leads-manager-empty-state-flash.md`
   summary: "Make `manager-leads.js` set `loading = false` explicitly when the list fetch settles, instead of relying on Vue's generic `updated` hook, so the no-empty-flash guarantee cannot silently break."
   evidence: Raised by blind-hunter on Story 1.12 (2026-09-25). The guarantee confirmed in 1.12 depends on nothing reactive changing before the first fetch settles. Today the initial `load(null, 'Tất cả site')` writes values identical to the initial data. A future change, for example a different default `siteTitle` or a preselected site, would trigger a re-render, `updated` would set `loading = false` early, and the empty state would flash. Low severity; worth bundling with the two entries above.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-1-site-b-page-shell-sticky-contact-bar.md`
+  summary: Site B tablet nav (768–1000px) may overflow its single nowrap 56px row once the real sitemap (Trống hub, Thùng rượu gỗ, Bồn tắm gỗ, Blog…) plus the 20px hotline are in place.
+  evidence: Unverified (maybe-false, would be medium) — settle by browser check at 768/820/1024px after Stories 2.2/2.3 create the real top-level pages; options are moving inline links to ≥1024px or letting the list scroll/wrap.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-1-site-b-page-shell-sticky-contact-bar.md`
+  summary: ContactLinks.TelHref concatenates all digits, so a Phone like "090 123 4567 ext 12" or two numbers yields a wrong tel: link (pre-existing Story 1.3 rule, now used by the Site B hotline/bar/footer too).
+  evidence: Unverified whether editors enter such values — settle by checking real SiteSettings Phone values or adding save-time validation (cap at 15 digits / reject separators).
