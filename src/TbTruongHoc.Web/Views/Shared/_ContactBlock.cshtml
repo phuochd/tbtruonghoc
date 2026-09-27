@@ -1,4 +1,3 @@
-@using System.Text.RegularExpressions
 @using TbTruongHoc.Web.Models
 @*
     Story 1.3: renders the current site's own contact details (Phone/Zalo/
@@ -23,31 +22,12 @@
     var address = settings?.Address?.Value;
     var mapsUrl = settings?.MapsUrl?.Value;
 
-    // tel: href keeps only digits, plus a leading "+" when the editor
-    // entered an internationally-formatted number (e.g. "+84 90 123 4567"
-    // -> "+84901234567") - never strip the dialing prefix. If the phone
-    // strips down to fewer digits than any real phone number can have
-    // (e.g. the editor typed "N/A", or garbage text that only incidentally
-    // contains a stray digit), treat it as unset rather than rendering a
-    // dead/nonsensical "tel:" link.
-    const int MinPhoneDigits = 7;
-    string telDigits = null;
-    if (!string.IsNullOrWhiteSpace(phone))
-    {
-        var hasPlusPrefix = phone.TrimStart().StartsWith("+");
-        var digitsOnly = Regex.Replace(phone, "[^0-9]", "");
-        if (digitsOnly.Length >= MinPhoneDigits)
-        {
-            telDigits = (hasPlusPrefix ? "+" : "") + digitsOnly;
-        }
-    }
-
-    // Zalo/Maps must be an absolute http(s) URL - a "javascript:"/"data:"
-    // value must never execute on click, and a relative/malformed value
-    // must never render a broken link - so anything else is treated as
-    // unset (element omitted) rather than rendered as-is.
-    var zaloHref = SiteSettingsValidation.IsSafeAbsoluteUrl(zaloUrl) ? zaloUrl : null;
-    var mapsHref = SiteSettingsValidation.IsSafeAbsoluteUrl(mapsUrl) ? mapsUrl : null;
+    // Story 2.1: the sanitizing rules (tel: digits + leading "+", >= 7
+    // digits; Zalo/Maps absolute http(s) only, else treated as unset) live
+    // in ContactLinks, shared with Site B's nav/sticky bar/footer.
+    var telDigits = ContactLinks.TelHref(phone);
+    var zaloHref = ContactLinks.SafeUrl(zaloUrl);
+    var mapsHref = ContactLinks.SafeUrl(mapsUrl);
 }
 @if (telDigits != null || zaloHref != null || mapsHref != null || !string.IsNullOrWhiteSpace(address))
 {

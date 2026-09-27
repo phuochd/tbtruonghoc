@@ -36,6 +36,11 @@ public class PiranhaWebApplicationFactory : WebApplicationFactory<Program>
         {
             services.RemoveAll<INotificationEmailSender>();
             services.AddSingleton<INotificationEmailSender>(EmailSender);
+
+            // Story 2.1: exposes the test-only HideChromeProbeController.
+            // The whole test assembly is added as an application part, so
+            // any controller defined in it becomes routable in the test host.
+            services.AddControllersWithViews().AddApplicationPart(typeof(HideChromeProbeController).Assembly);
         });
     }
 }

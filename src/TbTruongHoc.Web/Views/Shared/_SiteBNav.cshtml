@@ -1,0 +1,73 @@
+@*
+    Story 2.1: Site B top nav (DESIGN.md `nav`). Items come only from the
+    CMS sitemap: non-hidden top-level items, and each one's non-hidden
+    children as a one-level submenu (how the Trống hub + 5 subpages appear
+    once Story 2.2 creates them). Nothing hardcoded.
+
+    Mobile (< 768px): the hamburger opens a full-height, single-level sheet
+    where submenu children are listed flat beneath their parent (disclosure
+    buttons hidden). Tablet/desktop: inline links, submenus open by click /
+    Enter on the disclosure button (never hover-only), plus the hotline.
+    The hamburger sits before the menu in DOM order so the opened sheet is
+    the next thing in the tab order. No login/account UI, by design.
+
+    Behavior lives in site-b-nav.js. Without JS (html:not(.js)): below
+    768px the nav stops being fixed and shows the whole list, children
+    included, in normal flow; at 768px and up the disclosure buttons are
+    hidden and each submenu shows on :hover or :focus-within of its item.
+*@
+@{
+    var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
+    var phone = settings?.Phone?.Value;
+    var telHref = ContactLinks.TelHref(phone);
+
+    var items = (await WebApp.Site.Sitemap.ForUserAsync(User, Auth)).Where(i => !i.IsHidden).ToList();
+}
+<header class="sb-nav" data-sb-nav data-menu-open="false">
+    <div class="sb-nav__bar sb-container">
+        <a class="sb-nav__brand" href="~/">Trống <span class="sb-nav__brand-accent">Đọi Tam</span></a>
+
+        @if (items.Count > 0)
+        {
+            <button type="button" class="sb-nav__toggle" aria-expanded="false" aria-controls="sb-nav-menu" data-sb-nav-toggle>
+                <svg class="sb-icon" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span class="visually-hidden">Menu</span>
+            </button>
+
+            <nav class="sb-nav__menu" id="sb-nav-menu" aria-label="Điều hướng chính" data-sb-nav-menu>
+                <ul class="sb-nav__list">
+                    @foreach (var item in items)
+                    {
+                        var children = item.Items.Where(c => !c.IsHidden).ToList();
+                        var isCurrent = item.Id == WebApp.PageId;
+                        var isActive = isCurrent || item.HasChild(WebApp.PageId);
+                        var submenuId = "sb-sub-" + item.Id.ToString("N");
+                        <li class="sb-nav__item@(isActive ? " is-active" : "")@(children.Count > 0 ? " has-submenu" : "")">
+                            <a class="sb-nav__link" href="@WebApp.Url(item)" aria-current="@(isCurrent ? "page" : null)">@item.MenuTitle</a>
+                            @if (children.Count > 0)
+                            {
+                                <button type="button" class="sb-nav__subtoggle" aria-expanded="false" aria-controls="@submenuId" data-sb-submenu-toggle>
+                                    <svg class="sb-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    <span class="visually-hidden">Mục con của @item.MenuTitle</span>
+                                </button>
+                                <ul class="sb-nav__submenu" id="@submenuId" data-sb-submenu>
+                                    @foreach (var child in children)
+                                    {
+                                        <li>
+                                            <a class="sb-nav__sublink" href="@WebApp.Url(child)" aria-current="@(child.Id == WebApp.PageId ? "page" : null)">@child.MenuTitle</a>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+
+        @if (telHref != null)
+        {
+            <a class="sb-nav__hotline" href="tel:@telHref"><span class="visually-hidden">Hotline </span>@phone</a>
+        }
+    </div>
+</header>
