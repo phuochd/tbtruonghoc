@@ -1,0 +1,39 @@
+@model TbTruongHoc.Web.Models.ProductCardModel
+@*
+    Story 2.2: DESIGN.md `product-card`. Two separate, equally valid tap
+    targets to the same product URL - a stretched title link (the whole
+    card body) and an independent CTA anchor - never nested anchors.
+    Price is the editor's free text, HTML-encoded; blank = "Liên hệ báo giá".
+*@
+@{
+    var post = Model.Post;
+    var price = post.PriceText;
+}
+<article class="sb-card">
+    <div class="sb-card__thumb">
+        @if (post.PrimaryImage.HasValue)
+        {
+            <img src="@Url.Content(WebApp.Media.ResizeImage(post.PrimaryImage, 600, 450))" alt="@post.Title" width="600" height="450" loading="lazy">
+        }
+    </div>
+    <div class="sb-card__body">
+        @if (!string.IsNullOrWhiteSpace(Model.Eyebrow))
+        {
+            <p class="sb-card__eyebrow">@Model.Eyebrow</p>
+        }
+        <h2 class="sb-card__title"><a class="sb-card__link" href="@post.Permalink">@post.Title</a></h2>
+        @if (!string.IsNullOrWhiteSpace(post.Excerpt))
+        {
+            <p class="sb-card__desc">@post.Excerpt</p>
+        }
+        @if (price != null)
+        {
+            <p class="sb-card__price">@price</p>
+        }
+        else
+        {
+            <p class="sb-card__price sb-card__price--contact">Liên hệ báo giá</p>
+        }
+        <a class="sb-card__cta" href="@post.Permalink" aria-label="Xem chi tiết @post.Title">Xem chi tiết</a>
+    </div>
+</article>

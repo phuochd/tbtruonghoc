@@ -247,7 +247,7 @@ Line-height is generous throughout (1.25–1.6) rather than the tighter leading 
 
 Mobile-first, single-column. The scale is 4px-based (`spacing.1`–`spacing.8`); `gutter` (16px) is the mobile side margin used site-wide, matching the density the picked Danh Mục Nhanh direction called for — this is not an airy editorial margin, it is a working catalog margin. `gutter-desktop` (24px) widens it only on larger viewports; the layout never goes full-bleed edge-to-edge.
 
-The homepage and category pages use a 2-column card grid on mobile (`card-gap` 12px between cards) that can widen to 3–4 columns on tablet/desktop without changing card anatomy — this is what makes the `category-tile` and `product-card` components CMS-count-flexible rather than hardcoded: the grid reflows to however many items the CMS returns, it does not assume 3.
+The homepage and category pages use a 2-column card grid on mobile (`card-gap` 12px between cards) that can widen to 3–4 columns on tablet/desktop without changing card anatomy — *revised 2026-09-27 (Story 2.2 walkthrough): `product-card` grids go 1-up below 480px and 2-up from 480px, because 2-up cards at 375px (~165px wide) were too cramped for the photo and description; text-only `category-tile` grids stay 2-up on mobile* — this is what makes the `category-tile` and `product-card` components CMS-count-flexible rather than hardcoded: the grid reflows to however many items the CMS returns, it does not assume 3.
 
 `section-gap` (32px) separates major page sections (hero → category grid → trust strip → quote/testimonial → footer/sticky-bar zone). This is deliberately tighter than an editorial site's section rhythm would be — Danh Mục Nhanh is a dense register, and generous 80px+ editorial gaps would fight that.
 

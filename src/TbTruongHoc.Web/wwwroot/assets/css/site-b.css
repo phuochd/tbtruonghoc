@@ -529,6 +529,270 @@ body.site-b.sb-has-bar:has(> [data-consent-banner]:not([hidden])) {
     border-radius: var(--sb-radius-md);
 }
 
+/* ---------- Catalog: grid, product-card, category-tile, pager (Story 2.2) ---------- */
+.sb-catalog > .container {
+    padding-top: var(--sb-space-3);
+}
+
+/* CMS-count-flexible grid: 2-up mobile, 3 at >= 768px, 4 at >= 1200px. */
+.sb-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sb-card-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sb-grid > li {
+    display: flex;
+    min-width: 0;
+}
+
+/* Product cards go 1-up on small phones (~165px 2-up cards were too
+   cramped for the photo and description); 2-up from 480px. Category
+   tiles are text-only and stay 2-up. */
+.sb-grid--products {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 480px) {
+    .sb-grid--products {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 768px) {
+    .sb-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1200px) {
+    .sb-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/* product-card */
+.sb-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
+    background: var(--sb-surface);
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md);
+    transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+}
+
+.sb-card__thumb {
+    aspect-ratio: 4 / 3;
+    /* The one gradient in the system: wood-grain frame, visible when there is no photo. */
+    background: linear-gradient(135deg, var(--sb-secondary), var(--sb-primary));
+}
+
+.sb-main .sb-card__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+}
+
+.sb-card__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--sb-space-1);
+    padding: var(--sb-space-3);
+}
+
+.sb-card__eyebrow,
+.sb-tile__eyebrow {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sb-secondary);
+}
+
+.site-b .sb-card__title,
+.site-b .sb-tile__title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--sb-on-surface);
+    overflow-wrap: anywhere;
+}
+
+.site-b .sb-card__link {
+    color: var(--sb-on-surface);
+    text-decoration: none;
+}
+
+/* Stretched link: the whole card body is a tap target to the product. */
+.sb-card__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.sb-card__desc {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--sb-on-surface-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sb-card__price,
+.sb-product__price {
+    margin: var(--sb-space-1) 0 var(--sb-space-2);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--sb-on-surface);
+    overflow-wrap: anywhere;
+}
+
+.sb-card__price--contact,
+.sb-product__price--contact {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--sb-on-surface-muted);
+}
+
+/* Independent CTA, stacked above the stretched link. */
+.site-b .sb-card__cta {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    margin-top: auto;
+    padding: var(--sb-space-2) var(--sb-space-3);
+    background: var(--sb-primary);
+    color: var(--sb-on-primary);
+    border-radius: var(--sb-radius-sm);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+}
+
+.site-b .sb-card__cta:focus-visible {
+    outline-color: var(--sb-on-surface);
+}
+
+/* category-tile: the whole tile is one link. */
+.site-b .sb-tile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-1);
+    width: 100%;
+    padding: var(--sb-space-4) var(--sb-space-3);
+    background: var(--sb-surface);
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md);
+    color: var(--sb-on-surface);
+    text-decoration: none;
+    transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+}
+
+.sb-tile__desc {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--sb-on-surface-muted);
+}
+
+/* Pressed state on touch-down (never hover-only): inset primary ring + 0.98 scale. */
+.sb-card:active,
+.site-b .sb-tile:active {
+    box-shadow: inset 0 0 0 2px var(--sb-primary);
+    transform: scale(0.98);
+}
+
+.site-b .sb-card__cta:active {
+    background: var(--sb-primary-hover);
+    box-shadow: inset 0 2px 4px rgba(58, 46, 34, 0.25);
+}
+
+/* Keyboard focus on the stretched link rings the whole card. */
+.sb-card:has(.sb-card__link:focus-visible) {
+    box-shadow: inset 0 0 0 2px var(--sb-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sb-card,
+    .site-b .sb-tile {
+        transition: none;
+    }
+}
+
+/* Pagination: plain prev/next links. */
+.sb-pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sb-space-3);
+    margin-top: var(--sb-space-6);
+}
+
+.sb-pager__status {
+    font-size: 14px;
+    color: var(--sb-on-surface-muted);
+}
+
+.site-b .sb-pager__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--sb-space-4);
+    background: var(--sb-surface);
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    color: var(--sb-primary);
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.sb-pager__link--next {
+    margin-left: auto;
+}
+
+.site-b .sb-pager__link:active {
+    background: var(--sb-surface-sunken);
+}
+
+/* Minimal product page (replaced by Story 2.4's product-detail-page). */
+.sb-product__image {
+    display: block;
+    margin-bottom: var(--sb-space-4);
+    border: 1px solid var(--sb-border);
+}
+
+.sb-product__excerpt {
+    margin-bottom: var(--sb-space-2);
+}
+
+.sb-product__price {
+    margin-bottom: var(--sb-section-gap);
+}
+
 /* ---------- Footer ---------- */
 .sb-footer {
     padding: var(--sb-space-6) 0;
