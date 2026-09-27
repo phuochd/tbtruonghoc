@@ -42,7 +42,7 @@
     @if (posts.Count > 0)
     {
         <div class="container">
-            <ul class="sb-grid" data-sb-product-grid>
+            <ul class="sb-grid sb-grid--products" data-sb-product-grid>
                 @foreach (var post in posts)
                 {
                     <li>@await Html.PartialAsync("_ProductCard", new ProductCardModel(post, Model.Title))</li>

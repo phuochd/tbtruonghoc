@@ -38,7 +38,7 @@ The Trống hub is a `ProductHubPage` and its 5 subcategories are `ProductArchiv
   - CTA "Xem chi tiết" (primary fill, cta, rounded.sm) with aria-label "Xem chi tiết {title}".
 - Card body and CTA are two separate, equally valid tap targets to the post permalink. Use a stretched title link plus an independent CTA anchor. No nested anchors.
 - Pressed state on `:active`: 2px inset primary ring + scale 0.98. No hover-only affordances.
-- Grid is 2-up at mobile, 3 at ≥768px and 4 at ≥1200px, with a 12px gap. Uses Mộc Trầm tokens from `site-b.css` only.
+- Product-card grid is 1-up below 480px, 2-up from 480px, 3 at ≥768px and 4 at ≥1200px; category-tile grid is 2-up at mobile, 3 at ≥768px, 4 at ≥1200px. Both use a 12px gap. Uses Mộc Trầm tokens from `site-b.css` only.
 - Archive paging: 12 per page via the `pageSize` argument, with plain prev/next links (Vietnamese labels) only when TotalPages > 1. No infinite scroll.
 - Hub tiles are category-tile anatomy: eyebrow "Trống" = hub title, archive title, archive Excerpt, whole tile is one link. The hub renders its own blocks above the tiles.
 - "Published post count" means the archive's published posts only (use `Archives.GetByIdAsync(id, 1, …, pageSize: 1).TotalPosts`, not `Posts.GetCountAsync`).
@@ -101,7 +101,7 @@ The Trống hub is a `ProductHubPage` and its 5 subcategories are `ProductArchiv
 
 **Acceptance Criteria:**
 - Given the hub with ≥1 non-empty subcategory, when opened on Site B, then every non-empty, non-hidden subcategory appears as a tile linking to its permalink, and the nav submenu lists the subcategories under the hub.
-- Given a subcategory page at 375px, when rendered, then cards sit 2-up and both the card body and the CTA navigate to the same URL.
+- Given a subcategory page at 375px, when rendered, then cards sit 1-up and both the card body and the CTA navigate to the same URL.
 - Given the full test suite, when run, then all pre-existing tests still pass.
 
 ## Implementation Notes
@@ -113,6 +113,8 @@ The Trống hub is a `ProductHubPage` and its 5 subcategories are `ProductArchiv
 - The seed appends the hub after existing top-level Site B pages (`SortOrder = sitemap.Count`); on a Site B with no pages at all it becomes the start page (permalink `/`).
 
 ## Spec Change Log
+
+- 2026-09-27 (walkthrough, Phước): product cards were ~165px wide at 375px in the 2-up grid, too small for the photo and description. Product-card grid changed to 1-up below 480px and 2-up from 480px (`.sb-grid--products`). Category tiles are text-only and stay 2-up per DESIGN.md. Supersedes the "2-up at mobile" Boundary and the 375px acceptance criterion.
 
 ## Review Triage Log
 
