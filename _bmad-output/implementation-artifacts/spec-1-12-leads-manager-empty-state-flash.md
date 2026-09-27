@@ -33,6 +33,8 @@ Evidence:
 
 **Acceptance status:** AC3 (not real, close with the finding recorded) is met on the static evidence above. AC2 does not apply. AC1 asks for a manual, throttled click-through, which needs a Manager admin login. The agent does not have one (see Story 1.5's Implementation Notes), so AC1 is left for the human walkthrough. If the walkthrough *does* show a flash, this conclusion is wrong: reopen the story and apply the AC2 fix.
 
+**AC1 result (human walkthrough, 2026-09-27):** Passed. With Slow 3G throttling and the cache disabled, a hard reload of `/manager/leads` showed no empty-state flash, and switching the site filter showed no empty box between result sets. The session-expiry path showed the red "Không thể tải dữ liệu…" alert as expected. That failure path is still covered by the deferred follow-ups. All three ACs are now settled (AC1 met, AC2 not applicable, AC3 met).
+
 **Walkthrough steps for AC1:**
 1. Make sure at least one lead exists (`POST /api/leads` or the public form). The flash only matters when there are real leads.
 2. Log in to Manager. In DevTools → Network, disable the cache and set throttling to "Slow 3G".
