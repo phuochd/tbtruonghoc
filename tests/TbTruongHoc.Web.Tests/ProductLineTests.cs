@@ -175,7 +175,7 @@ public class ProductLineTests
                 Assert.Contains("<p class=\"sb-card__price sb-card__price--contact\">Liên hệ báo giá</p>", card);
                 var hrefs = Regex.Matches(card, "<a [^>]*href=\"([^\"]+)\"").Select(m => m.Groups[1].Value).Distinct().ToList();
                 Assert.Equal(new[] { post.Permalink }, hrefs);
-                Assert.Contains($"<h1>{post.Title}</h1>", Decode(await GetAsync(post.Permalink, HostnameOf(siteB), HttpStatusCode.OK)));
+                Assert.Contains($"<h1 class=\"sb-pdp__title\">{post.Title}</h1>", Decode(await GetAsync(post.Permalink, HostnameOf(siteB), HttpStatusCode.OK)));
             }
 
             // Nav: flat link, after Trống; Bồn tắm (still a draft) absent.

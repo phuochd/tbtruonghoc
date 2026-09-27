@@ -1,3 +1,11 @@
 @model Piranha.Extend.Blocks.ImageBlock
+@{
+    // Story 2.4 (block-image alt decision A): media AltText, then the page's
+    // ViewData["ImageAltFallback"] (the PDP sets its product title), then the
+    // media Title. Never omit the attribute.
+    var media = Model.Body?.Media;
+    var alt = new[] { media?.AltText, ViewData["ImageAltFallback"] as string, media?.Title }
+        .FirstOrDefault(s => !string.IsNullOrWhiteSpace(s))?.Trim() ?? "";
+}
 
-<img src="@Url.Content(WebApp.Media.ResizeImage(Model, 1110))">
+<img src="@Url.Content(WebApp.Media.ResizeImage(Model, 1110))" alt="@alt">

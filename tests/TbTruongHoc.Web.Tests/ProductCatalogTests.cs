@@ -215,29 +215,6 @@ public class ProductCatalogTests
     }
 
     [Fact]
-    public async Task Product_Post_Renders_Price_Row_And_Prefilled_Quote_Form()
-    {
-        await WithCatalogAsync(async (api, siteB, c) =>
-        {
-            var hub = await c.HubAsync("Hub Post");
-            var archive = await c.ArchiveAsync(hub, "Post Parent", 0);
-            var post = await c.PostAsync(archive, "Detail", excerpt: "Detail excerpt");
-
-            var html = await GetHtmlAsync(post.Permalink, HostnameOf(siteB));
-            var decoded = Decode(html);
-            Assert.Contains($"<title>{post.Title}</title>", decoded);
-            Assert.Contains($"<h1>{post.Title}</h1>", decoded);
-            Assert.Contains("Detail excerpt", decoded);
-            Assert.Contains("<p class=\"sb-product__price sb-product__price--contact\">Liên hệ báo giá</p>", decoded);
-            Assert.Contains("data-quote-request-form", html);
-            Assert.Contains($"name=\"productOfInterest\" value=\"{post.Title}\"", decoded);
-            Assert.Contains("lead-form.js", html);
-            Assert.DoesNotContain("<img", Section(html, "<main", "</main>"));
-            Assert.DoesNotContain("Đặt mua", decoded);
-        });
-    }
-
-    [Fact]
     public async Task Trong_Seed_Is_Idempotent_And_Keeps_Editor_Changes()
     {
         using var scope = _factory.Services.CreateScope();
@@ -393,7 +370,7 @@ public class ProductCatalogTests
 
     // --- helpers ---
 
-    private sealed class CatalogBuilder
+    internal sealed class CatalogBuilder
     {
         private readonly IApi _api;
         private readonly Site _site;
@@ -539,9 +516,9 @@ public class ProductCatalogTests
     private static int Count(string haystack, string needle) =>
         Regex.Matches(haystack, Regex.Escape(needle)).Count;
 
-    private static string Decode(string html) => WebUtility.HtmlDecode(html);
+    internal static string Decode(string html) => WebUtility.HtmlDecode(html);
 
-    private static string Section(string html, string startMarker, string endMarker)
+    internal static string Section(string html, string startMarker, string endMarker)
     {
         var start = html.IndexOf(startMarker, StringComparison.Ordinal);
         Assert.True(start >= 0, $"Expected to find '{startMarker}'.");
@@ -550,14 +527,14 @@ public class ProductCatalogTests
         return html[start..(end + endMarker.Length)];
     }
 
-    private static async Task<Site> GetSiteAsync(IApi api, string internalId)
+    internal static async Task<Site> GetSiteAsync(IApi api, string internalId)
     {
         var site = await api.Sites.GetByInternalIdAsync(internalId);
         Assert.NotNull(site);
         return site!;
     }
 
-    private static string HostnameOf(Site site)
+    internal static string HostnameOf(Site site)
     {
         var hostname = site.Hostnames?.Split(',').FirstOrDefault()?.Trim();
         Assert.False(string.IsNullOrEmpty(hostname));
