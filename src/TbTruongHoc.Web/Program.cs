@@ -268,6 +268,13 @@ app.UsePiranha(options =>
     // the content types are built above. Skipped entirely once a page with
     // slug "trong" exists on Site B, so editor changes always stick.
     TrongCatalogSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+
+    // Story 2.3: idempotently seed Site B's "Thùng rượu gỗ" + "Bồn tắm gỗ"
+    // category archives as drafts (plus 3 draft Thùng rượu variant posts).
+    // Runs after TrongCatalogSeed so both are appended after the Trống hub.
+    // Per slug: only a missing page is created; existing pages are never
+    // modified, so editor changes always stick.
+    ProductLineSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
 });
 
 app.Run();
