@@ -1,0 +1,16 @@
+@model TbTruongHoc.Web.Models.CategoryTileViewModel
+@*
+    Story 2.2: DESIGN.md `category-tile` - eyebrow (the hub's title), the
+    subcategory title and its excerpt. The whole tile is one link.
+*@
+<a class="sb-tile" href="@Model.Tile.Permalink">
+    @if (!string.IsNullOrWhiteSpace(Model.Eyebrow))
+    {
+        <span class="sb-tile__eyebrow">@Model.Eyebrow</span>
+    }
+    <h2 class="sb-tile__title">@Model.Tile.Title</h2>
+    @if (!string.IsNullOrWhiteSpace(Model.Tile.Excerpt))
+    {
+        <span class="sb-tile__desc">@Model.Tile.Excerpt</span>
+    }
+</a>

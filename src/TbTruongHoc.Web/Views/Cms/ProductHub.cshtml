@@ -1,0 +1,47 @@
+@model ProductHubPage
+@*
+    Story 2.2: product hub (e.g. "Trống"). The hub's own blocks render
+    first, then a category-tile grid built by ProductCatalog from its
+    visible, non-empty ProductArchive children - omitted when there are none.
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var hasImage = Model.PrimaryImage.HasValue;
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<header @(hasImage ? "class=has-image" : "") @(hasImage ? $"style=background-image:url({ @Url.Content(WebApp.Media.ResizeImage(Model.PrimaryImage, 1920, 400)) })" : "")>
+    <div class="dimmer"></div>
+    <div class="container">
+        <h1>@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
+        {
+            <div class="lead">@Model.Excerpt</div>
+        }
+    </div>
+</header>
+
+<main class="sb-catalog">
+    @foreach (var block in Model.Blocks)
+    {
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+
+    @if (Model.Tiles.Count > 0)
+    {
+        <div class="container">
+            <ul class="sb-grid" data-sb-tile-grid>
+                @foreach (var tile in Model.Tiles)
+                {
+                    <li>@await Html.PartialAsync("_CategoryTile", new CategoryTileViewModel(tile, Model.Title))</li>
+                }
+            </ul>
+        </div>
+    }
+</main>

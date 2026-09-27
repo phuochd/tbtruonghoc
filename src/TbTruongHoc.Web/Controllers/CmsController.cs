@@ -3,6 +3,7 @@ using Piranha;
 using Piranha.AspNetCore.Services;
 using Piranha.Models;
 using TbTruongHoc.Web.Models;
+using TbTruongHoc.Web.Services;
 
 namespace TbTruongHoc.Web.Controllers;
 
@@ -11,15 +12,17 @@ public class CmsController : Controller
 {
     private readonly IApi _api;
     private readonly IModelLoader _loader;
+    private readonly ProductCatalog _catalog;
 
     /// <summary>
     /// Default constructor.
     /// </summary>
     /// <param name="api">The current api</param>
-    public CmsController(IApi api, IModelLoader loader)
+    public CmsController(IApi api, IModelLoader loader, ProductCatalog catalog)
     {
         _api = api;
         _loader = loader;
+        _catalog = catalog;
     }
 
     /// <summary>
@@ -88,6 +91,72 @@ public class CmsController : Controller
             return View(model);
         }
         catch
+        {
+            return Unauthorized();
+        }
+    }
+
+    /// <summary>
+    /// Story 2.2: gets the product hub page (e.g. "Trống") with the given id,
+    /// plus its category tiles built from its ProductArchive children.
+    /// </summary>
+    /// <param name="id">The unique page id</param>
+    /// <param name="draft">If a draft is requested</param>
+    [Route("producthub")]
+    public async Task<IActionResult> ProductHub(Guid id, bool draft = false)
+    {
+        try
+        {
+            var model = await _loader.GetPageAsync<ProductHubPage>(id, HttpContext.User, draft);
+            model.Tiles = await _catalog.GetHubTilesAsync(model.SiteId, model.Id);
+
+            return View(model);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+    }
+
+    /// <summary>
+    /// Story 2.2: gets the product archive (category) page with the given id
+    /// and the requested page of its products.
+    /// </summary>
+    /// <param name="id">The unique page id</param>
+    /// <param name="page">The optional archive page</param>
+    /// <param name="draft">If a draft is requested</param>
+    [Route("productarchive")]
+    public async Task<IActionResult> ProductArchive(Guid id, int? page = null, bool draft = false)
+    {
+        try
+        {
+            var model = await _loader.GetPageAsync<ProductArchive>(id, HttpContext.User, draft);
+            model.Archive = await _api.Archives.GetByIdAsync<ProductPost>(id, page, null, null, null, null,
+                Models.ProductArchive.PageSize);
+
+            return View(model);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+    }
+
+    /// <summary>
+    /// Story 2.2: gets the product post with the given id.
+    /// </summary>
+    /// <param name="id">The unique post id</param>
+    /// <param name="draft">If a draft is requested</param>
+    [Route("productpost")]
+    public async Task<IActionResult> ProductPost(Guid id, bool draft = false)
+    {
+        try
+        {
+            var model = await _loader.GetPostAsync<ProductPost>(id, HttpContext.User, draft);
+
+            return View(model);
+        }
+        catch (UnauthorizedAccessException)
         {
             return Unauthorized();
         }

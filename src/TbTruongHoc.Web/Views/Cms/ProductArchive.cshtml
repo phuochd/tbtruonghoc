@@ -1,0 +1,68 @@
+@model ProductArchive
+@*
+    Story 2.2: product category page (e.g. one Trống subcategory). Header +
+    blocks, then a product-card grid (12 per page) with plain prev/next
+    links when there is more than one page. An empty archive renders no
+    grid, no pagination and no "no products" text.
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var hasImage = Model.PrimaryImage.HasValue;
+    var posts = Model.Archive?.Posts ?? new List<ProductPost>();
+    var currentPage = Math.Max(1, Model.Archive?.CurrentPage ?? 1);
+    var totalPages = Model.Archive?.TotalPages ?? 0;
+
+    string PageLink(int n) => n <= 1 ? Model.Permalink : $"{Model.Permalink}/page/{n}";
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<header @(hasImage ? "class=has-image" : "") @(hasImage ? $"style=background-image:url({ @Url.Content(WebApp.Media.ResizeImage(Model.PrimaryImage, 1920, 400)) })" : "")>
+    <div class="dimmer"></div>
+    <div class="container">
+        <h1>@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
+        {
+            <div class="lead">@Model.Excerpt</div>
+        }
+    </div>
+</header>
+
+<main class="sb-catalog">
+    @foreach (var block in Model.Blocks)
+    {
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+
+    @if (posts.Count > 0)
+    {
+        <div class="container">
+            <ul class="sb-grid" data-sb-product-grid>
+                @foreach (var post in posts)
+                {
+                    <li>@await Html.PartialAsync("_ProductCard", new ProductCardModel(post, Model.Title))</li>
+                }
+            </ul>
+
+            @if (totalPages > 1)
+            {
+                <nav class="sb-pager" aria-label="Phân trang">
+                    @if (currentPage > 1)
+                    {
+                        <a class="sb-pager__link sb-pager__link--prev" href="@PageLink(currentPage - 1)" rel="prev">Trang trước</a>
+                    }
+                    <span class="sb-pager__status">Trang @currentPage / @totalPages</span>
+                    @if (currentPage < totalPages)
+                    {
+                        <a class="sb-pager__link sb-pager__link--next" href="@PageLink(currentPage + 1)" rel="next">Trang sau</a>
+                    }
+                </nav>
+            }
+        </div>
+    }
+</main>

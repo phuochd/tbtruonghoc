@@ -12,6 +12,7 @@ using Piranha.Models;
 using TbTruongHoc.Web.Data;
 using TbTruongHoc.Web.Models;
 using TbTruongHoc.Web.Notifications;
+using TbTruongHoc.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,6 +75,9 @@ builder.Services.AddSingleton<FormNotificationService>();
 builder.Services.AddSingleton<IFormNotificationService>(sp => sp.GetRequiredService<FormNotificationService>());
 builder.Services.AddSingleton<INotificationEmailSender, SmtpNotificationEmailSender>();
 builder.Services.AddHostedService<FormNotificationWorker>();
+
+// Story 2.2: builds a product hub's category tiles from its sitemap children.
+builder.Services.AddScoped<ProductCatalog>();
 
 var app = builder.Build();
 
@@ -258,6 +262,12 @@ app.UsePiranha(options =>
     // run after SiteSeed so both Site records already exist. Safe to run on
     // every startup - a no-op once seeded.
     SiteSettingsSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+
+    // Story 2.2: idempotently seed Site B's "Trống" hub + its 5 subcategory
+    // archives. Must run after SiteSeed (needs the Site B record) and after
+    // the content types are built above. Skipped entirely once a page with
+    // slug "trong" exists on Site B, so editor changes always stick.
+    TrongCatalogSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
 });
 
 app.Run();

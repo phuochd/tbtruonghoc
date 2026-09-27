@@ -1,0 +1,45 @@
+@model ProductPost
+@*
+    Story 2.2: minimal product page until Story 2.4's product-detail-page
+    replaces this body - title, image, excerpt, price row, then the shared
+    quote form prefilled with the product name.
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var price = Model.PriceText;
+    var productOfInterest = Model.Title?.Length > 200 ? Model.Title[..200] : Model.Title;
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<header>
+    <div class="container">
+        <h1>@Model.Title</h1>
+    </div>
+</header>
+
+<main class="sb-product">
+    <div class="container">
+        @if (Model.PrimaryImage.HasValue)
+        {
+            <img class="sb-product__image" src="@Url.Content(WebApp.Media.ResizeImage(Model.PrimaryImage, 1140))" alt="@Model.Title">
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
+        {
+            <p class="sb-product__excerpt">@Model.Excerpt</p>
+        }
+        @if (price != null)
+        {
+            <p class="sb-product__price">@price</p>
+        }
+        else
+        {
+            <p class="sb-product__price sb-product__price--contact">Liên hệ báo giá</p>
+        }
+
+        @await Html.PartialAsync("_QuoteRequestForm", new QuoteRequestFormViewModel { ProductOfInterest = productOfInterest })
+    </div>
+</main>
+
+<script src="~/assets/js/lead-form.js" asp-append-version="true"></script>
