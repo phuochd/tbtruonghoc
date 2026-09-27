@@ -1,45 +1,128 @@
 @model ProductPost
 @*
-    Story 2.2: minimal product page until Story 2.4's product-detail-page
-    replaces this body - title, image, excerpt, price row, then the shared
-    quote form prefilled with the product name.
+    Story 2.4: DESIGN.md `product-detail-page`. Order: gallery, category
+    eyebrow, title, "Mã: …", excerpt, price row, spec rows, content blocks,
+    then the shared quote form prefilled with the product name. Every part is
+    CMS-driven and a blank field renders nothing (no label, no empty box).
+
+    Gallery: PrimaryImage then the "Ảnh sản phẩm" list. 1 photo = one framed
+    image, no controls. 2+ photos = main image + a row of thumbnail links to
+    the large image (work without JS); sb-gallery.js swaps the main image in
+    place. Never auto-advances, no lightbox.
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
     var price = Model.PriceText;
+    var sku = Model.SkuText;
+    var specs = Model.SpecRows;
+    var images = Model.GalleryImages;
     var productOfInterest = Model.Title?.Length > 200 ? Model.Title[..200] : Model.Title;
+    var layoutClass = images.Count > 0 ? "sb-pdp__layout sb-pdp__layout--gallery" : "sb-pdp__layout";
+    var archive = await WebApp.Api.Pages.GetByIdAsync(Model.BlogId);
+    string eyebrow = archive?.Title;
+
+    string AltFor(Piranha.Extend.Fields.ImageField field, int n) =>
+        !string.IsNullOrWhiteSpace(field.Media?.AltText) ? field.Media.AltText.Trim() : $"{Model.Title} – ảnh {n}";
+    string LargeUrl(Piranha.Extend.Fields.ImageField field) => Url.Content(WebApp.Media.ResizeImage(field, 1140));
 }
 @section head {
     @await Html.PartialAsync("_MetaTags", Model)
 }
 
-<header>
+<main class="sb-pdp">
     <div class="container">
-        <h1>@Model.Title</h1>
+        <div class="@layoutClass">
+            @if (images.Count == 1)
+            {
+                <div class="sb-pdp__gallery">
+                    <img class="sb-pdp__image" fetchpriority="high" src="@LargeUrl(images[0])" alt="@AltFor(images[0], 1)" width="@images[0].Media.Width" height="@images[0].Media.Height">
+                </div>
+            }
+            else if (images.Count > 1)
+            {
+                var first = images[0];
+                <div class="sb-pdp__gallery" data-sb-gallery>
+                    <img class="sb-pdp__image" data-sb-gallery-main fetchpriority="high" src="@LargeUrl(first)" alt="@AltFor(first, 1)" width="@first.Media.Width" height="@first.Media.Height">
+                    <ul class="sb-pdp__thumbs">
+                        @for (var i = 0; i < images.Count; i++)
+                        {
+                            var image = images[i];
+                            var n = i + 1;
+                            var alt = AltFor(image, n);
+                            <li>
+                                <a class="sb-pdp__thumb" href="@LargeUrl(image)" aria-label="Xem ảnh @n"
+                                   data-sb-gallery-thumb data-alt="@alt" data-width="@image.Media.Width" data-height="@image.Media.Height"
+                                   aria-current="@(i == 0 ? "true" : null)">
+                                    <img src="@Url.Content(WebApp.Media.ResizeImage(image, 160, 160))" alt="@alt" width="160" height="160" loading="lazy">
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="sb-pdp__details">
+                @if (!string.IsNullOrWhiteSpace(eyebrow))
+                {
+                    <p class="sb-pdp__eyebrow">@eyebrow</p>
+                }
+                <h1 class="sb-pdp__title">@Model.Title</h1>
+                @if (sku != null)
+                {
+                    <p class="sb-pdp__sku">Mã: @sku</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
+                {
+                    <p class="sb-pdp__excerpt">@Model.Excerpt</p>
+                }
+                @if (price != null)
+                {
+                    <p class="sb-product__price">@price</p>
+                }
+                else
+                {
+                    <p class="sb-product__price sb-product__price--contact">Liên hệ báo giá</p>
+                }
+                @if (specs.Count > 0)
+                {
+                    <dl class="sb-spec">
+                        @foreach (var row in specs)
+                        {
+                            <div class="sb-spec__row">
+                                <dt class="sb-spec__label">@row.Label</dt>
+                                <dd class="sb-spec__value">@row.Value</dd>
+                            </div>
+                        }
+                    </dl>
+                }
+            </div>
+        </div>
     </div>
-</header>
 
-<main class="sb-product">
-    <div class="container">
-        @if (Model.PrimaryImage.HasValue)
-        {
-            <img class="sb-product__image" src="@Url.Content(WebApp.Media.ResizeImage(Model.PrimaryImage, 1140))" alt="@Model.Title">
-        }
-        @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
-        {
-            <p class="sb-product__excerpt">@Model.Excerpt</p>
-        }
-        @if (price != null)
-        {
-            <p class="sb-product__price">@price</p>
-        }
-        else
-        {
-            <p class="sb-product__price sb-product__price--contact">Liên hệ báo giá</p>
-        }
+    @{
+        // Block-image alt decision A: shared ImageBlock/ImageGalleryBlock
+        // templates fall back to the product title when media has no AltText.
+        ViewData["ImageAltFallback"] = Model.Title;
+    }
+    @foreach (var block in Model.Blocks)
+    {
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+    @{
+        ViewData.Remove("ImageAltFallback");
+    }
 
+    <div class="container sb-pdp__form">
         @await Html.PartialAsync("_QuoteRequestForm", new QuoteRequestFormViewModel { ProductOfInterest = productOfInterest })
     </div>
 </main>
 
+@if (images.Count > 1)
+{
+    <script src="~/assets/js/sb-gallery.js" asp-append-version="true"></script>
+}
 <script src="~/assets/js/lead-form.js" asp-append-version="true"></script>

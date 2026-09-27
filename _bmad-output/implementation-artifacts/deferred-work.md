@@ -93,3 +93,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-thung-ruou-bon-tam-category-pages.md`
   summary: No test pins the Program.cs startup order of the Site B seeds (TrongCatalogSeed before ProductLineSeed), which decides whether the Trống hub sorts before Thùng rượu gỗ / Bồn tắm gỗ in the nav on a fresh database.
   evidence: The nav-order test runs against the persistent dev DB, where the hub already exists, so swapping the two calls in Program.cs fails no test; pinning it needs a fresh-database test host (or at least a throwaway-site test calling both seeds in order).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-product-detail-page.md`
+  summary: Add tests for the shared ImageBlock/ImageGalleryBlock alt chain off the PDP (media Title fallback, no ImageAltFallback set, e.g. Site A pages).
+  evidence: Story 2.4 review pass 2 (V3). Only the PDP renders these templates in tests, where ImageAltFallback is always set and test media has no Title, so dropping or reordering the Title step fails no test.
