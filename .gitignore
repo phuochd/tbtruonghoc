@@ -13,3 +13,6 @@ media/
 
 # Local secrets - see .env.example for the expected keys
 .env
+
+# Local dev uploads (runtime-generated)
+src/TbTruongHoc.Web/wwwroot/uploads/

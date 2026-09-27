@@ -89,3 +89,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-1-site-b-page-shell-sticky-contact-bar.md`
   summary: ContactLinks.TelHref concatenates all digits, so a Phone like "090 123 4567 ext 12" or two numbers yields a wrong tel: link (pre-existing Story 1.3 rule, now used by the Site B hotline/bar/footer too).
   evidence: Unverified whether editors enter such values — settle by checking real SiteSettings Phone values or adding save-time validation (cap at 15 digits / reject separators).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-thung-ruou-bon-tam-category-pages.md`
+  summary: No test pins the Program.cs startup order of the Site B seeds (TrongCatalogSeed before ProductLineSeed), which decides whether the Trống hub sorts before Thùng rượu gỗ / Bồn tắm gỗ in the nav on a fresh database.
+  evidence: The nav-order test runs against the persistent dev DB, where the hub already exists, so swapping the two calls in Program.cs fails no test; pinning it needs a fresh-database test host (or at least a throwaway-site test calling both seeds in order).
