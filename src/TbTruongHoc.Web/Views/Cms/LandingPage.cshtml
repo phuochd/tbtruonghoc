@@ -5,13 +5,17 @@
     3-segment sticky bar; tokens, GA4 and cookie consent stay.
 
     Order: brand mark (plain text, no link - no escape route by design) ->
-    eyebrow -> title -> hero image -> intro -> content blocks -> form section
-    #dat-hang (quote form posting formType=landing, then phone/Zalo
-    alternatives from SiteSettings) -> one fixed full-width CTA to #dat-hang.
-    Every part is CMS-driven and a blank field renders nothing.
+    eyebrow -> title -> hero image -> intro -> variant cards -> content
+    blocks -> form section #dat-hang (quote form posting formType=landing,
+    then phone/Zalo alternatives from SiteSettings) -> one fixed full-width
+    CTA to #dat-hang. Every part is CMS-driven and a blank field renders
+    nothing.
 
-    The Variants region is NOT rendered here: Story 3.2 renders the variant
-    cards and their prices.
+    Story 3.2 (FR-13): one card per visible variant (name or label set) in
+    the product grid - photo, chip, title, real price (blank = "Liên hệ báo
+    giá") and a per-card CTA anchor to #dat-hang. The card itself is not a
+    link. landing-page.js prefills the form's product field from the CTA's
+    data-lp-variant; without JS the anchor still jumps to the form.
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
@@ -20,6 +24,8 @@
     var eyebrow = Model.EyebrowText;
     var intro = Model.IntroText;
     var ctaText = Model.CtaText;
+    var variants = Model.VisibleVariants;
+    var variantsTitle = Model.VariantsTitleText;
 
     var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
     var telHref = ContactLinks.TelHref(settings?.Phone?.Value);
@@ -52,6 +58,62 @@
         @if (intro != null)
         {
             <p class="sb-lp__intro">@intro</p>
+        }
+
+        @if (variants.Count > 0)
+        {
+            <section class="sb-lp__variants" aria-labelledby="@(variantsTitle != null ? "sb-lp-variants-title" : null)">
+                @if (variantsTitle != null)
+                {
+                    <h2 class="sb-lp__variants-title" id="sb-lp-variants-title">@variantsTitle</h2>
+                }
+                <ul class="sb-grid sb-grid--products">
+                    @foreach (var variant in variants)
+                    {
+                        var heading = variant.HeadingText;
+                        var label = variant.LabelText;
+                        var price = variant.PriceText;
+                        var variantCta = variant.CtaText;
+                        <li>
+                            <article class="sb-card sb-lp__variant">
+                                <div class="sb-card__thumb">
+                                    @if (variant.HasImage)
+                                    {
+                                        <img src="@Url.Content(WebApp.Media.ResizeImage(variant.Image, 768))"
+                                             srcset="@Url.Content(WebApp.Media.ResizeImage(variant.Image, 480)) 480w, @Url.Content(WebApp.Media.ResizeImage(variant.Image, 768)) 768w"
+                                             sizes="(min-width: 1200px) 270px, (min-width: 768px) 33vw, (min-width: 480px) 50vw, calc(100vw - 32px)" alt="@variant.AltText(Model.Title)"
+                                             width="@variant.Image.Media.Width" height="@variant.Image.Media.Height" loading="lazy">
+                                    }
+                                </div>
+                                <div class="sb-card__body">
+                                    @if (label != null && variant.NameText != null)
+                                    {
+                                        <p class="sb-lp__chip">@label</p>
+                                    }
+                                    @if (variantsTitle != null)
+                                    {
+                                        <h3 class="sb-card__title">@heading</h3>
+                                    }
+                                    else
+                                    {
+                                        <h2 class="sb-card__title">@heading</h2>
+                                    }
+                                    @if (price != null)
+                                    {
+                                        <p class="sb-card__price">@price</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="sb-card__price sb-card__price--contact">@LandingVariant.ContactPriceText</p>
+                                    }
+                                    <a class="sb-lp__variant-cta" href="#dat-hang" data-lp-variant="@variant.PrefillText"
+                                       aria-label="@(variantCta + " " + heading + " – đến form đặt hàng")">@variantCta</a>
+                                </div>
+                            </article>
+                        </li>
+                    }
+                </ul>
+            </section>
         }
     </div>
 
@@ -102,3 +164,4 @@
 <a class="sb-lp__cta" href="#dat-hang" aria-label="@(ctaText + " – đến form đặt hàng")">@ctaText</a>
 
 <script src="~/assets/js/lead-form.js" asp-append-version="true"></script>
+<script src="~/assets/js/landing-page.js" asp-append-version="true"></script>
