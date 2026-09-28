@@ -9,9 +9,10 @@
     figures - 1-up on mobile, 2-up from 768px. No JS gallery, no
     auto-advance, no lightbox.
 
-    Video (decision A, 2026-09-28): self-hosted mp4 from the Media library,
-    shown only when its .vtt captions file is also set. No autoplay, no
-    third-party embed; otherwise the video slot is omitted entirely.
+    Video (decision A, 2026-09-28; captions made optional by Phước the same
+    day): self-hosted mp4 from the Media library, with a captions track only
+    when a .vtt file is set. No autoplay, no third-party embed; with no video
+    file the slot is omitted entirely.
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
@@ -56,12 +57,15 @@
             </div>
         }
 
-        @if (Model.HasCaptionedVideo)
+        @if (Model.HasVideo)
         {
             <div class="sb-story__video">
                 <video class="sb-story__player" controls preload="none">
                     <source src="@Url.Content(Model.Video.Media.PublicUrl)" type="@Model.Video.Media.ContentType">
-                    <track kind="captions" srclang="vi" label="Tiếng Việt" src="@Url.Content(Model.VideoCaptions.Media.PublicUrl)" default>
+                    @if (Model.HasVideoCaptions)
+                    {
+                        <track kind="captions" srclang="vi" label="Tiếng Việt" src="@Url.Content(Model.VideoCaptions.Media.PublicUrl)" default>
+                    }
                 </video>
             </div>
         }

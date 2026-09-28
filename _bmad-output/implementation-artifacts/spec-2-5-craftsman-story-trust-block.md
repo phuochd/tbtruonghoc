@@ -19,7 +19,7 @@ context:
 **Approach:**
 - Add a standalone `CraftsmanStoryPage` page type (AD-2) holding:
   - photos, each with a caption
-  - an optional video with a captions track
+  - an optional video with an optional captions track
   - Piranha blocks for the prose
   - the short quote used by the trust-block
 - The page shows the workshop address and Maps link from `SiteSettings`.
@@ -32,9 +32,10 @@ context:
 - **Story lookup:** the site's first `CraftsmanStoryPage` in sitemap order that is published and not future-dated. Hidden-from-nav pages count. None found → no trust-block and no footer link anywhere. The lookup is per site (Site A never shows it).
 - **Trust-block:** `surface-sunken`, `border`, `radius-md`; quote in `body`, attribution in `caption`/muted, then a link "Câu chuyện nghệ nhân →" with an accessible name. The quote and attribution render only when both are non-blank. Otherwise the block is the link alone, in the same box. Text is HTML-encoded.
 - **Placement:** on a PDP, directly before the quote form. On a hub or archive page, after the tile/product grid (after the pager) or after the blocks when there is no grid.
-- **Story page order:** eyebrow (optional field) → h1 heading-lg → photos → video (only when it has both a video file and a captions file) → blocks → workshop section (Address + Maps link through `ContactLinks.SafeUrl`, omitted when both are unset).
+- **Story page order:** eyebrow (optional field) → h1 heading-lg → photos → video (whenever a video file is set) → blocks → workshop section (Address + Maps link through `ContactLinks.SafeUrl`, omitted when both are unset).
 - **Photo decision (2026-09-28, Phước: option A, vertical grid).** Every photo is visible as a `<figure>`, `rounded-lg`, with its caption line under it (`caption`, muted). Layout is 1-up on mobile and 2-up from 768px. There is no JS gallery, no auto-advance and no lightbox or modal. Alt text = media `AltText` → caption → `"{Title} – ảnh {n}"`.
-- **Video decision (2026-09-28, Phước: option A, self-hosted).** An mp4 and a `.vtt` captions file are both uploaded to the Media library. Render `<video controls preload="none">` with a `<track kind="captions" srclang="vi" default>`. No autoplay, and no YouTube or any other third-party embed.
+- **Video decision (2026-09-28, Phước: option A, self-hosted).** An mp4 is uploaded to the Media library and rendered as `<video controls preload="none">`. No autoplay, and no YouTube or any other third-party embed.
+- **Captions decision (2026-09-28, Phước, renegotiated after build): the `.vtt` file is optional.** A video file alone renders the player. A `.vtt` file, when set, adds `<track kind="captions" srclang="vi" default>`; any other document in that field is ignored. Phước accepted the trade-off: a spoken video without captions fails WCAG 1.2.2, which overrides EXPERIENCE.md's "captions are a condition of shipping video" rule.
 - **Seeding:** seed a draft story page on Site B (slug `cau-chuyen-nghe-nhan`, title "Câu chuyện nghệ nhân", attribution "Nghệ nhân Phạm Trí Trong"), idempotent per slug, following `ProductLineSeed`. No prose, quote or photos: that is the client's content.
 - Mộc Trầm tokens only. Only the Site B views change, plus `Program.cs` for the `.vtt` media type and the seed call.
 
@@ -52,7 +53,7 @@ context:
 | Story, no quote | Published, quote blank | Trust-block = the link only, no `<blockquote>` | N/A |
 | Bare story page | Title only | h1, no `<img>`, `<video>` or workshop section | N/A |
 | Photos | 2 photos, one caption, one blank item | 2 `<figure>`s in order, one `<figcaption>`, alts per the rule | Blank item skipped |
-| Video without captions | Video set, captions blank | No `<video>` element | N/A |
+| Video without captions | Video set, captions blank (or a non-.vtt document) | `<video controls preload="none">`, no `<track>`, no autoplay | Non-.vtt ignored |
 | Video + captions | Both set | `<video controls preload="none">` + `<track kind="captions">`, no autoplay | N/A |
 | Site A | Any page | No trust-block, no story link | N/A |
 
@@ -63,7 +64,7 @@ context:
 - `src/TbTruongHoc.Web/Models/ProductHubPage.cs` / `ProductArchive.cs` -- pattern for the new `Models/CraftsmanStoryPage.cs`: `[PageType(Title = "Câu chuyện nghệ nhân")]`, `[ContentTypeRoute(Route = "/craftsmanstory")]`. Regions:
   - `Eyebrow` (`StringField`)
   - `Photos`: `IList<StoryPhoto>`, a region class with `Image` (`ImageField`) and `Caption` (`StringField`)
-  - `Video` (`VideoField`) and `VideoCaptions` (`DocumentField`, with a description saying ".vtt, required for the video to show")
+  - `Video` (`VideoField`) and `VideoCaptions` (`DocumentField`, optional, .vtt only)
   - `Quote` (`TextField`) and `QuoteAttribution` (`StringField`)
   - Trimmed-null helpers in the style of `ProductPost.PriceText`/`GalleryImages`, which skip items whose `Media == null`.
 - `src/TbTruongHoc.Web/Controllers/CmsController.cs` -- add a `[Route("craftsmanstory")]` action, following `ProductHub`.
@@ -97,6 +98,11 @@ context:
 - Tests temporarily unpublish any published story page on Site B and restore it in `finally`.
 
 ## Spec Change Log
+
+- **Post-build renegotiation (2026-09-28).**
+  - **Trigger:** Phước asked for the `.vtt` to be optional (it was a hard requirement for showing the video).
+  - **Amended:** frozen captions decision, story-page order line, matrix row "Video without captions", Code Map, manual check.
+  - **Code:** `HasCaptionedVideo` split into `HasVideo` + `HasVideoCaptions`; the `<track>` is conditional; the 2 no-caption tests now expect a player without a track.
 
 ## Review Triage Log
 
@@ -132,4 +138,4 @@ Pass 1 (blind = B, edge-case = E, verification-gap = V).
 - `dotnet build` -- expected: 0 new warnings.
 
 **Manual checks:**
-- In the Manager, publish the seeded story page with 2 photos, a quote and a video with a .vtt file. Check at 375px and 1280px: the story page, the trust-block on a Trống subcategory page and a PDP, and the footer link. Remove the .vtt and confirm the video disappears.
+- In the Manager, publish the seeded story page with 2 photos, a quote and a video with a .vtt file. Check at 375px and 1280px: the story page, the trust-block on a Trống subcategory page and a PDP, and the footer link. Remove the .vtt and confirm the video still plays, without captions.

@@ -9,8 +9,8 @@ namespace TbTruongHoc.Web.Models;
 
 /// <summary>
 /// Story 2.5 (AD-2, FR-10): the standalone craftsman story page (Phạm Trí
-/// Trong) - captioned photos, an optional self-hosted video (shown only with
-/// a .vtt captions file), prose blocks, and the short quote the shared
+/// Trong) - captioned photos, an optional self-hosted video (with an
+/// optional .vtt captions track), prose blocks, and the short quote the shared
 /// trust-block (<c>Views/Shared/_TrustBlock.cshtml</c>) shows on the hub,
 /// category and product pages. Every field is optional; a blank one renders
 /// nothing.
@@ -28,11 +28,11 @@ public class CraftsmanStoryPage : Page<CraftsmanStoryPage>
     public IList<StoryPhoto> Photos { get; set; } = new List<StoryPhoto>();
 
     /// <summary>Optional self-hosted video (mp4).</summary>
-    [Region(Title = "Video", Description = "Tải video mp4 lên thư viện Media. Video chỉ hiển thị khi có cả file phụ đề .vtt bên dưới.")]
+    [Region(Title = "Video", Description = "Tải video mp4 lên thư viện Media. Không bắt buộc; để trống thì trang không hiện khung video.")]
     public VideoField Video { get; set; }
 
     /// <summary>The video's WebVTT captions file.</summary>
-    [Region(Title = "Phụ đề video (.vtt)", Description = ".vtt, bắt buộc để video được hiển thị (required for the video to show).")]
+    [Region(Title = "Phụ đề video (.vtt)", Description = "Không bắt buộc. File phụ đề .vtt cho video ở trên; chỉ nhận file .vtt, file khác bị bỏ qua.")]
     public DocumentField VideoCaptions { get; set; }
 
     /// <summary>The short quote shown by the trust-block.</summary>
@@ -62,14 +62,15 @@ public class CraftsmanStoryPage : Page<CraftsmanStoryPage>
             .Select(p => (p.Image, Trimmed(p.Caption?.Value)))
             .ToList();
 
+    /// <summary>True when a video file is set - the video renders.</summary>
+    public bool HasVideo => Video != null && Video.HasValue && Video.Media != null;
+
     /// <summary>
-    /// True when both the video and its captions file are set, and the
-    /// captions file is a WebVTT (.vtt) file - the only case in which the
-    /// video renders.
+    /// True when a captions file is set and it is a WebVTT (.vtt) file - the
+    /// video then gets a captions track. Any other document is ignored.
     /// </summary>
-    public bool HasCaptionedVideo =>
-        Video != null && Video.HasValue && Video.Media != null
-        && VideoCaptions != null && VideoCaptions.HasValue && VideoCaptions.Media != null
+    public bool HasVideoCaptions =>
+        VideoCaptions != null && VideoCaptions.HasValue && VideoCaptions.Media != null
         && IsVtt(VideoCaptions.Media);
 
     private static bool IsVtt(Media media) =>

@@ -275,9 +275,9 @@ public class CraftsmanStoryTests
         });
     }
 
-    // Matrix: Video without captions.
+    // Matrix: Video without captions (captions optional, Phước 2026-09-28).
     [Fact]
-    public async Task Video_Without_Captions_Renders_No_Video()
+    public async Task Video_Without_Captions_Renders_Player_Without_Track()
     {
         await WithStoryAsync(async (api, siteB, f) =>
         {
@@ -287,15 +287,18 @@ public class CraftsmanStoryTests
 
             var html = await GetHtmlAsync(story.Permalink, HostnameOf(siteB));
             var main = Section(html, "<main", "</main>");
-            Assert.DoesNotContain("<video", main);
-            Assert.DoesNotContain("sb-story__video", main);
-            Assert.DoesNotContain(video.ToString(), main);
+            var videoTag = Regex.Match(main, "<video\\b[^>]*>").Value;
+            Assert.Matches(@"\scontrols[\s>=]", videoTag);
+            Assert.Equal("none", AttrOf(videoTag, "preload"));
+            Assert.Contains(video.ToString(), AttrOf(Regex.Match(main, "<source\\b[^>]*>").Value, "src")!);
+            Assert.DoesNotContain("<track", main);
+            Assert.DoesNotContain("autoplay", main, StringComparison.OrdinalIgnoreCase);
             AssertPageWideRules(html);
         });
     }
 
     [Fact]
-    public async Task Video_With_Non_Vtt_Captions_Document_Renders_No_Video()
+    public async Task Video_With_Non_Vtt_Captions_Document_Renders_Player_Without_Track()
     {
         await WithStoryAsync(async (api, siteB, f) =>
         {
@@ -310,9 +313,10 @@ public class CraftsmanStoryTests
 
             var html = await GetHtmlAsync(story.Permalink, HostnameOf(siteB));
             var main = Section(html, "<main", "</main>");
-            Assert.DoesNotContain("<video", main);
+            Assert.Contains("<video", main);
+            Assert.Contains(video.ToString(), main);
             Assert.DoesNotContain("<track", main);
-            Assert.DoesNotContain(video.ToString(), main);
+            Assert.DoesNotContain(notVtt.ToString(), main);
             AssertPageWideRules(html);
         });
     }
@@ -513,7 +517,7 @@ public class CraftsmanStoryTests
             Assert.Null(seeded.QuoteText);
             Assert.Empty(seeded.PhotoItems);
             Assert.Empty(seeded.Blocks);
-            Assert.False(seeded.HasCaptionedVideo);
+            Assert.False(seeded.HasVideo);
             Assert.True(seeded.IsHidden);
 
             // Re-run: nothing created, editor's rename kept.
