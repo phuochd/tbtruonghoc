@@ -5,6 +5,9 @@
     links when there is more than one page. An empty archive renders no
     grid, no pagination and no "no products" text. Story 2.5: the craftsman
     trust-block closes the page (after the pager, or after the blocks).
+    Story 4.2: a "Bảng cấu hình" block renders at its block position and
+    brings the page's only quote form (prefill "Tư vấn cấu hình – {title}");
+    lead-form.js + sb-config.js load only when it renders.
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
@@ -12,7 +15,12 @@
     var posts = Model.Archive?.Posts ?? new List<ProductPost>();
     var currentPage = Math.Max(1, Model.Archive?.CurrentPage ?? 1);
     var totalPages = Model.Archive?.TotalPages ?? 0;
-    var hasConfig = Model.ConfigRows.Count > 0;
+    var configBlock = ConfigBlock.FirstRenderable(Model.Blocks);
+    var configProduct = $"Tư vấn cấu hình – {Model.Title}";
+    if (configProduct.Length > 200)
+    {
+        configProduct = configProduct[..200];
+    }
 
     string PageLink(int n) => n <= 1 ? Model.Permalink : $"{Model.Permalink}/page/{n}";
 }
@@ -32,13 +40,26 @@
 </header>
 
 <main class="sb-catalog">
+    @{
+        ViewData[ConfigBlock.HostViewDataKey] = true;
+        ViewData[ConfigBlock.OwnFormViewDataKey] = configProduct;
+    }
     @foreach (var block in Model.Blocks)
     {
+        // Story 4.2: a config block that will not render leaves no wrapper.
+        if (block is ConfigBlock && block != configBlock)
+        {
+            continue;
+        }
         <div class="block @block.CssName()">
             <div class="container">
                 @Html.DisplayFor(m => block, block.GetType().Name)
             </div>
         </div>
+    }
+    @{
+        ViewData.Remove(ConfigBlock.HostViewDataKey);
+        ViewData.Remove(ConfigBlock.OwnFormViewDataKey);
     }
 
     @if (posts.Count > 0)
@@ -68,12 +89,11 @@
         </div>
     }
 
-    @await Html.PartialAsync("_DrumConfigReference", Model)
-
     @await Html.PartialAsync("_TrustBlock")
 </main>
 
-@if (hasConfig)
+@if (configBlock != null)
 {
+    <script src="~/assets/js/sb-config.js" asp-append-version="true"></script>
     <script src="~/assets/js/lead-form.js" asp-append-version="true"></script>
 }

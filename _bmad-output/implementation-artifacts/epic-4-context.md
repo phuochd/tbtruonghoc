@@ -4,35 +4,56 @@
 
 ## Goal
 
-Give drum buyers on Site B (trongdoitam.net) a read-only configuration reference (size × loại 1/2/3 × bánh xe × sơn × vẽ mặt trống) on the Trống subpages. They can use it to narrow down what they want before contacting the workshop. It is a reference aid, not a configurator. It never computes or shows a price, and it always ends in the same human quote-request / Zalo / phone CTA used everywhere else. It is a should-have. If it has not shipped, the Trống subpages must still work fully without it, and buyers configure by phone/Zalo as they do today.
+Let Site B (trongdoitam.net) buyers see, and now also pick, product configuration options before they ask for a quote. For drums the options are size × loại 1/2/3 × bánh xe × sơn × vẽ mặt trống. Their choices arrive with the lead, so sales does not have to ask again. The epic started as a read-only drum reference table fixed to the Trống subpages (4.1, done). It has been rescoped into a reusable Piranha **config block** (4.2). Editors add the block to any supported page (archive, PDP, landing page) and choose an input type for each row. That serves drums and also other product lines such as thùng rượu and bồn tắm. It stays a lightweight selector and never becomes a configurator or a checkout: no price is computed or shown, and it always ends in the human quote-request / Zalo / phone path. The epic is a should-have. Pages without the block must work fully.
 
 ## Stories
 
-- Story 4.1: Bảng tham khảo cấu hình trống (FR-11)
+- Story 4.1: Bảng tham khảo cấu hình trống (FR-11) — done
+- Story 4.2: Block cấu hình dùng chung — editor chọn kiểu input (FR-11)
 
 ## Requirements & Constraints
 
-- The table is read-only. Its dimensions are size, loại 1/2/3, bánh xe, sơn, and vẽ mặt trống. There is no price computation, no price display, and no cart or checkout. Drums stay contact-for-quote site-wide.
-- A visible disclaimer line sits beneath the table: "Bảng tham khảo, không tính giá tự động".
-- The component ends in the existing `quote-request-form`/Zalo/phone CTA pattern.
-- If it is built, the options shown must match what sales actually offers. Content must be CMS-editable and must never be hardcoded or invented. The Stitch mock rows (sizes, finishes, "Đại tự") are illustrative only, and the real rows come from the client.
-- It is optional per page. A Trống subpage with no table content must render fully, with no empty shell, heading, or broken link, and route straight to the contact channels. Epic 2 must not depend on this epic.
-- Vietnamese only. WCAG 2.1 AA is the floor. Tap targets must suit an older, less web-savvy, phone/tablet-first audience. No hover-only affordances.
+- Never compute or display a price. No cart and no "Đặt mua ngay". Drums stay contact-for-quote. The block must show the disclaimer "Bảng tham khảo, không tính giá tự động".
+- Row input types, chosen by the editor:
+  - Chỉ hiển thị: read-only text, the 4.1 behaviour.
+  - Text: a free text box.
+  - Option: pick one.
+  - Check: a single yes/no.
+  - Multi-option: pick several.
+- For Option and Multi-option rows, the editor enters the choices as a list, and they render in editor order.
+- Every selection is optional, so a visitor can submit with nothing selected. Selections are carried into the page's quote form in a readable form, e.g. "Kích thước: 60cm; Loại: 2; Bánh xe: Có", so the stored lead records the configuration.
+- Each page has **exactly one** quote form. If the host page has no form of its own (e.g. an archive), the block brings the shared quote form. If it already has one (PDP, landing page), the block feeds that form.
+- An invalid row is omitted. A row is invalid if its label is blank, or if it is an Option/Multi-option row with no choices. A block with no valid rows renders nothing: no empty shell, heading or broken link.
+- Row content is CMS-editable and supplied by the client. Never hardcode or invent option values. The Stitch mock rows are illustrative only.
+- Progressive enhancement: without JavaScript the rows stay readable as a reference.
+- Accessibility floor is WCAG 2.1 AA. Every input is labelled and keyboard-operable, and has a tap target of at least 44px. The block fits a 375px viewport with no sideways scroll. No hover-only affordances. The audience is older, less web-savvy, and uses phones and tablets first.
+- All editor-entered text is HTML-encoded on output. The UI is Vietnamese only.
 
 ## Technical Decisions
 
-- **Placement is an open question:** the architecture capability map lists FR-11 as "reference table on Product Post", with the exact shape explicitly deferred to story planning. The epic/story and UX put the component on the **Trống subpages**, which are Archive pages with Product Post children (AD-2). Resolve the actual field/region shape and host page type during story planning.
-- **Row styling already exists:** Epic 2's product-detail-page spec rows were built with the `drum-config-reference` row treatment (`surface-sunken` background, `body-sm` rows) so that Epic 4 could reuse it. Reuse it; don't fork a new table style. The PDP spec rows are conceptually one model's subset of this table.
-- **Leads/contact:** reuse the Epic 1 quote-form pipeline (`_QuoteRequestForm` partial, `POST /api/leads`, allow-listed `FormType`) and the per-site `SiteSettings` phone/Zalo. Never hardcode contact data.
-- **Design tokens (Mộc Trầm):** the `drum-config-reference` block uses `surface-sunken` (#EFE7D8) background, `border` outline, `rounded.md`, `body-sm` rows, a `primary`/`on-primary` CTA, and `caption` typography for the disclaimer. Use `surface-sunken` sparingly. It exists so this block reads as a recessed reference tool, not another product card.
+- **Block, not region.** The config block is a Piranha block group with an optional heading, and its child items are the config rows. Editors add, reorder and remove it like the existing Gallery/Column blocks.
+- **Where it can go.** Supported page types are at least ProductArchive (the Trống, Thùng rượu and Bồn tắm subpages), ProductPost (PDP) and LandingPage. Each view renders a block area at a fixed, documented position. On archives that position is after the grid/pager and before the trust-block, the same slot 4.1 used.
+- **Replaces 4.1.** The block replaces 4.1's `DrumConfigTitle`/`DrumConfig` regions on `ProductArchive` and the `_DrumConfigReference` partial. No client content is expected, so there is nothing to migrate, but confirm that before removing them. Carry 4.1's tests over to the block so they still cover the table, disclaimer, form prefill, encoding and empty state.
+- **Lead pipeline.** Reuse the Epic 1 quote-form pipeline: the `_QuoteRequestForm` partial, client-side fetch to `POST /api/leads`, and the allow-listed `FormType`. The `FormSubmission` schema is fixed shared columns: no JSON blob, no per-form tables, no new ad-hoc columns. Configuration text must fit the existing fields. Phone and Zalo come from each site's `SiteSettings` and are never hardcoded.
+- **Pricing separation.** Only the LandingPage's own variant+price region shows real prices. The config block must not add price fields to any page type.
+- **Styling.** Reuse the existing `drum-config-reference` treatment rather than forking a new table style. It uses the Mộc Trầm tokens:
+  - `surface-sunken` (#EFE7D8) background, used sparingly so the block reads as a recessed reference tool
+  - `border` outline and `rounded.md` corners
+  - `body-sm` rows
+  - a `primary`/`on-primary` CTA
+  - a `caption` disclaimer
+
+  PDP spec rows already share this row treatment.
 
 ## UX & Interaction Patterns
 
-- Mobile-first. A multi-column table must stay readable on narrow phones, for example by scrolling horizontally inside its own container, never by overflowing the page gutter.
-- Voice is calm and helpful, e.g. "Liên hệ để được tư vấn cấu hình trống phù hợp." No urgency or hype.
-- The buyer journey is: browse a Trống subpage, optionally scan the reference table, open a model PDP (whose spec rows mirror the table's treatment), then configure off-platform by phone/Zalo, or through the quote form, from memory of the table.
+- Mobile-first. Inputs must stack or fit within 375px. Nothing may overflow the page gutter.
+- Voice is calm and helpful, e.g. "Liên hệ để được tư vấn cấu hình phù hợp." No urgency or hype.
+- Buyer journey: browse a product subpage or PDP, pick options in the block (optional), then submit the quote form with the selections prefilled. Phone/Zalo remain an immediate alternative.
+- Quote-form behaviour is unchanged from Epic 1: inline per-field validation, an in-place success message, and entered values kept on failure with a phone/Zalo fallback.
 
 ## Cross-Story Dependencies
 
-- Depends on Epic 1 (lead form pipeline, `SiteSettings`, per-page SEO) and Epic 2 (Trống hub + 5 subpages as Archive pages, Mộc Trầm tokens, PDP spec-row styling, quote-form styling).
-- Sequenced after the Tết 2027 landing page (Epic 3), which is now done. No other epic depends on Epic 4.
+- 4.2 builds on and replaces 4.1's regions and partial, and inherits 4.1's tests.
+- Depends on Epic 1 (lead pipeline, `SiteSettings`, form-type allow-list), Epic 2 (ProductArchive subpages, ProductPost PDPs, Mộc Trầm tokens, trust-block, quote-form styling) and Epic 3 (the LandingPage type and its inline form, which the block must feed instead of adding a second form).
+- No other epic depends on Epic 4. Epic 2 pages must keep working with no block present.

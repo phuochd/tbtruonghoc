@@ -130,6 +130,24 @@ app.UsePiranha(options =>
     // Initialize Piranha
     App.Init(options.Api);
 
+    // Story 4.2 (FR-11): the "Bảng cấu hình" block group, its (unlisted)
+    // row block, and the row's input-type select field. Registered before
+    // the ContentTypeBuilder below. Guarded so re-running this callback
+    // (e.g. a second WebApplicationFactory in the same process) never adds
+    // a duplicate entry.
+    if (App.Blocks.GetByType(typeof(ConfigBlock)) == null)
+    {
+        App.Blocks.Register<ConfigBlock>();
+    }
+    if (App.Blocks.GetByType(typeof(ConfigRowBlock)) == null)
+    {
+        App.Blocks.Register<ConfigRowBlock>();
+    }
+    if (App.Fields.GetByType(typeof(SelectField<ConfigInputType>)) == null)
+    {
+        App.Fields.RegisterSelect<ConfigInputType>();
+    }
+
     // Story 1.5 (AD-3): register the "Danh sách khách để lại thông tin" entry
     // into Piranha's own Manager menu - mirrors this file's existing inline-
     // registration style for hooks/seeding below rather than introducing a

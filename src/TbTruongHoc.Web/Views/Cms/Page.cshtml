@@ -25,6 +25,11 @@
 <main>
     @foreach (var block in Model.Blocks)
     {
+        // Story 4.2: the config block renders only on archive/PDP/landing pages.
+        if (block is ConfigBlock)
+        {
+            continue;
+        }
         <div class="block @block.CssName()">
             <div class="container">
                 @Html.DisplayFor(m => block, block.GetType().Name)

@@ -1,0 +1,94 @@
+@model ConfigBlock
+@*
+    Story 4.2 (FR-11): "Bảng cấu hình" - DESIGN.md `drum-config-reference`
+    look (surface-sunken panel, body-sm rows, caption disclaimer), rendered
+    inline at the editor's block position.
+
+    Renders only when the host view opted in via
+    ViewData[ConfigBlock.HostViewDataKey] (ProductArchive, ProductPost,
+    LandingPage) and the block has at least one valid row. "One block per
+    page" is enforced by the hosts: they render only
+    ConfigBlock.FirstRenderable(Model.Blocks) and skip every other config
+    block; the other page views skip config blocks entirely.
+
+    On an archive (ViewData[ConfigBlock.OwnFormViewDataKey] = the prefill)
+    the block brings the shared quote form; on a PDP/landing page it feeds
+    the page's existing form - sb-config.js builds "Label: value; ..." and
+    lead-form.js prepends it to the lead message at submit. Controls sit
+    outside the <form> and use sb-config-* names, so lead-form.js never
+    reads them as form fields. Without JS every row is still a readable
+    reference. Never a price or cart. All editor text is HTML-encoded.
+*@
+@{
+    var rows = Model.ValidRows;
+    var isHost = ViewData[ConfigBlock.HostViewDataKey] != null;
+}
+@if (isHost && rows.Count > 0)
+{
+    var ownFormProduct = ViewData[ConfigBlock.OwnFormViewDataKey] as string;
+    <section class="sb-config" aria-labelledby="sb-config-title" data-sb-config>
+        <h2 class="sb-config__title" id="sb-config-title">@Model.HeadingText</h2>
+        <div class="sb-config__panel">
+            @for (var i = 0; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                var id = $"sb-config-{i}";
+                switch (row.Type)
+                {
+                    case ConfigInputType.Display:
+                        <div class="sb-config__row sb-config__row--display">
+                            <span class="sb-config__label">@row.Label</span>
+                            <span class="sb-config__value">@row.Value</span>
+                        </div>
+                        break;
+                    case ConfigInputType.Text:
+                        <div class="sb-config__row sb-config__row--text" data-sb-config-row="text" data-label="@row.Label">
+                            <label class="sb-config__label" for="@id">@row.Label</label>
+                            <input class="sb-config__input" type="text" id="@id" name="@id" maxlength="200" autocomplete="off">
+                        </div>
+                        break;
+                    case ConfigInputType.Option:
+                        <div class="sb-config__row sb-config__row--option" data-sb-config-row="option" data-label="@row.Label">
+                            <label class="sb-config__label" for="@id">@row.Label</label>
+                            <select class="sb-config__select" id="@id" name="@id">
+                                <option value="">— Chưa chọn —</option>
+                                @foreach (var choice in row.Choices)
+                                {
+                                    <option value="@choice">@choice</option>
+                                }
+                            </select>
+                        </div>
+                        break;
+                    case ConfigInputType.Check:
+                        <div class="sb-config__row sb-config__row--check" data-sb-config-row="check" data-label="@row.Label">
+                            <input class="sb-config__checkbox" type="checkbox" id="@id" name="@id" value="Có">
+                            <label class="sb-config__check-label" for="@id">@row.Label</label>
+                        </div>
+                        break;
+                    case ConfigInputType.MultiOption:
+                        <fieldset class="sb-config__row sb-config__row--multi" data-sb-config-row="multi" data-label="@row.Label">
+                            <legend class="sb-config__label">@row.Label</legend>
+                            <ul class="sb-config__choices">
+                                @for (var j = 0; j < row.Choices.Count; j++)
+                                {
+                                    var choiceId = $"sb-config-{i}-{j}";
+                                    <li class="sb-config__choice">
+                                        <input class="sb-config__checkbox" type="checkbox" id="@choiceId" name="@id" value="@row.Choices[j]">
+                                        <label class="sb-config__check-label" for="@choiceId">@row.Choices[j]</label>
+                                    </li>
+                                }
+                            </ul>
+                        </fieldset>
+                        break;
+                }
+            }
+        </div>
+        <p class="sb-config__disclaimer">@ConfigBlock.Disclaimer</p>
+        @if (ownFormProduct != null)
+        {
+            <div class="sb-config__form">
+                @await Html.PartialAsync("_QuoteRequestForm", new QuoteRequestFormViewModel { ProductOfInterest = ownFormProduct })
+            </div>
+        }
+    </section>
+}
