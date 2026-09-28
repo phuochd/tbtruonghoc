@@ -1255,6 +1255,74 @@ html:has(.sb-lp__cta) {
     white-space: pre-line;
 }
 
+/*
+    Story 3.2 (FR-13): variant cards in the product grid (.sb-grid--products,
+    1-up <480px). Reuses .sb-card; the card itself is not a link, so it has no
+    pressed state - only the per-card CTA (56px, like the fixed CTA) is tappable.
+*/
+.sb-lp__variants {
+    margin-top: var(--sb-section-gap);
+}
+
+.site-b .sb-lp__variants-title {
+    margin: 0 0 var(--sb-space-4);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.sb-card.sb-lp__variant:active {
+    box-shadow: none;
+    transform: none;
+}
+
+/* Variant-label chip: `label` type, rounded.sm; on-surface on
+   surface-sunken is well above 4.5:1. */
+.sb-lp__chip {
+    align-self: flex-start;
+    max-width: 100%;
+    margin: 0 0 var(--sb-space-1);
+    padding: 2px var(--sb-space-2);
+    background: var(--sb-surface-sunken);
+    color: var(--sb-on-surface);
+    border-radius: var(--sb-radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    overflow-wrap: anywhere;
+}
+
+.site-b .sb-lp__variant-cta {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--sb-lp-cta-h);
+    margin-top: auto;
+    padding: var(--sb-space-2) var(--sb-space-3);
+    background: var(--sb-primary);
+    color: var(--sb-on-primary);
+    border-radius: var(--sb-radius-sm);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+}
+
+.site-b .sb-lp__variant-cta:hover,
+.site-b .sb-lp__variant-cta:active {
+    background: var(--sb-primary-hover);
+    color: var(--sb-on-primary);
+}
+
+.site-b .sb-lp__variant-cta:focus-visible {
+    outline: 3px solid var(--sb-on-surface);
+    outline-offset: 2px;
+}
+
 .sb-lp__form {
     margin-top: var(--sb-section-gap);
 }

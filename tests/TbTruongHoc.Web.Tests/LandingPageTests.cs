@@ -23,9 +23,9 @@ using static TbTruongHoc.Web.Tests.ProductCatalogTests;
 namespace TbTruongHoc.Web.Tests;
 
 /// <summary>
-/// Story 3.1: the paid-ads landing page type (<c>Models/LandingPage.cs</c>,
+/// Stories 3.1/3.2: the paid-ads landing page type (<c>Models/LandingPage.cs</c>,
 /// <c>Views/Cms/LandingPage.cshtml</c>) - one test per I/O &amp; Edge-Case
-/// Matrix row, the nav-hiding save hook, the seed, the <c>landing</c> lead
+/// Matrix row (3.2: variant cards, prices and card CTAs), the nav-hiding save hook, the seed, the <c>landing</c> lead
 /// type, and the page-wide acceptance checks on every render. Real HTTP
 /// render against the MariaDB-backed app. Each test builds its own
 /// throwaway pages/media and deletes them afterwards; Site B's contact
@@ -200,17 +200,18 @@ public class LandingPageTests
         });
     }
 
-    // Matrix: Variants filled.
+    // Story 3.2 matrix: Variants filled.
     [Fact]
-    public async Task Variants_And_Prices_Are_Not_Rendered_Yet()
+    public async Task Filled_Variants_Render_Cards_In_Order_With_Chip_Price_And_Cta()
     {
         await WithFixtureAsync(async (api, siteB, f) =>
         {
             var image = await f.UploadAsync();
-            var landing = await f.LandingAsync("Variant Landing");
+            var landing = await f.LandingAsync("Variant Landing", block: "<p>Variant block marker</p>");
             await f.UpdateLandingAsync(landing.Id, p =>
             {
-                p.Variants.Add(new LandingVariant { Image = image, Name = "VariantNameOne", Label = "ChipOne", Price = "1.234.567đ" });
+                p.Intro = "Variant intro marker";
+                p.Variants.Add(new LandingVariant { Image = image, Name = "  VariantNameOne ", Label = "ChipOne", Price = " 1.234.567đ " });
                 p.Variants.Add(new LandingVariant { Name = "VariantNameTwo", Label = "ChipTwo", Price = "7.654.321đ" });
             });
 
@@ -220,17 +221,319 @@ public class LandingPageTests
                 var fresh = scope.ServiceProvider.GetRequiredService<IApi>();
                 var saved = (await fresh.Pages.GetByIdAsync<LandingPage>(landing.Id))!;
                 Assert.Equal(2, saved.Variants.Count);
-                Assert.Equal("1.234.567đ", saved.Variants[0].Price.Value);
+                Assert.Equal("1.234.567đ", saved.Variants[0].PriceText);
             }
 
-            var html = Decode(await GetHtmlAsync(landing.Permalink, HostnameOf(siteB)));
-            foreach (var text in new[] { "VariantNameOne", "VariantNameTwo", "ChipOne", "ChipTwo", "1.234.567", "7.654.321" })
+            var html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            var main = Section(html, "<main", "</main>");
+            var cards = VariantCards(main);
+            Assert.Equal(2, cards.Count);
+
+            var expected = new[]
             {
-                Assert.DoesNotContain(text, html);
+                (Name: "VariantNameOne", Chip: "ChipOne", Price: "1.234.567đ"),
+                (Name: "VariantNameTwo", Chip: "ChipTwo", Price: "7.654.321đ")
+            };
+            for (var i = 0; i < cards.Count; i++)
+            {
+                var card = Decode(cards[i]);
+                Assert.Contains($"<p class=\"sb-lp__chip\">{expected[i].Chip}</p>", card);
+                Assert.Contains($"<h2 class=\"sb-card__title\">{expected[i].Name}</h2>", card);
+                Assert.Contains($"<p class=\"sb-card__price\">{expected[i].Price}</p>", card);
+                Assert.DoesNotContain("sb-card__price--contact", card);
+                var cta = VariantCta(cards[i]);
+                Assert.Equal("#dat-hang", AttrOf(cta.Tag, "href"));
+                Assert.Equal("Đặt mua ngay", cta.Text);
+                Assert.Equal($"{expected[i].Name} – {expected[i].Price}", cta.Prefill);
+                Assert.Equal($"Đặt mua ngay {expected[i].Name} – đến form đặt hàng", cta.AriaLabel);
+                // The card itself is not a link: the CTA is its only anchor.
+                Assert.Single(Regex.Matches(cards[i], "<a\\b"));
+                // Chip, title, price, CTA in that order.
+                var order = new[] { "sb-lp__chip", "sb-card__title", "sb-card__price", "sb-lp__variant-cta" }
+                    .Select(m => card.IndexOf(m, StringComparison.Ordinal)).ToList();
+                Assert.All(order, p => Assert.True(p >= 0));
+                Assert.Equal(order.OrderBy(p => p), order);
             }
-            Assert.DoesNotContain(image.ToString(), html);
+
+            // Image: lazy, srcset, alt falls back to the variant name.
+            var img = Assert.Single(Imgs(cards[0]));
+            Assert.Contains(image.ToString(), AttrOf(img, "src")!);
+            Assert.Contains("480w", AttrOf(img, "srcset")!);
+            Assert.Contains("768w", AttrOf(img, "srcset")!);
+            Assert.Equal("lazy", AttrOf(img, "loading"));
+            Assert.Equal("VariantNameOne", Decode(AttrOf(img, "alt")!));
+            Assert.Empty(Imgs(cards[1]));
+
+            // Product grid, after the intro and before the content blocks.
+            Assert.Contains("<ul class=\"sb-grid sb-grid--products\">", main);
+            var intro = main.IndexOf("Variant intro marker", StringComparison.Ordinal);
+            var section = main.IndexOf("class=\"sb-lp__variants\"", StringComparison.Ordinal);
+            var block = main.IndexOf("Variant block marker", StringComparison.Ordinal);
+            Assert.True(intro >= 0 && intro < section && section < block);
+
+            // The fixed CTA, form type and form prefill stay as in 3.1.
+            Assert.Single(Regex.Matches(html, "class=\"sb-lp__cta\""));
+            Assert.EndsWith(">Nhận báo giá</a>", Decode(Regex.Match(html, "<a class=\"sb-lp__cta\"[^>]*>[^<]*</a>").Value));
+            Assert.Contains("<input type=\"hidden\" name=\"formType\" value=\"landing\">", main);
+            Assert.Equal(landing.Title, Decode(AttrOf(Regex.Match(main, "<input type=\"text\" id=\"quoteRequestProduct\"[^>]*>").Value, "value")!));
+            AssertPageWideRules(html, allowDatMua: true);
+
+            // Media AltText wins over the name.
+            await f.SetAltTextAsync(image, "Thùng rượu gỗ sồi 1 ngựa");
+            main = Section(await GetHtmlAsync(landing.Permalink, HostnameOf(siteB)), "<main", "</main>");
+            Assert.Equal("Thùng rượu gỗ sồi 1 ngựa", Decode(AttrOf(Imgs(VariantCards(main)[0])[0], "alt")!));
+        });
+    }
+
+    // Story 3.2 matrix: No variants.
+    [Fact]
+    public async Task No_Variants_Render_No_Section_Or_Grid()
+    {
+        await WithFixtureAsync(async (api, siteB, f) =>
+        {
+            var landing = await f.LandingAsync("Novariant Landing");
+            await f.UpdateLandingAsync(landing.Id, p => p.VariantsTitle = "Chọn mẫu");
+
+            var html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            Assert.DoesNotContain("sb-lp__variants", html);
+            Assert.DoesNotContain("sb-grid", html);
+            Assert.DoesNotContain("data-lp-variant", html);
+            Assert.DoesNotContain("Chọn mẫu", Decode(html));
             AssertPageWideRules(html);
         });
+    }
+
+    // Story 3.2 matrix: Blank variant.
+    [Fact]
+    public async Task Blank_Variants_Are_Skipped_And_All_Blank_Renders_No_Section()
+    {
+        await WithFixtureAsync(async (api, siteB, f) =>
+        {
+            var image = await f.UploadAsync();
+            var landing = await f.LandingAsync("Blankvariant Landing");
+            await f.UpdateLandingAsync(landing.Id, p =>
+            {
+                p.Variants.Add(new LandingVariant { Image = image, Name = "  ", Label = null, Price = "9.999.999đ" });
+                p.Variants.Add(new LandingVariant { Name = "KeptVariant", Price = "1.000.000đ" });
+                p.Variants.Add(new LandingVariant { Name = null, Label = " ", Price = null });
+            });
+
+            var html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            var cards = VariantCards(Section(html, "<main", "</main>"));
+            Assert.Contains("KeptVariant", Decode(Assert.Single(cards)));
+            Assert.DoesNotContain("9.999.999", html);
+            Assert.DoesNotContain(image.ToString(), html);
+
+            // All blank: no section at all.
+            await f.UpdateLandingAsync(landing.Id, p => p.Variants.RemoveAt(1));
+            html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            Assert.DoesNotContain("sb-lp__variants", html);
+            Assert.DoesNotContain("data-lp-variant", html);
+            AssertPageWideRules(html);
+        });
+    }
+
+    // Story 3.2 matrix: Label only.
+    [Fact]
+    public async Task Label_Only_Variant_Uses_Label_As_Title_Without_Chip()
+    {
+        await WithFixtureAsync(async (api, siteB, f) =>
+        {
+            var landing = await f.LandingAsync("Labelonly Landing");
+            await f.UpdateLandingAsync(landing.Id, p =>
+                p.Variants.Add(new LandingVariant { Label = " 2 ngựa ", Price = "3.000.000đ" }));
+
+            var html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            var card = Assert.Single(VariantCards(Section(html, "<main", "</main>")));
+            Assert.Contains("<h2 class=\"sb-card__title\">2 ngựa</h2>", Decode(card));
+            Assert.DoesNotContain("sb-lp__chip", card);
+            var cta = VariantCta(card);
+            Assert.Equal("2 ngựa – 3.000.000đ", cta.Prefill);
+            Assert.Equal("Đặt mua ngay 2 ngựa – đến form đặt hàng", cta.AriaLabel);
+            AssertPageWideRules(html, allowDatMua: true);
+        });
+    }
+
+    // Story 3.2 matrix: No price (decision a).
+    [Fact]
+    public async Task Priceless_Variant_Shows_Contact_Line_And_Quote_Cta()
+    {
+        await WithFixtureAsync(async (api, siteB, f) =>
+        {
+            var landing = await f.LandingAsync("Noprice Landing");
+            await f.UpdateLandingAsync(landing.Id, p =>
+                p.Variants.Add(new LandingVariant { Name = "Ngựa kéo", Label = "Gỗ sồi", Price = "   " }));
+
+            var html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            var card = Assert.Single(VariantCards(Section(html, "<main", "</main>")));
+            Assert.Contains("<p class=\"sb-card__price sb-card__price--contact\">Liên hệ báo giá</p>", Decode(card));
+            var cta = VariantCta(card);
+            Assert.Equal("Nhận báo giá", cta.Text);
+            Assert.Equal("Ngựa kéo", cta.Prefill);
+            Assert.Equal("Nhận báo giá Ngựa kéo – đến form đặt hàng", cta.AriaLabel);
+            // No "Đặt mua" anywhere without a real price.
+            AssertPageWideRules(html);
+        });
+    }
+
+    // Story 3.2 matrix: Section title (decision a).
+    [Fact]
+    public async Task Section_Title_Renders_H2_With_H3_Cards_And_Blank_Title_Gives_H2_Cards()
+    {
+        await WithFixtureAsync(async (api, siteB, f) =>
+        {
+            var landing = await f.LandingAsync("Sectiontitle Landing");
+            await f.UpdateLandingAsync(landing.Id, p =>
+            {
+                p.VariantsTitle = "  Chọn mẫu <thùng> ";
+                p.Variants.Add(new LandingVariant { Name = "TitledVariant", Price = "1.500.000đ" });
+            });
+
+            var html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            var section = Section(Section(html, "<main", "</main>"), "<section class=\"sb-lp__variants\"", "</section>");
+            var h2 = Regex.Match(section, "<h2 class=\"sb-lp__variants-title\" id=\"([^\"]+)\">([^<]*)</h2>");
+            Assert.True(h2.Success);
+            Assert.Equal("Chọn mẫu <thùng>", Decode(h2.Groups[2].Value));
+            Assert.Contains($"aria-labelledby=\"{h2.Groups[1].Value}\"", section);
+            Assert.DoesNotContain("<thùng>", html);
+            Assert.Contains("<h3 class=\"sb-card__title\">TitledVariant</h3>", section);
+            Assert.DoesNotContain("<h2 class=\"sb-card__title\"", section);
+
+            await f.UpdateLandingAsync(landing.Id, p => p.VariantsTitle = "   ");
+            html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            section = Section(Section(html, "<main", "</main>"), "<section class=\"sb-lp__variants\"", "</section>");
+            Assert.DoesNotContain("sb-lp__variants-title", section);
+            Assert.DoesNotContain("aria-labelledby", section);
+            Assert.Contains("<h2 class=\"sb-card__title\">TitledVariant</h2>", section);
+            Assert.DoesNotContain("<h3", section);
+            AssertPageWideRules(html, allowDatMua: true);
+        });
+    }
+
+    // Story 3.2 matrix: No image.
+    [Fact]
+    public async Task Imageless_Variant_Keeps_The_Empty_Thumb_Frame()
+    {
+        await WithFixtureAsync(async (api, siteB, f) =>
+        {
+            var landing = await f.LandingAsync("Noimage Landing");
+            await f.UpdateLandingAsync(landing.Id, p =>
+                p.Variants.Add(new LandingVariant { Name = "NoImageVariant", Price = "2.000.000đ" }));
+
+            var html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            var card = Assert.Single(VariantCards(Section(html, "<main", "</main>")));
+            Assert.Empty(Imgs(card));
+            Assert.Matches("<div class=\"sb-card__thumb\">\\s*</div>", card);
+            AssertPageWideRules(html, allowDatMua: true);
+        });
+    }
+
+    // Story 3.2 matrix: HTML in fields.
+    [Fact]
+    public async Task Variant_Fields_Are_Encoded_In_Text_And_Attributes()
+    {
+        await WithFixtureAsync(async (api, siteB, f) =>
+        {
+            var image = await f.UploadAsync();
+            var landing = await f.LandingAsync("Encode Landing");
+            await f.UpdateLandingAsync(landing.Id, p =>
+                p.Variants.Add(new LandingVariant { Image = image, Name = "<b>x</b> \"q\"", Label = "<i>chip</i>", Price = "<s>1đ</s>" }));
+
+            var html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            var card = Assert.Single(VariantCards(Section(html, "<main", "</main>")));
+            foreach (var raw in new[] { "<b>", "<i>", "<s>" })
+            {
+                Assert.DoesNotContain(raw, card);
+            }
+            var decoded = Decode(card);
+            Assert.Contains("<h2 class=\"sb-card__title\"><b>x</b> \"q\"</h2>", decoded);
+            Assert.Contains("<p class=\"sb-lp__chip\"><i>chip</i></p>", decoded);
+            Assert.Contains("<p class=\"sb-card__price\"><s>1đ</s></p>", decoded);
+            var cta = VariantCta(card);
+            Assert.Equal("<b>x</b> \"q\" – <s>1đ</s>", cta.Prefill);
+            Assert.Equal("Đặt mua ngay <b>x</b> \"q\" – đến form đặt hàng", cta.AriaLabel);
+            Assert.Equal("<b>x</b> \"q\"", Decode(AttrOf(Imgs(card)[0], "alt")!));
+            AssertPageWideRules(html, allowDatMua: true);
+        });
+    }
+
+    // Story 3.2 matrix: CTA tapped. JS is not executed here: the anchor
+    // target, the prefill attribute and the script tag are what it relies on.
+    [Fact]
+    public async Task Card_Cta_Is_An_Anchor_To_The_Form_With_Prefill_And_Script()
+    {
+        await WithFixtureAsync(async (api, siteB, f) =>
+        {
+            var landing = await f.LandingAsync("Tap Landing");
+            await f.UpdateLandingAsync(landing.Id, p =>
+                p.Variants.Add(new LandingVariant { Name = "TapVariant", Label = "1 ngựa", Price = "4.000.000đ" }));
+
+            var html = await GetHtmlAsync(landing.Permalink, HostnameOf(siteB));
+            var main = Section(html, "<main", "</main>");
+            var cta = VariantCta(Assert.Single(VariantCards(main)));
+            Assert.Equal("#dat-hang", AttrOf(cta.Tag, "href"));
+            Assert.Equal("TapVariant – 4.000.000đ", cta.Prefill);
+            Assert.Contains("name=\"productOfInterest\"", Section(main, "id=\"dat-hang\"", "</section>"));
+            Assert.Contains("lead-form.js", html);
+            Assert.Contains("landing-page.js", html);
+
+            var js = await _factory.CreateClient().GetStringAsync("/assets/js/landing-page.js");
+            Assert.Contains("data-lp-variant", js);
+            Assert.Contains("#dat-hang [name=\"productOfInterest\"]", js);
+            AssertPageWideRules(html, allowDatMua: true);
+        });
+    }
+
+    // Story 3.2 matrix: Submit from card.
+    [Fact]
+    public async Task Lead_Submitted_With_Variant_Prefill_Is_Stored_As_Landing()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var siteB = await GetSiteAsync(api, SiteSeed.TrongDoiTamInternalId);
+        var prefill = new LandingVariant { Name = "2 ngựa", Price = "5.500.000đ" }.PrefillText;
+        Assert.Equal("2 ngựa – 5.500.000đ", prefill);
+        Guid? id = null;
+
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/leads")
+            {
+                Content = new StringContent(JsonSerializer.Serialize(new
+                {
+                    name = $"Variant Lead {Guid.NewGuid():N}",
+                    phone = "0901234567",
+                    productOfInterest = prefill,
+                    formType = LandingPage.FormType
+                }), Encoding.UTF8)
+            };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            request.Headers.Host = HostnameOf(siteB);
+            var response = await _factory.CreateClient().SendAsync(request);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.True(response.StatusCode == HttpStatusCode.OK, body);
+            using (var json = JsonDocument.Parse(body))
+            {
+                id = json.RootElement.GetProperty("id").GetGuid();
+            }
+
+            using var dbScope = _factory.Services.CreateScope();
+            var leadDb = dbScope.ServiceProvider.GetRequiredService<LeadDbContext>();
+            var row = await leadDb.FormSubmissions.AsNoTracking().SingleAsync(s => s.Id == id);
+            Assert.Equal("landing", row.FormType);
+            Assert.Equal(prefill, row.ProductOfInterest);
+            Assert.Equal(siteB.Id, row.SiteId);
+        }
+        finally
+        {
+            if (id.HasValue)
+            {
+                using var dbScope = _factory.Services.CreateScope();
+                var leadDb = dbScope.ServiceProvider.GetRequiredService<LeadDbContext>();
+                leadDb.FormSubmissions.RemoveRange(await leadDb.FormSubmissions.Where(s => s.Id == id).ToListAsync());
+                await leadDb.SaveChangesAsync();
+            }
+        }
     }
 
     // Matrix: CTA label.
@@ -506,6 +809,19 @@ public class LandingPageTests
         {
             Assert.False(string.IsNullOrWhiteSpace(AttrOf(img, "alt")), $"Image without alt: {img}");
         }
+    }
+
+    private static List<string> VariantCards(string html) =>
+        Regex.Matches(html, "<article class=\"sb-card sb-lp__variant\">.*?</article>", RegexOptions.Singleline)
+            .Select(m => m.Value).ToList();
+
+    /// <summary>A card's CTA: its open tag, and its decoded text, prefill and aria-label.</summary>
+    private static (string Tag, string Text, string Prefill, string AriaLabel) VariantCta(string card)
+    {
+        var m = Regex.Match(card, "(<a class=\"sb-lp__variant-cta\"[^>]*>)([^<]*)</a>");
+        Assert.True(m.Success, "Expected a variant CTA.");
+        var tag = m.Groups[1].Value;
+        return (tag, Decode(m.Groups[2].Value), Decode(AttrOf(tag, "data-lp-variant")!), Decode(AttrOf(tag, "aria-label")!));
     }
 
     private static string BodyTag(string html) => Regex.Match(html, "<body[^>]*>").Value;
