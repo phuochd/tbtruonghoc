@@ -125,13 +125,21 @@ public class CraftsmanStoryTests
             Assert.True(trustAt < pdp.IndexOf("sb-pdp__form", StringComparison.Ordinal));
             Assert.True(trustAt < pdp.IndexOf("data-quote-request-form", StringComparison.Ordinal));
 
-            // Archive: after the product grid and the Story 4.1 drum config.
+            // Archive: after the product grid and the Story 4.2 config block
+            // (which renders among the blocks, above the grid).
             // Hub: after the tile grid.
             using (var scope = _factory.Services.CreateScope())
             {
                 var scopedApi = scope.ServiceProvider.GetRequiredService<IApi>();
                 var a = (await scopedApi.Pages.GetByIdAsync<ProductArchive>(archive.Id))!;
-                a.DrumConfig.Add(new DrumConfigRow { Label = "Loại", Value = "Loại 1" });
+                var config = new ConfigBlock();
+                config.Items.Add(new ConfigRowBlock
+                {
+                    Label = "Loại",
+                    InputType = new Piranha.Extend.Fields.SelectField<ConfigInputType> { Value = ConfigInputType.Display },
+                    Choices = "Loại 1"
+                });
+                a.Blocks.Add(config);
                 await scopedApi.Pages.SaveAsync(a);
             }
             var archiveMain = Section(await GetHtmlAsync(archive.Permalink, HostnameOf(siteB)), "<main", "</main>");
@@ -139,7 +147,8 @@ public class CraftsmanStoryTests
             var configAt = archiveMain.IndexOf("data-sb-config", StringComparison.Ordinal);
             var archiveTrustAt = archiveMain.IndexOf("class=\"sb-trust\"", StringComparison.Ordinal);
             Assert.True(gridAt >= 0, "Expected the product grid.");
-            Assert.True(configAt > gridAt, "Config must follow the product grid.");
+            Assert.True(configAt >= 0, "Expected the config block.");
+            Assert.True(archiveTrustAt > gridAt, "Trust-block must follow the product grid.");
             Assert.True(archiveTrustAt > configAt, "Trust-block must follow the config.");
             var hubMain = Section(await GetHtmlAsync(hub.Permalink, HostnameOf(siteB)), "<main", "</main>");
             Assert.True(hubMain.IndexOf("data-sb-tile-grid", StringComparison.Ordinal) < hubMain.IndexOf("class=\"sb-trust\"", StringComparison.Ordinal));

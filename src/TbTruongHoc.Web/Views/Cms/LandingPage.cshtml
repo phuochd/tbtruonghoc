@@ -16,6 +16,10 @@
     giá") and a per-card CTA anchor to #dat-hang. The card itself is not a
     link. landing-page.js prefills the form's product field from the CTA's
     data-lp-variant; without JS the anchor still jumps to the form.
+
+    Story 4.2: a "Bảng cấu hình" block renders at its block position and
+    feeds the #dat-hang form (no form of its own); sb-config.js loads only
+    when it renders.
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
@@ -26,6 +30,7 @@
     var ctaText = Model.CtaText;
     var variants = Model.VisibleVariants;
     var variantsTitle = Model.VariantsTitleText;
+    var configBlock = ConfigBlock.FirstRenderable(Model.Blocks);
 
     var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
     var telHref = ContactLinks.TelHref(settings?.Phone?.Value);
@@ -121,9 +126,15 @@
         // Block-image alt decision A (as on the PDP): shared ImageBlock /
         // ImageGalleryBlock templates fall back to the page title.
         ViewData["ImageAltFallback"] = Model.Title;
+        // Story 4.2: a config block renders here and feeds the #dat-hang form.
+        ViewData[ConfigBlock.HostViewDataKey] = true;
     }
     @foreach (var block in Model.Blocks)
     {
+        if (block is ConfigBlock && block != configBlock)
+        {
+            continue;
+        }
         <div class="block @block.CssName()">
             <div class="container">
                 @Html.DisplayFor(m => block, block.GetType().Name)
@@ -132,6 +143,7 @@
     }
     @{
         ViewData.Remove("ImageAltFallback");
+        ViewData.Remove(ConfigBlock.HostViewDataKey);
     }
 
     <div class="container">
@@ -163,5 +175,9 @@
 
 <a class="sb-lp__cta" href="#dat-hang" aria-label="@(ctaText + " – đến form đặt hàng")">@ctaText</a>
 
+@if (configBlock != null)
+{
+    <script src="~/assets/js/sb-config.js" asp-append-version="true"></script>
+}
 <script src="~/assets/js/lead-form.js" asp-append-version="true"></script>
 <script src="~/assets/js/landing-page.js" asp-append-version="true"></script>

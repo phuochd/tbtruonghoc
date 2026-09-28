@@ -10,6 +10,10 @@
     image, no controls. 2+ photos = main image + a row of thumbnail links to
     the large image (work without JS); sb-gallery.js swaps the main image in
     place. Never auto-advances, no lightbox.
+
+    Story 4.2: a "Bảng cấu hình" block renders at its block position and
+    feeds the quote form below (no form of its own); sb-config.js loads
+    only when it renders.
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
@@ -19,6 +23,7 @@
     var images = Model.GalleryImages;
     var productOfInterest = Model.Title?.Length > 200 ? Model.Title[..200] : Model.Title;
     var layoutClass = images.Count > 0 ? "sb-pdp__layout sb-pdp__layout--gallery" : "sb-pdp__layout";
+    var configBlock = ConfigBlock.FirstRenderable(Model.Blocks);
     var archive = await WebApp.Api.Pages.GetByIdAsync(Model.BlogId);
     string eyebrow = archive?.Title;
 
@@ -104,9 +109,15 @@
         // Block-image alt decision A: shared ImageBlock/ImageGalleryBlock
         // templates fall back to the product title when media has no AltText.
         ViewData["ImageAltFallback"] = Model.Title;
+        // Story 4.2: a config block renders here and feeds the quote form below.
+        ViewData[ConfigBlock.HostViewDataKey] = true;
     }
     @foreach (var block in Model.Blocks)
     {
+        if (block is ConfigBlock && block != configBlock)
+        {
+            continue;
+        }
         <div class="block @block.CssName()">
             <div class="container">
                 @Html.DisplayFor(m => block, block.GetType().Name)
@@ -115,6 +126,7 @@
     }
     @{
         ViewData.Remove("ImageAltFallback");
+        ViewData.Remove(ConfigBlock.HostViewDataKey);
     }
 
     @await Html.PartialAsync("_TrustBlock")
@@ -127,5 +139,9 @@
 @if (images.Count > 1)
 {
     <script src="~/assets/js/sb-gallery.js" asp-append-version="true"></script>
+}
+@if (configBlock != null)
+{
+    <script src="~/assets/js/sb-config.js" asp-append-version="true"></script>
 }
 <script src="~/assets/js/lead-form.js" asp-append-version="true"></script>

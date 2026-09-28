@@ -14,6 +14,41 @@
 
     var LEADS_ENDPOINT = '/api/leads';
 
+    // Story 4.2: LeadSubmissionRequest.Message's max length, and the prefix
+    // for the "Bảng cấu hình" selections prepended to it.
+    var MESSAGE_MAX = 2000;
+    var CONFIG_PREFIX = 'Cấu hình đã chọn: ';
+
+    /**
+     * Story 4.2: when the page has a config block ([data-sb-config], with
+     * sb-config.js loaded) and the visitor picked something, the sent
+     * message becomes "Cấu hình đã chọn: {summary}\n\n{typed message}". The
+     * typed message is kept whole; the summary is cut so the total fits
+     * MESSAGE_MAX. The Lời nhắn box itself is never changed.
+     */
+    function withConfigSummary(message) {
+        var section = document.querySelector('[data-sb-config]');
+        if (!section || typeof window.sbConfigSummary !== 'function') {
+            return message;
+        }
+
+        var summary = window.sbConfigSummary(section);
+        if (!summary) {
+            return message;
+        }
+
+        var separator = message ? '\n\n' : '';
+        var budget = MESSAGE_MAX - CONFIG_PREFIX.length - separator.length - message.length;
+        if (budget < 1) {
+            return message;
+        }
+        if (summary.length > budget) {
+            summary = summary.slice(0, budget - 1) + '…';
+        }
+
+        return CONFIG_PREFIX + summary + separator + message;
+    }
+
     // Maps the request DTO's field names (as returned by ASP.NET Core's
     // ValidationProblemDetails "errors" dictionary, keyed by the
     // LeadSubmissionRequest property name) to this form's input `name`
@@ -61,7 +96,7 @@
                 name: getValue('name'),
                 phone: getValue('phone'),
                 productOfInterest: getValue('productOfInterest'),
-                message: getValue('message'),
+                message: withConfigSummary(getValue('message')),
                 formType: getValue('formType')
             };
 
