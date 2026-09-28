@@ -902,7 +902,8 @@ body.site-b.sb-has-bar:has(> [data-consent-banner]:not([hidden])) {
 
 /*
     Spec rows: the drum-config-reference row treatment (surface-sunken,
-    body-sm). Reusable - Epic 4's drum-config-reference uses the same classes.
+    body-sm). Story 4.1's .sb-config* table mirrors this look with its own
+    classes (a real <table>, not these rows).
 */
 .sb-spec {
     display: flex;
@@ -935,6 +936,101 @@ body.site-b.sb-has-bar:has(> [data-consent-banner]:not([hidden])) {
     margin: 0;
     color: var(--sb-on-surface);
     overflow-wrap: anywhere;
+}
+
+/*
+    Story 4.1: drum-config-reference - a read-only 2-column table (label /
+    offered choices) on surface-sunken, reusing the .sb-spec row look. Fixed
+    layout + overflow-wrap:anywhere keep it inside the gutter at 375px (no
+    sideways scroll, on the page or in the table).
+*/
+.sb-config {
+    margin-top: var(--sb-section-gap);
+}
+
+.site-b .sb-config__title {
+    margin: 0 0 var(--sb-space-4);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.sb-config__panel {
+    padding: var(--sb-space-1) var(--sb-space-3);
+    background: var(--sb-surface-sunken);
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md);
+}
+
+.sb-config__table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--sb-on-surface);
+}
+
+.sb-config__row + .sb-config__row {
+    border-top: 1px solid var(--sb-border-subtle);
+}
+
+/* on-surface, not muted: muted on surface-sunken is below 4.5:1. */
+.sb-config__label,
+.sb-config__value {
+    padding: var(--sb-space-2) 0;
+    vertical-align: top;
+    text-align: left;
+    color: var(--sb-on-surface);
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.sb-config__label {
+    width: 40%;
+    padding-right: var(--sb-space-3);
+    font-weight: 600;
+}
+
+.sb-config__disclaimer {
+    margin: var(--sb-space-2) 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--sb-on-surface-muted);
+}
+
+.sb-config__form {
+    margin-top: var(--sb-space-5);
+}
+
+.sb-config__form input,
+.sb-config__form textarea {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: var(--sb-space-2) var(--sb-space-3);
+    font-size: 16px;
+    color: var(--sb-on-surface);
+    background: var(--sb-surface);
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+}
+
+.sb-config__form button[type="submit"] {
+    min-height: 44px;
+    padding: var(--sb-space-2) var(--sb-space-5);
+    font-weight: 600;
+    color: var(--sb-on-primary);
+    background: var(--sb-primary);
+    border: 0;
+    border-radius: var(--sb-radius-md);
+}
+
+.sb-config__form button[type="submit"]:hover,
+.sb-config__form button[type="submit"]:focus-visible {
+    background: var(--sb-primary-hover);
 }
 
 /* ---------- Craftsman story page + trust-block (Story 2.5) ---------- */

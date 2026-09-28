@@ -12,6 +12,7 @@
     var posts = Model.Archive?.Posts ?? new List<ProductPost>();
     var currentPage = Math.Max(1, Model.Archive?.CurrentPage ?? 1);
     var totalPages = Model.Archive?.TotalPages ?? 0;
+    var hasConfig = Model.ConfigRows.Count > 0;
 
     string PageLink(int n) => n <= 1 ? Model.Permalink : $"{Model.Permalink}/page/{n}";
 }
@@ -67,5 +68,12 @@
         </div>
     }
 
+    @await Html.PartialAsync("_DrumConfigReference", Model)
+
     @await Html.PartialAsync("_TrustBlock")
 </main>
+
+@if (hasConfig)
+{
+    <script src="~/assets/js/lead-form.js" asp-append-version="true"></script>
+}

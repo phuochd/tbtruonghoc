@@ -105,3 +105,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-5-craftsman-story-trust-block.md`
   summary: "Production deploy: the reverse proxy in front of the app must accept 1 GB request bodies on `/manager/api/media/upload` (nginx `client_max_body_size 1g;` for that location, or IIS `maxAllowedContentLength`), otherwise story-video uploads fail again."
   evidence: Found in the Story 2.5 walkthrough (2026-09-28). A 0.3 GB mp4 failed with "Server responded with 0 code" because of Kestrel's ~28.6 MB default. The app now raises its own limit to 1 GB for that endpoint only (`Services/MediaUploadLimits.cs`), but a proxy enforces its own cap first (nginx defaults to 1 MB). Belongs with the production deploy story.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-1-drum-config-reference.md`
+  summary: Give the shared `_QuoteRequestForm` one Site B style (`.site-b .quote-request-form` inputs, labels, error slots, primary submit ≥44px) so the PDP and landing-page forms match the drum-config form, and drop the `.sb-config__form`-scoped copies.
+  evidence: Story 4.1 review (Blind Hunter). The form's inputs and button are unstyled on Site B's PDP (`.sb-pdp__form`) and landing page (`.sb-lp__form`), which predates this story. 4.1 needed a primary 44px CTA, so it styled the form only inside `.sb-config__form`. The same partial now looks different depending on the page. Restyling it site-wide changes pages outside 4.1's intent.
