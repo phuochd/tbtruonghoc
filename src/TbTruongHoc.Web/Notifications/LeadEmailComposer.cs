@@ -85,6 +85,7 @@ public static class LeadEmailComposer
     {
         "general" => "Liên hệ / báo giá",
         "survey" => "Khảo sát",
+        LandingPage.FormType => "Landing page quảng cáo",
         _ => formType ?? string.Empty
     };
 

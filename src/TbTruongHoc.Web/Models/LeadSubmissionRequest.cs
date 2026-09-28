@@ -30,7 +30,8 @@ public class LeadSubmissionRequest
     /// <summary>
     /// Distinguishes this general contact/quote form ("general", the default
     /// when the client omits it) from later reuses of the same endpoint/table
-    /// - e.g. Story 6.5's survey form ("survey"). Never client-trusted for
+    /// - e.g. Story 3.1's paid-ads landing page ("landing") and Story 6.5's
+    /// survey form ("survey"). Never client-trusted for
     /// anything beyond this label; every other field/validation rule is
     /// identical regardless of value.
     /// </summary>
