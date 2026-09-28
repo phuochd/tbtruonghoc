@@ -253,6 +253,17 @@ app.UsePiranha(options =>
         }
     });
 
+    // Story 3.1 (AD-2): a paid-ads landing page is never part of the site
+    // nav. Whatever the editor ticks in the Manager, every LandingPage save
+    // is forced hidden; it still resolves at its own permalink.
+    App.Hooks.Pages.RegisterOnBeforeSave(page =>
+    {
+        if (page.TypeId == nameof(LandingPage))
+        {
+            page.IsHidden = true;
+        }
+    });
+
     // Story 2.5: the craftsman story video's WebVTT captions file. Piranha 12
     // registers .mp4 but not .vtt, so the Media library would reject it.
     // Must be registered before the content types are built.
@@ -313,6 +324,11 @@ app.UsePiranha(options =>
     // (title + quote attribution only - the prose, quote and photos are the
     // client's content). Per slug: never modifies an existing page.
     CraftsmanStorySeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+
+    // Story 3.1: idempotently seed Site B's first paid-ads landing page (Tết
+    // 2027 wine barrels) as a hidden, noindex draft - title and slug only.
+    // Per slug: never modifies an existing page.
+    LandingPageSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
 });
 
 app.Run();

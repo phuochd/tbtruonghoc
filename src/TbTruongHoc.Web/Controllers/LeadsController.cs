@@ -28,16 +28,18 @@ public class LeadsController : ControllerBase
 {
     /// <summary>
     /// Closed set of accepted <see cref="FormSubmission.FormType"/> values -
-    /// "general" (this story) and "survey" (Story 6.5's future reuse of this
-    /// same endpoint/table). Anything else the client sends, including
-    /// blank, is coerced to "general" rather than persisted verbatim - see
+    /// "general" (this story), "survey" (Story 6.5's future reuse of this
+    /// same endpoint/table) and "landing" (Story 3.1's paid-ads landing
+    /// page, <see cref="LandingPage.FormType"/>). Anything else the client
+    /// sends, including blank, is coerced to "general" rather than persisted verbatim - see
     /// <see cref="LeadSubmissionRequest.FormType"/>'s doc comment, which
     /// already described this as a closed set.
     /// </summary>
     private static readonly HashSet<string> AllowedFormTypes = new(StringComparer.OrdinalIgnoreCase)
     {
         "general",
-        "survey"
+        "survey",
+        LandingPage.FormType
     };
 
     private readonly IApi _api;

@@ -183,6 +183,26 @@ public class CmsController : Controller
     }
 
     /// <summary>
+    /// Story 3.1: gets the paid-ads landing page with the given id.
+    /// </summary>
+    /// <param name="id">The unique page id</param>
+    /// <param name="draft">If a draft is requested</param>
+    [Route("landingpage")]
+    public async Task<IActionResult> LandingPage(Guid id, bool draft = false)
+    {
+        try
+        {
+            var model = await _loader.GetPageAsync<LandingPage>(id, HttpContext.User, draft);
+
+            return View(model);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+    }
+
+    /// <summary>
     /// Saves the given comment and then redirects to the post.
     /// </summary>
     /// <param name="id">The unique post id</param>

@@ -1,0 +1,104 @@
+@model LandingPage
+@*
+    Story 3.1 (FR-12, AD-2/AD-5): the chrome-less paid-ads landing page
+    (DESIGN.md `landing-page-cta`). HideSiteChrome drops the nav, footer and
+    3-segment sticky bar; tokens, GA4 and cookie consent stay.
+
+    Order: brand mark (plain text, no link - no escape route by design) ->
+    eyebrow -> title -> hero image -> intro -> content blocks -> form section
+    #dat-hang (quote form posting formType=landing, then phone/Zalo
+    alternatives from SiteSettings) -> one fixed full-width CTA to #dat-hang.
+    Every part is CMS-driven and a blank field renders nothing.
+
+    The Variants region is NOT rendered here: Story 3.2 renders the variant
+    cards and their prices.
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    ViewData["HideSiteChrome"] = true;
+
+    var eyebrow = Model.EyebrowText;
+    var intro = Model.IntroText;
+    var ctaText = Model.CtaText;
+
+    var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
+    var telHref = ContactLinks.TelHref(settings?.Phone?.Value);
+    var phoneText = string.IsNullOrWhiteSpace(settings?.Phone?.Value) ? null : settings.Phone.Value.Trim();
+    var zaloHref = ContactLinks.SafeUrl(settings?.ZaloUrl?.Value);
+    var showPhone = telHref != null && phoneText != null;
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<main class="sb-lp">
+    <div class="container">
+        <p class="sb-lp__brand">Trống Đọi Tam</p>
+
+        @if (eyebrow != null)
+        {
+            <p class="sb-lp__eyebrow">@eyebrow</p>
+        }
+        <h1 class="sb-lp__title">@Model.Title</h1>
+
+        @if (Model.HasHeroImage)
+        {
+            <img class="sb-lp__hero" src="@Url.Content(WebApp.Media.ResizeImage(Model.HeroImage, 1140))"
+                 srcset="@Url.Content(WebApp.Media.ResizeImage(Model.HeroImage, 480)) 480w, @Url.Content(WebApp.Media.ResizeImage(Model.HeroImage, 768)) 768w, @Url.Content(WebApp.Media.ResizeImage(Model.HeroImage, 1140)) 1140w"
+                 sizes="(min-width: 1200px) 1140px, calc(100vw - 32px)" alt="@Model.HeroAltText"
+                 width="@Model.HeroImage.Media.Width" height="@Model.HeroImage.Media.Height" fetchpriority="high">
+        }
+
+        @if (intro != null)
+        {
+            <p class="sb-lp__intro">@intro</p>
+        }
+    </div>
+
+    @{
+        // Block-image alt decision A (as on the PDP): shared ImageBlock /
+        // ImageGalleryBlock templates fall back to the page title.
+        ViewData["ImageAltFallback"] = Model.Title;
+    }
+    @foreach (var block in Model.Blocks)
+    {
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+    @{
+        ViewData.Remove("ImageAltFallback");
+    }
+
+    <div class="container">
+        <section class="sb-lp__form" id="dat-hang" aria-labelledby="sb-lp-form-title">
+            <h2 class="sb-lp__form-title" id="sb-lp-form-title">Nhận báo giá &amp; đặt hàng</h2>
+            @await Html.PartialAsync("_QuoteRequestForm", new QuoteRequestFormViewModel { ProductOfInterest = Model.Title, FormType = LandingPage.FormType })
+
+            @if (showPhone || zaloHref != null)
+            {
+                <p class="sb-lp__alt">
+                    Hoặc liên hệ trực tiếp:
+                    @if (showPhone)
+                    {
+                        <a class="sb-lp__alt-link" href="tel:@telHref" aria-label="Gọi @phoneText tới Đọi Tam">Gọi @phoneText</a>
+                    }
+                    @if (showPhone && zaloHref != null)
+                    {
+                        <span aria-hidden="true">·</span>
+                    }
+                    @if (zaloHref != null)
+                    {
+                        <a class="sb-lp__alt-link" href="@zaloHref" target="_blank" rel="noopener noreferrer" aria-label="Chat Zalo với Đọi Tam (mở tab mới)">Chat Zalo</a>
+                    }
+                </p>
+            }
+        </section>
+    </div>
+</main>
+
+<a class="sb-lp__cta" href="#dat-hang" aria-label="@(ctaText + " – đến form đặt hàng")">@ctaText</a>
+
+<script src="~/assets/js/lead-form.js" asp-append-version="true"></script>

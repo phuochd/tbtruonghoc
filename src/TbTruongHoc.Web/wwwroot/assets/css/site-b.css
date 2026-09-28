@@ -1187,6 +1187,140 @@ body.site-b.sb-has-bar:has(> [data-consent-banner]:not([hidden])) {
     }
 }
 
+/* ---------- Landing page (Story 3.1, DESIGN.md landing-page-cta) ---------- */
+/*
+    Chrome-less paid-ads page: no nav, footer or 3-segment bar. Its single
+    persistent action is one full-width CTA fixed to the viewport bottom
+    (56px touch target, larger than the product-card CTA). <main> pads its
+    bottom by the CTA's footprint + safe area so the form's submit button is
+    never covered; focused fields and the consent banner clear it too.
+*/
+:root {
+    --sb-lp-cta-h: 56px;
+    --sb-lp-cta-total: calc(var(--sb-lp-cta-h) + var(--sb-space-2) * 2 + env(safe-area-inset-bottom, 0px));
+}
+
+html:has(.sb-lp__cta) {
+    scroll-padding-bottom: var(--sb-lp-cta-total);
+}
+
+.sb-main main.sb-lp {
+    padding-bottom: calc(var(--sb-lp-cta-total) + var(--sb-space-5));
+}
+
+.sb-lp > .container:first-child {
+    padding-top: var(--sb-space-5);
+}
+
+/* Brand recognition only - plain text, deliberately not a link. */
+.sb-lp__brand {
+    margin: 0 0 var(--sb-space-5);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--sb-primary);
+}
+
+.sb-lp__eyebrow {
+    margin: 0 0 var(--sb-space-1);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sb-secondary);
+}
+
+.site-b .sb-lp__title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.sb-main .sb-lp__hero {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: var(--sb-space-5);
+    border-radius: var(--sb-radius-lg);
+}
+
+.sb-lp__intro {
+    margin: var(--sb-space-4) 0 0;
+    font-size: 18px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+.sb-lp__form {
+    margin-top: var(--sb-section-gap);
+}
+
+.site-b .sb-lp__form-title {
+    margin: 0 0 var(--sb-space-4);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.sb-lp__alt {
+    margin: var(--sb-space-4) 0 0;
+    overflow-wrap: anywhere;
+}
+
+/* >=44px tap target. */
+.site-b .sb-lp__alt-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 600;
+    color: var(--sb-primary);
+}
+
+.site-b .sb-lp__cta {
+    position: fixed;
+    left: var(--sb-gutter);
+    right: var(--sb-gutter);
+    bottom: calc(var(--sb-space-2) + env(safe-area-inset-bottom, 0px));
+    z-index: 1020;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 1140px;
+    min-height: var(--sb-lp-cta-h);
+    margin: 0 auto;
+    padding: var(--sb-space-2) var(--sb-space-4);
+    background: var(--sb-primary);
+    color: var(--sb-on-primary);
+    border-radius: var(--sb-radius-sm);
+    box-shadow: var(--sb-bar-shadow);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.site-b .sb-lp__cta:hover,
+.site-b .sb-lp__cta:active {
+    background: var(--sb-primary-hover);
+    color: var(--sb-on-primary);
+}
+
+.site-b .sb-lp__cta:focus-visible {
+    outline: 3px solid var(--sb-on-surface);
+    outline-offset: 2px;
+}
+
+/* The consent banner sits directly above the CTA, never under it. */
+body.site-b:has(.sb-lp__cta) .cookie-consent {
+    bottom: var(--sb-lp-cta-total) !important;
+}
+
 /* ---------- Hover / pressed feedback ---------- */
 .sb-nav__link:hover,
 .sb-nav__link:active,
