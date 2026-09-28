@@ -125,9 +125,22 @@ public class CraftsmanStoryTests
             Assert.True(trustAt < pdp.IndexOf("sb-pdp__form", StringComparison.Ordinal));
             Assert.True(trustAt < pdp.IndexOf("data-quote-request-form", StringComparison.Ordinal));
 
-            // Archive: after the product grid. Hub: after the tile grid.
+            // Archive: after the product grid and the Story 4.1 drum config.
+            // Hub: after the tile grid.
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var scopedApi = scope.ServiceProvider.GetRequiredService<IApi>();
+                var a = (await scopedApi.Pages.GetByIdAsync<ProductArchive>(archive.Id))!;
+                a.DrumConfig.Add(new DrumConfigRow { Label = "Loại", Value = "Loại 1" });
+                await scopedApi.Pages.SaveAsync(a);
+            }
             var archiveMain = Section(await GetHtmlAsync(archive.Permalink, HostnameOf(siteB)), "<main", "</main>");
-            Assert.True(archiveMain.IndexOf("data-sb-product-grid", StringComparison.Ordinal) < archiveMain.IndexOf("class=\"sb-trust\"", StringComparison.Ordinal));
+            var gridAt = archiveMain.IndexOf("data-sb-product-grid", StringComparison.Ordinal);
+            var configAt = archiveMain.IndexOf("data-sb-config", StringComparison.Ordinal);
+            var archiveTrustAt = archiveMain.IndexOf("class=\"sb-trust\"", StringComparison.Ordinal);
+            Assert.True(gridAt >= 0, "Expected the product grid.");
+            Assert.True(configAt > gridAt, "Config must follow the product grid.");
+            Assert.True(archiveTrustAt > configAt, "Trust-block must follow the config.");
             var hubMain = Section(await GetHtmlAsync(hub.Permalink, HostnameOf(siteB)), "<main", "</main>");
             Assert.True(hubMain.IndexOf("data-sb-tile-grid", StringComparison.Ordinal) < hubMain.IndexOf("class=\"sb-trust\"", StringComparison.Ordinal));
         });
