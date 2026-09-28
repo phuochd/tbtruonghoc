@@ -693,39 +693,51 @@ So that I can narrow down what I want before contacting sales, without expecting
 **When** a Trống subpage built in Epic 2 renders without this component
 **Then** the subpage still functions completely — it simply omits the reference table and routes straight to the existing contact channels, exactly as it does today by phone. This confirms Epic 2 does not depend on this epic to be complete.
 
-### Story 4.2: Bộ chọn cấu hình trống nhẹ — editor chọn kiểu input (FR-11)
+### Story 4.2: Block cấu hình dùng chung — editor chọn kiểu input (FR-11)
 
-*Added 2026-09-28 after the Story 4.1 walkthrough (Phước): the read-only table does not let a buyer pick options. FR-11 allows a "lightweight selector", so this story builds it on top of 4.1's rows.*
-
-As a visitor configuring a ceremonial drum,
-I want to pick my options (size, loại, bánh xe, sơn, vẽ mặt trống) directly in the config block,
-So that my quote request already states the configuration I want and sales do not have to ask again.
+*Added 2026-09-28 after the Story 4.1 walkthrough (Phước). The read-only table does not let a buyer pick options, and other product lines (thùng rượu, bồn tắm, …) can need the same thing. FR-11 allows a "lightweight selector". Decision: build it as a reusable Piranha **block** that editors add to any page that needs it (option A), rather than a region fixed to one page type. This replaces 4.1's `ProductArchive` config regions.*
 
 As an editor,
-I want to choose the input type for each config row,
-So that each dimension is asked the way that fits it.
+I want to add a configuration block to any product page that needs it and choose the input type for each row,
+So that each product line can offer its own options without a developer adding them per page.
+
+As a visitor configuring a product (e.g. a ceremonial drum),
+I want to pick my options directly on the page,
+So that my quote request already states the configuration I want and sales do not have to ask again.
 
 **Acceptance Criteria:**
 
-**Given** a `DrumConfig` row in the Manager
+**Given** the Manager block picker
+**When** an editor edits a page of a supported type
+**Then** a "Bảng cấu hình" block is available. It is a block group with an optional heading, and its child items are config rows. The block can be added, reordered and removed like the existing Gallery/Column blocks.
+**And** the supported page types are at least ProductArchive (Trống/Thùng rượu/Bồn tắm subpages), ProductPost (PDP) and LandingPage. Each view renders a block area at a documented, fixed position (for archives: after the grid/pager, before the trust-block, as in 4.1).
+
+**Given** a config row in the block
 **When** the editor sets its input type
-**Then** the available types are: **Text** (free text box), **Option** (pick one), **Check** (single yes/no checkbox), **Multi-option** (pick several)
-**And** for Option and Multi-option the editor enters the choices as a list (one choice per entry/line), shown to the visitor in editor order
-**And** existing 4.1 rows keep rendering sensibly without any editor action (a documented default type, no data loss, no migration).
+**Then** the available types are **Chỉ hiển thị** (read-only text, the 4.1 behaviour), **Text** (free text box), **Option** (pick one), **Check** (single yes/no) and **Multi-option** (pick several)
+**And** for Option and Multi-option the editor enters the choices as a list, shown to the visitor in editor order.
 
-**Given** a Trống subpage whose config has at least one valid row
-**When** a visitor selects/enters values
-**Then** the selections are carried into the embedded quote form (e.g. composed into the message or product-of-interest as "Kích thước: 60cm; Loại: 2; Bánh xe: Có") so the submitted lead records the chosen configuration
-**And** all selections are optional — the visitor can still submit the form with nothing selected.
+**Given** a page with a config block that has at least one valid row
+**When** a visitor selects or enters values
+**Then** the selections are carried into the page's quote form (e.g. "Kích thước: 60cm; Loại: 2; Bánh xe: Có"), so the submitted lead records the chosen configuration
+**And** every selection is optional, so the visitor can submit with nothing selected
+**And** if the page has no quote form of its own (e.g. an archive), the block brings the shared `_QuoteRequestForm` like 4.1, and the page has exactly one quote form in all cases.
 
-**Given** the selector
+**Given** the block
 **When** it renders
-**Then** it never computes or displays a price, has no cart/"Đặt mua ngay", and keeps the "Bảng tham khảo, không tính giá tự động" disclaimer
-**And** without JavaScript the options remain readable as a reference (progressive enhancement), and every input is labelled, keyboard-operable, ≥44px tap target, and fits 375px with no sideways scroll.
+**Then** it never computes or displays a price, has no cart/"Đặt mua ngay", and shows the "Bảng tham khảo, không tính giá tự động" disclaimer
+**And** without JavaScript the rows stay readable as a reference (progressive enhancement)
+**And** every input is labelled and keyboard-operable, has a ≥44px tap target, and fits 375px with no sideways scroll
+**And** all editor text is HTML-encoded.
 
-**Given** a row that is invalid for its type (e.g. Option/Multi-option with no choices, blank label)
+**Given** a row that is invalid for its type (blank label, or an Option/Multi-option row with no choices)
 **When** the page renders
-**Then** that row is omitted, and a config with no valid rows renders nothing (same rule as 4.1).
+**Then** that row is omitted, and a block with no valid rows renders nothing, following the same rule as 4.1.
+
+**Given** Story 4.1's `DrumConfigTitle`/`DrumConfig` regions on `ProductArchive`
+**When** this story ships
+**Then** those regions and `_DrumConfigReference` are replaced by the block (no client content exists yet, so there is no data to migrate; confirm this before removing them)
+**And** 4.1's tests are carried over to the block, so the table, disclaimer, form prefill, encoding and empty-state behaviour stay covered.
 
 ## Epic 5: Site B — Blog/Nội dung
 
