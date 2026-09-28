@@ -3,7 +3,8 @@
     Story 2.2: product category page (e.g. one Trống subcategory). Header +
     blocks, then a product-card grid (12 per page) with plain prev/next
     links when there is more than one page. An empty archive renders no
-    grid, no pagination and no "no products" text.
+    grid, no pagination and no "no products" text. Story 2.5: the craftsman
+    trust-block closes the page (after the pager, or after the blocks).
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
@@ -65,4 +66,6 @@
             }
         </div>
     }
+
+    @await Html.PartialAsync("_TrustBlock")
 </main>

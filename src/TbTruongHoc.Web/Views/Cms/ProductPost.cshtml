@@ -2,8 +2,9 @@
 @*
     Story 2.4: DESIGN.md `product-detail-page`. Order: gallery, category
     eyebrow, title, "Mã: …", excerpt, price row, spec rows, content blocks,
-    then the shared quote form prefilled with the product name. Every part is
-    CMS-driven and a blank field renders nothing (no label, no empty box).
+    the craftsman trust-block (Story 2.5), then the shared quote form
+    prefilled with the product name. Every part is CMS-driven and a blank
+    field renders nothing (no label, no empty box).
 
     Gallery: PrimaryImage then the "Ảnh sản phẩm" list. 1 photo = one framed
     image, no controls. 2+ photos = main image + a row of thumbnail links to
@@ -115,6 +116,8 @@
     @{
         ViewData.Remove("ImageAltFallback");
     }
+
+    @await Html.PartialAsync("_TrustBlock")
 
     <div class="container sb-pdp__form">
         @await Html.PartialAsync("_QuoteRequestForm", new QuoteRequestFormViewModel { ProductOfInterest = productOfInterest })

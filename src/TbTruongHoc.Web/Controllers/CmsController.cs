@@ -163,6 +163,26 @@ public class CmsController : Controller
     }
 
     /// <summary>
+    /// Story 2.5: gets the craftsman story page with the given id.
+    /// </summary>
+    /// <param name="id">The unique page id</param>
+    /// <param name="draft">If a draft is requested</param>
+    [Route("craftsmanstory")]
+    public async Task<IActionResult> CraftsmanStory(Guid id, bool draft = false)
+    {
+        try
+        {
+            var model = await _loader.GetPageAsync<CraftsmanStoryPage>(id, HttpContext.User, draft);
+
+            return View(model);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+    }
+
+    /// <summary>
     /// Saves the given comment and then redirects to the post.
     /// </summary>
     /// <param name="id">The unique post id</param>

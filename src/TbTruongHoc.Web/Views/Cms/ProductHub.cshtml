@@ -3,6 +3,7 @@
     Story 2.2: product hub (e.g. "Trống"). The hub's own blocks render
     first, then a category-tile grid built by ProductCatalog from its
     visible, non-empty ProductArchive children - omitted when there are none.
+    Story 2.5: the craftsman trust-block closes the page.
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
@@ -44,4 +45,6 @@
             </ul>
         </div>
     }
+
+    @await Html.PartialAsync("_TrustBlock")
 </main>

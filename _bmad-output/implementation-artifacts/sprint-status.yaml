@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-18-2026 17:00
-last_updated: 09-27-2026 23:11
+last_updated: 09-28-2026 09:13
 project: tbtruonghoc
 project_key: NOKEY
 tracking_system: file-system
@@ -55,7 +55,7 @@ development_status:
   2-2-trống-hub-5-trang-phân-loại-fr-9: done
   2-3-trang-danh-mục-thùng-rượu-gỗ-bồn-tắm-gỗ-fr-9: done
   2-4-trang-chi-tiết-sản-phẩm-product-detail-page-cho-từng-model-f: done
-  2-5-trang-câu-chuyện-nghệ-nhân-trust-block-fr-10: backlog
+  2-5-trang-câu-chuyện-nghệ-nhân-trust-block-fr-10: review
   epic-2-retrospective: optional
 
   epic-3: backlog
