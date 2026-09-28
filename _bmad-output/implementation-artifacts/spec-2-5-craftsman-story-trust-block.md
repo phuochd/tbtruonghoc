@@ -103,6 +103,11 @@ context:
   - **Trigger:** Phước asked for the `.vtt` to be optional (it was a hard requirement for showing the video).
   - **Amended:** frozen captions decision, story-page order line, matrix row "Video without captions", Code Map, manual check.
   - **Code:** `HasCaptionedVideo` split into `HasVideo` + `HasVideoCaptions`; the `<track>` is conditional; the 2 no-caption tests now expect a player without a track.
+- **Walkthrough finding (2026-09-28): video upload limit.**
+  - **Trigger:** a 0.3 GB mp4 failed to upload in the Manager ("Server responded with 0 code"). Kestrel caps request bodies at ~28.6 MB and multipart forms at 128 MB, so any real self-hosted video was blocked.
+  - **Decision (Phước):** raise the limit to 1 GB for the Manager media upload only (`POST /manager/api/media/upload`); every other request, including the public lead forms, keeps the defaults.
+  - **Code:** `Services/MediaUploadLimits.cs` + an `app.Use` before `UsePiranha`; the Video region description recommends 720p (~20–60 MB); `MediaUploadLimitsTests`.
+  - **Deploy note:** a reverse proxy or IIS in front of the app has its own limit (nginx `client_max_body_size`, IIS `maxAllowedContentLength`) that must also allow 1 GB.
 
 ## Review Triage Log
 

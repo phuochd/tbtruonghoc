@@ -116,6 +116,15 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
+// Story 2.5: raise the body/form size limits for the Manager's media upload
+// only, so a self-hosted story video (up to 1 GB) can be uploaded. Must run
+// before UsePiranha, which routes to the upload endpoint.
+app.Use(async (context, next) =>
+{
+    MediaUploadLimits.Apply(context);
+    await next();
+});
+
 app.UsePiranha(options =>
 {
     // Initialize Piranha

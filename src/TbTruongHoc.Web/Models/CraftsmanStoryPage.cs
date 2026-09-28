@@ -28,7 +28,7 @@ public class CraftsmanStoryPage : Page<CraftsmanStoryPage>
     public IList<StoryPhoto> Photos { get; set; } = new List<StoryPhoto>();
 
     /// <summary>Optional self-hosted video (mp4).</summary>
-    [Region(Title = "Video", Description = "Tải video mp4 lên thư viện Media. Không bắt buộc; để trống thì trang không hiện khung video.")]
+    [Region(Title = "Video", Description = "Tải video mp4 lên thư viện Media (tối đa 1 GB; nên nén về 720p, khoảng 20–60 MB, để khách xem trên điện thoại không phải tải nặng). Không bắt buộc; để trống thì trang không hiện khung video.")]
     public VideoField Video { get; set; }
 
     /// <summary>The video's WebVTT captions file.</summary>
