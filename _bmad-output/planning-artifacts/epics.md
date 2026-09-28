@@ -693,6 +693,40 @@ So that I can narrow down what I want before contacting sales, without expecting
 **When** a Trống subpage built in Epic 2 renders without this component
 **Then** the subpage still functions completely — it simply omits the reference table and routes straight to the existing contact channels, exactly as it does today by phone. This confirms Epic 2 does not depend on this epic to be complete.
 
+### Story 4.2: Bộ chọn cấu hình trống nhẹ — editor chọn kiểu input (FR-11)
+
+*Added 2026-09-28 after the Story 4.1 walkthrough (Phước): the read-only table does not let a buyer pick options. FR-11 allows a "lightweight selector", so this story builds it on top of 4.1's rows.*
+
+As a visitor configuring a ceremonial drum,
+I want to pick my options (size, loại, bánh xe, sơn, vẽ mặt trống) directly in the config block,
+So that my quote request already states the configuration I want and sales do not have to ask again.
+
+As an editor,
+I want to choose the input type for each config row,
+So that each dimension is asked the way that fits it.
+
+**Acceptance Criteria:**
+
+**Given** a `DrumConfig` row in the Manager
+**When** the editor sets its input type
+**Then** the available types are: **Text** (free text box), **Option** (pick one), **Check** (single yes/no checkbox), **Multi-option** (pick several)
+**And** for Option and Multi-option the editor enters the choices as a list (one choice per entry/line), shown to the visitor in editor order
+**And** existing 4.1 rows keep rendering sensibly without any editor action (a documented default type, no data loss, no migration).
+
+**Given** a Trống subpage whose config has at least one valid row
+**When** a visitor selects/enters values
+**Then** the selections are carried into the embedded quote form (e.g. composed into the message or product-of-interest as "Kích thước: 60cm; Loại: 2; Bánh xe: Có") so the submitted lead records the chosen configuration
+**And** all selections are optional — the visitor can still submit the form with nothing selected.
+
+**Given** the selector
+**When** it renders
+**Then** it never computes or displays a price, has no cart/"Đặt mua ngay", and keeps the "Bảng tham khảo, không tính giá tự động" disclaimer
+**And** without JavaScript the options remain readable as a reference (progressive enhancement), and every input is labelled, keyboard-operable, ≥44px tap target, and fits 375px with no sideways scroll.
+
+**Given** a row that is invalid for its type (e.g. Option/Multi-option with no choices, blank label)
+**When** the page renders
+**Then** that row is omitted, and a config with no valid rows renders nothing (same rule as 4.1).
+
 ## Epic 5: Site B — Blog/Nội dung
 
 Khách đọc bài viết về nghề thủ công, cách bảo quản đồ gỗ, và hướng dẫn quà Tết, độc lập với danh mục sản phẩm. **FRs covered:** FR-14.
