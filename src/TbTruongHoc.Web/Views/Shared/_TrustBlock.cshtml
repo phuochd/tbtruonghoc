@@ -1,0 +1,28 @@
+@inject TbTruongHoc.Web.Services.CraftsmanStory CraftsmanStory
+@*
+    Story 2.5: DESIGN.md `trust-block` - the craftsman's short quote plus a
+    link to the story page, on surface-sunken. Embedded on every product hub
+    (e.g. Trống), every ProductArchive page and every PDP. Renders nothing
+    when the site has no published story page (and never on Site A - see
+    CraftsmanStory).
+    The quote + attribution show only when both are set; otherwise the block
+    is the link alone. All text is HTML-encoded.
+*@
+@{
+    var story = await CraftsmanStory.GetPublishedAsync(WebApp.Site?.Id ?? Guid.Empty);
+}
+@if (story != null)
+{
+    <div class="container">
+        <aside class="sb-trust" aria-label="Câu chuyện nghệ nhân">
+            @if (story.Quote != null && story.Attribution != null)
+            {
+                <figure class="sb-trust__figure">
+                    <blockquote class="sb-trust__quote"><p>@story.Quote</p></blockquote>
+                    <figcaption class="sb-trust__attribution">@story.Attribution</figcaption>
+                </figure>
+            }
+            <a class="sb-trust__link" href="@story.Permalink" aria-label="Đọc câu chuyện nghệ nhân">Câu chuyện nghệ nhân →</a>
+        </aside>
+    </div>
+}

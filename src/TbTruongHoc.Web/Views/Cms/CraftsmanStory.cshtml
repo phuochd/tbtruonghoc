@@ -1,0 +1,107 @@
+@model CraftsmanStoryPage
+@*
+    Story 2.5: DESIGN.md `craftsman-story-block`. Order: eyebrow, title,
+    photos, video, content blocks, then the workshop section (address + Maps
+    link from this site's SiteSettings). Every part is CMS-driven and a blank
+    field renders nothing (no label, no empty box).
+
+    Photos (decision A, 2026-09-28): a plain vertical grid of captioned
+    figures - 1-up on mobile, 2-up from 768px. No JS gallery, no
+    auto-advance, no lightbox.
+
+    Video (decision A, 2026-09-28; captions made optional by Phước the same
+    day): self-hosted mp4 from the Media library, with a captions track only
+    when a .vtt file is set. No autoplay, no third-party embed; with no video
+    file the slot is omitted entirely.
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var eyebrow = Model.EyebrowText;
+    var photos = Model.PhotoItems;
+
+    var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
+    var address = string.IsNullOrWhiteSpace(settings?.Address?.Value) ? null : settings.Address.Value.Trim();
+    var mapsUrl = ContactLinks.SafeUrl(settings?.MapsUrl?.Value);
+
+    string AltFor(Piranha.Extend.Fields.ImageField field, string caption, int n) =>
+        !string.IsNullOrWhiteSpace(field.Media?.AltText) ? field.Media.AltText.Trim()
+        : caption ?? $"{Model.Title} – ảnh {n}";
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<main class="sb-story">
+    <div class="container">
+        @if (eyebrow != null)
+        {
+            <p class="sb-story__eyebrow">@eyebrow</p>
+        }
+        <h1 class="sb-story__title">@Model.Title</h1>
+
+        @if (photos.Count > 0)
+        {
+            <div class="sb-story__photos">
+                @for (var i = 0; i < photos.Count; i++)
+                {
+                    var (image, caption) = photos[i];
+                    <figure class="sb-story__figure">
+                        <img class="sb-story__image" src="@Url.Content(WebApp.Media.ResizeImage(image, 1140))" alt="@AltFor(image, caption, i + 1)"
+                             width="@image.Media.Width" height="@image.Media.Height" loading="@(i == 0 ? "eager" : "lazy")">
+                        @if (caption != null)
+                        {
+                            <figcaption class="sb-story__caption">@caption</figcaption>
+                        }
+                    </figure>
+                }
+            </div>
+        }
+
+        @if (Model.HasVideo)
+        {
+            <div class="sb-story__video">
+                <video class="sb-story__player" controls preload="none">
+                    <source src="@Url.Content(Model.Video.Media.PublicUrl)" type="@Model.Video.Media.ContentType">
+                    @if (Model.HasVideoCaptions)
+                    {
+                        <track kind="captions" srclang="vi" label="Tiếng Việt" src="@Url.Content(Model.VideoCaptions.Media.PublicUrl)" default>
+                    }
+                </video>
+            </div>
+        }
+    </div>
+
+    @{
+        // Block-image alt decision A (as on the PDP): shared ImageBlock /
+        // ImageGalleryBlock templates fall back to the page title.
+        ViewData["ImageAltFallback"] = Model.Title;
+    }
+    @foreach (var block in Model.Blocks)
+    {
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+    @{
+        ViewData.Remove("ImageAltFallback");
+    }
+
+    @if (address != null || mapsUrl != null)
+    {
+        <div class="container">
+            <section class="sb-story__workshop" aria-labelledby="sb-story-workshop">
+                <h2 class="sb-story__workshop-title" id="sb-story-workshop">Xưởng nghệ nhân</h2>
+                @if (address != null)
+                {
+                    <p class="sb-story__address">@address</p>
+                }
+                @if (mapsUrl != null)
+                {
+                    <p class="sb-story__maps"><a href="@mapsUrl" target="_blank" rel="noopener" aria-label="Xem bản đồ xưởng (mở tab mới)">Xem bản đồ →</a></p>
+                }
+            </section>
+        </div>
+    }
+</main>

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Piranha;
@@ -79,6 +80,21 @@ builder.Services.AddHostedService<FormNotificationWorker>();
 // Story 2.2: builds a product hub's category tiles from its sitemap children.
 builder.Services.AddScoped<ProductCatalog>();
 
+// Story 2.5: finds the site's published craftsman story page for the
+// trust-block and the Site B footer link (memoized per request).
+builder.Services.AddScoped<CraftsmanStory>();
+
+// Story 2.5: serve uploaded .vtt captions files. ASP.NET Core's default
+// content-type map has no .vtt entry, so static files would 404 it. Piranha's
+// UsePiranha calls the parameterless UseStaticFiles(), which reads these
+// options.
+builder.Services.Configure<StaticFileOptions>(o =>
+{
+    var contentTypes = new FileExtensionContentTypeProvider();
+    contentTypes.Mappings[".vtt"] = "text/vtt";
+    o.ContentTypeProvider = contentTypes;
+});
+
 var app = builder.Build();
 
 // Resolved once at startup for the OnBeforeSave hook below - Piranha's own
@@ -99,6 +115,15 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
+
+// Story 2.5: raise the body/form size limits for the Manager's media upload
+// only, so a self-hosted story video (up to 1 GB) can be uploaded. Must run
+// before UsePiranha, which routes to the upload endpoint.
+app.Use(async (context, next) =>
+{
+    MediaUploadLimits.Apply(context);
+    await next();
+});
 
 app.UsePiranha(options =>
 {
@@ -228,6 +253,14 @@ app.UsePiranha(options =>
         }
     });
 
+    // Story 2.5: the craftsman story video's WebVTT captions file. Piranha 12
+    // registers .mp4 but not .vtt, so the Media library would reject it.
+    // Must be registered before the content types are built.
+    if (!App.MediaTypes.Documents.Any(t => t.Extension == ".vtt"))
+    {
+        App.MediaTypes.Documents.Add(".vtt", "text/vtt");
+    }
+
     // Build content types
     new ContentTypeBuilder(options.Api)
         .AddAssembly(typeof(Program).Assembly)
@@ -275,6 +308,11 @@ app.UsePiranha(options =>
     // Per slug: only a missing page is created; existing pages are never
     // modified, so editor changes always stick.
     ProductLineSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+
+    // Story 2.5: idempotently seed Site B's craftsman story page as a draft
+    // (title + quote attribution only - the prose, quote and photos are the
+    // client's content). Per slug: never modifies an existing page.
+    CraftsmanStorySeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
 });
 
 app.Run();

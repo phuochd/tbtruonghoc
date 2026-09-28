@@ -97,3 +97,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-4-product-detail-page.md`
   summary: Add tests for the shared ImageBlock/ImageGalleryBlock alt chain off the PDP (media Title fallback, no ImageAltFallback set, e.g. Site A pages).
   evidence: Story 2.4 review pass 2 (V3). Only the PDP renders these templates in tests, where ImageAltFallback is always set and test media has no Title, so dropping or reordering the Title step fails no test.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-5-craftsman-story-trust-block.md`
+  summary: "**MUST DO BEFORE RELEASE.** Run Story 2.5's captions check with a real `.vtt` file. Upload it to the Media library, set it as the story page's \"Phụ đề video (.vtt)\" and play the video: Vietnamese captions must show and be on by default, and the `.vtt` request must return 200 with `text/vtt`. Then remove the `.vtt` and confirm the video still plays, without captions."
+  evidence: Deferred by Phước during the Story 2.5 walkthrough (2026-09-28), because no `.vtt` file exists yet. The walkthrough confirmed the mp4 upload and player. This check is the only coverage for the real upload path: `Vtt_Files_Are_Served_As_Text_Vtt` writes straight into wwwroot, because the test host stores uploads elsewhere, so Piranha accepting `.vtt` (`App.MediaTypes.Documents`) and serving it from `/uploads` are only tested together here.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-5-craftsman-story-trust-block.md`
+  summary: "Production deploy: the reverse proxy in front of the app must accept 1 GB request bodies on `/manager/api/media/upload` (nginx `client_max_body_size 1g;` for that location, or IIS `maxAllowedContentLength`), otherwise story-video uploads fail again."
+  evidence: Found in the Story 2.5 walkthrough (2026-09-28). A 0.3 GB mp4 failed with "Server responded with 0 code" because of Kestrel's ~28.6 MB default. The app now raises its own limit to 1 GB for that endpoint only (`Services/MediaUploadLimits.cs`), but a proxy enforces its own cap first (nginx defaults to 1 MB). Belongs with the production deploy story.
