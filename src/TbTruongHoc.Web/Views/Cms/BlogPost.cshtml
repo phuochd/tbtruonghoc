@@ -1,0 +1,45 @@
+@model BlogPost
+@*
+    Story 5.1 (FR-14): minimal article page on the site layout - H1 title,
+    muted date, then the body blocks, with the post's own meta tags.
+    Story 5.2 adds the breadcrumb, related posts / back-link and the rich
+    article layout. Site-agnostic.
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<main class="sb-article">
+    <div class="container">
+        <h1 class="sb-article__title">@Model.Title</h1>
+        @if (Model.Published.HasValue)
+        {
+            <time class="sb-article__date" datetime="@Model.Published.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)">@Model.Published.Value.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture)</time>
+        }
+    </div>
+
+    @{
+        // Block-image alt decision A (as on the PDP): shared ImageBlock /
+        // ImageGalleryBlock templates fall back to the post title.
+        ViewData["ImageAltFallback"] = Model.Title;
+    }
+    @foreach (var block in Model.Blocks)
+    {
+        // Story 4.2: the config block renders only on archive/PDP/landing pages.
+        if (block is ConfigBlock)
+        {
+            continue;
+        }
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+    @{
+        ViewData.Remove("ImageAltFallback");
+    }
+</main>

@@ -347,6 +347,12 @@ app.UsePiranha(options =>
     // 2027 wine barrels) as a hidden, noindex draft - title and slug only.
     // Per slug: never modifies an existing page.
     LandingPageSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+
+    // Story 5.1: idempotently seed Site B's "Blog" listing page (a
+    // BlogArchive, slug "blog") as a published, visible top-level page so
+    // the sitemap-driven nav shows it even with zero posts. No posts are
+    // seeded. Per slug: never modifies an existing page.
+    BlogSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
 });
 
 app.Run();

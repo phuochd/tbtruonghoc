@@ -1,0 +1,78 @@
+@model BlogArchive
+@*
+    Story 5.1 (FR-14): blog listing page. Header + blocks, then a blog-card
+    grid (12 per page, newest first, published posts only) with plain
+    prev/next links when there is more than one page. With no published
+    posts it shows "Bài viết đang được cập nhật" instead - no grid, no pager.
+    Site-agnostic: no Site B-specific code (Epic 7 reuses it on Site A).
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var hasImage = Model.PrimaryImage.HasValue;
+    var posts = Model.Archive?.Posts ?? new List<BlogPost>();
+    var currentPage = Math.Max(1, Model.Archive?.CurrentPage ?? 1);
+    var totalPages = Model.Archive?.TotalPages ?? 0;
+
+    string PageLink(int n) => n <= 1 ? Model.Permalink : $"{Model.Permalink}/page/{n}";
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<header @(hasImage ? "class=has-image" : "") @(hasImage ? $"style=background-image:url({ @Url.Content(WebApp.Media.ResizeImage(Model.PrimaryImage, 1920, 400)) })" : "")>
+    <div class="dimmer"></div>
+    <div class="container">
+        <h1>@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
+        {
+            <div class="lead">@Model.Excerpt</div>
+        }
+    </div>
+</header>
+
+<main class="sb-catalog sb-blog">
+    @foreach (var block in Model.Blocks)
+    {
+        // Story 4.2: the config block renders only on archive/PDP/landing pages.
+        if (block is ConfigBlock)
+        {
+            continue;
+        }
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+
+    <div class="container">
+        @if (posts.Count > 0)
+        {
+            <ul class="sb-grid sb-grid--blog" data-sb-blog-grid>
+                @foreach (var post in posts)
+                {
+                    <li>@await Html.PartialAsync("_BlogCard", post)</li>
+                }
+            </ul>
+
+            @if (totalPages > 1)
+            {
+                <nav class="sb-pager" aria-label="Phân trang">
+                    @if (currentPage > 1)
+                    {
+                        <a class="sb-pager__link sb-pager__link--prev" href="@PageLink(currentPage - 1)" rel="prev">Trang trước</a>
+                    }
+                    <span class="sb-pager__status">Trang @currentPage / @totalPages</span>
+                    @if (currentPage < totalPages)
+                    {
+                        <a class="sb-pager__link sb-pager__link--next" href="@PageLink(currentPage + 1)" rel="next">Trang sau</a>
+                    }
+                </nav>
+            }
+        }
+        else
+        {
+            <p class="sb-empty">Bài viết đang được cập nhật</p>
+        }
+    </div>
+</main>
