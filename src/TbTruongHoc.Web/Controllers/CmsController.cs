@@ -163,6 +163,60 @@ public class CmsController : Controller
     }
 
     /// <summary>
+    /// Story 5.1: gets the blog listing page with the given id and the
+    /// requested page of its (published) posts.
+    /// </summary>
+    /// <param name="id">The unique page id</param>
+    /// <param name="page">The optional archive page</param>
+    /// <param name="draft">If a draft is requested</param>
+    [Route("blogarchive")]
+    public async Task<IActionResult> BlogArchive(Guid id, int? page = null, bool draft = false)
+    {
+        try
+        {
+            var model = await _loader.GetPageAsync<BlogArchive>(id, HttpContext.User, draft);
+            if (model == null)
+            {
+                return NotFound();
+            }
+            model.Archive = await _api.Archives.GetByIdAsync<BlogPost>(id, page, null, null, null, null,
+                Models.BlogArchive.PageSize);
+
+            return View(model);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+    }
+
+    /// <summary>
+    /// Story 5.1: gets the blog post with the given id.
+    /// </summary>
+    /// <param name="id">The unique post id</param>
+    /// <param name="draft">If a draft is requested</param>
+    [Route("blogpost")]
+    public async Task<IActionResult> BlogPost(Guid id, bool draft = false)
+    {
+        try
+        {
+            var model = await _loader.GetPostAsync<BlogPost>(id, HttpContext.User, draft);
+            // An unpublished post loads as null for visitors: 404, not a
+            // null-model render error.
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            return View(model);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+    }
+
+    /// <summary>
     /// Story 2.5: gets the craftsman story page with the given id.
     /// </summary>
     /// <param name="id">The unique page id</param>

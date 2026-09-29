@@ -1,0 +1,30 @@
+@model BlogPost
+@*
+    Story 5.1: blog listing card on the `product-card` grid convention -
+    thumbnail (gradient frame when there is no image), title, muted date,
+    optional excerpt. The whole card is one tap target: a stretched title
+    link, with no separate CTA, price or eyebrow.
+*@
+@{
+    var post = Model;
+    var alt = !string.IsNullOrWhiteSpace(post.PrimaryImage?.Media?.AltText) ? post.PrimaryImage.Media.AltText.Trim() : post.Title;
+}
+<article class="sb-card">
+    <div class="sb-card__thumb">
+        @if (post.PrimaryImage != null && post.PrimaryImage.HasValue)
+        {
+            <img src="@Url.Content(WebApp.Media.ResizeImage(post.PrimaryImage, 600, 450))" alt="@alt" width="600" height="450" loading="lazy">
+        }
+    </div>
+    <div class="sb-card__body">
+        <h2 class="sb-card__title"><a class="sb-card__link" href="@post.Permalink">@post.Title</a></h2>
+        @if (post.Published.HasValue)
+        {
+            <time class="sb-card__date" datetime="@post.Published.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)">@post.Published.Value.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture)</time>
+        }
+        @if (!string.IsNullOrWhiteSpace(post.Excerpt))
+        {
+            <p class="sb-card__desc">@post.Excerpt</p>
+        }
+    </div>
+</article>

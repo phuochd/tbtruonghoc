@@ -109,3 +109,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-1-drum-config-reference.md`
   summary: Give the shared `_QuoteRequestForm` one Site B style (`.site-b .quote-request-form` inputs, labels, error slots, primary submit ≥44px) so the PDP and landing-page forms match the drum-config form, and drop the `.sb-config__form`-scoped copies.
   evidence: Story 4.1 review (Blind Hunter). The form's inputs and button are unstyled on Site B's PDP (`.sb-pdp__form`) and landing page (`.sb-lp__form`), which predates this story. 4.1 needed a primary 44px CTA, so it styled the form only inside `.sb-config__form`. The same partial now looks different depending on the page. Restyling it site-wide changes pages outside 4.1's intent.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-5-1-blog-listing-page.md`
+  summary: Archive actions (`ProductArchive`, `BlogArchive`) ignore Piranha's year/month/category/tag route values and let an out-of-range `/page/n` render the clamped last page, so filtered and out-of-range archive URLs return 200 duplicates of the listing.
+  evidence: `CmsController` archive actions call `Archives.GetByIdAsync(id, page, null, null, null, null, PageSize)` with no param validation; flagged by Story 5.1 blind + edge-case review, same shape pre-existing in `ProductArchive`.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-5-1-blog-listing-page.md`
+  summary: `CmsController.ProductPost` returns 500 (null model render) when a visitor opens an unpublished product post instead of 404.
+  evidence: Story 5.1 implementer probe showed the 500 on a draft ProductPost; `BlogPost` got a `model == null → NotFound()` guard, `ProductPost` has none.
