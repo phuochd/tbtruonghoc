@@ -4,9 +4,12 @@
     thumbnail (gradient frame when there is no image), title, muted date,
     optional excerpt. The whole card is one tap target: a stretched title
     link, with no separate CTA, price or eyebrow.
+    Story 5.2: ViewData["CardHeadingTag"] = "h3" drops the title a level
+    (related strip under its h2); anything else renders the default h2.
 *@
 @{
     var post = Model;
+    var headingTag = ViewData["CardHeadingTag"] as string == "h3" ? "h3" : "h2";
     var alt = !string.IsNullOrWhiteSpace(post.PrimaryImage?.Media?.AltText) ? post.PrimaryImage.Media.AltText.Trim() : post.Title;
 }
 <article class="sb-card">
@@ -17,7 +20,14 @@
         }
     </div>
     <div class="sb-card__body">
-        <h2 class="sb-card__title"><a class="sb-card__link" href="@post.Permalink">@post.Title</a></h2>
+        @if (headingTag == "h3")
+        {
+            <h3 class="sb-card__title"><a class="sb-card__link" href="@post.Permalink">@post.Title</a></h3>
+        }
+        else
+        {
+            <h2 class="sb-card__title"><a class="sb-card__link" href="@post.Permalink">@post.Title</a></h2>
+        }
         @if (post.Published.HasValue)
         {
             <time class="sb-card__date" datetime="@post.Published.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)">@post.Published.Value.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture)</time>

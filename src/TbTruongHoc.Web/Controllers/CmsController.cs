@@ -208,12 +208,55 @@ public class CmsController : Controller
                 return NotFound();
             }
 
+            // Story 5.2: parent archive for the breadcrumb / back-link, and
+            // the related-posts strip.
+            model.ParentArchive = await _api.Pages.GetByIdAsync<PageInfo>(model.BlogId);
+            model.Related = await LoadRelatedPostsAsync(model);
+
             return View(model);
         }
         catch (UnauthorizedAccessException)
         {
             return Unauthorized();
         }
+    }
+
+    /// <summary>
+    /// Story 5.2: posts from the same archive that share at least one tag
+    /// with <paramref name="post"/>. Piranha's archive loader does the
+    /// published filtering and newest-first ordering per tag; the per-tag
+    /// results are merged, de-duplicated, stripped of the post itself and
+    /// cut to <see cref="Models.BlogPost.MaxRelated"/>. No tags, no calls.
+    /// </summary>
+    private async Task<IReadOnlyList<BlogPost>> LoadRelatedPostsAsync(BlogPost post)
+    {
+        var tagIds = post.Tags?.Select(t => t.Id).Where(id => id != Guid.Empty).Distinct().ToList()
+            ?? new List<Guid>();
+        if (tagIds.Count == 0)
+        {
+            return Array.Empty<BlogPost>();
+        }
+
+        var candidates = new Dictionary<Guid, BlogPost>();
+        foreach (var tagId in tagIds)
+        {
+            // One extra over the cap so the post itself can be dropped.
+            var archive = await _api.Archives.GetByIdAsync<BlogPost>(post.BlogId, 1, null, tagId, null, null,
+                Models.BlogPost.MaxRelated + 1);
+            foreach (var candidate in archive?.Posts ?? new List<BlogPost>())
+            {
+                if (candidate.Id != post.Id)
+                {
+                    candidates.TryAdd(candidate.Id, candidate);
+                }
+            }
+        }
+
+        return candidates.Values
+            .OrderByDescending(p => p.Published)
+            .ThenBy(p => p.Id)
+            .Take(Models.BlogPost.MaxRelated)
+            .ToList();
     }
 
     /// <summary>

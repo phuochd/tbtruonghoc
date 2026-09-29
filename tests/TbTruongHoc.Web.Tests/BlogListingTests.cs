@@ -373,7 +373,7 @@ public class BlogListingTests
         return block;
     }
 
-    private sealed class BlogBuilder
+    internal sealed class BlogBuilder
     {
         private readonly IApi _api;
         private readonly IServiceProvider _services;
@@ -419,11 +419,15 @@ public class BlogListingTests
         public async Task<BlogPost> PostAsync(PageBase archive, string title, bool published = true,
             string? excerpt = null, DateTime? publishedAt = null, string? blockHtml = null,
             string? metaTitle = null, string? metaDescription = null, Guid? primaryImage = null,
-            ConfigBlock? configBlock = null)
+            ConfigBlock? configBlock = null, string? category = null, IEnumerable<string>? tags = null)
         {
             var post = await _api.Posts.CreateAsync<BlogPost>();
             post.BlogId = archive.Id;
-            post.Category = "General";
+            post.Category = category ?? "General";
+            foreach (var tag in tags ?? Enumerable.Empty<string>())
+            {
+                post.Tags.Add(tag);
+            }
             post.Title = $"{title} {Suffix}";
             post.Slug = $"bl-post-{Guid.NewGuid():N}";
             post.Excerpt = excerpt;
@@ -495,12 +499,18 @@ public class BlogListingTests
         }
     }
 
-    private async Task WithBlogAsync(Func<IApi, Site, BlogBuilder, Task> body)
+    private Task WithBlogAsync(Func<IApi, Site, BlogBuilder, Task> body) => WithBlogAsync(_factory, body);
+
+    /// <summary>
+    /// Runs <paramref name="body"/> with a <see cref="BlogBuilder"/> on Site B
+    /// and deletes everything it built afterwards (shared with Story 5.2).
+    /// </summary>
+    internal static async Task WithBlogAsync(PiranhaWebApplicationFactory factory, Func<IApi, Site, BlogBuilder, Task> body)
     {
-        using var scope = _factory.Services.CreateScope();
+        using var scope = factory.Services.CreateScope();
         var api = scope.ServiceProvider.GetRequiredService<IApi>();
         var siteB = await GetSiteAsync(api, SiteSeed.TrongDoiTamInternalId);
-        var builder = new BlogBuilder(api, _factory.Services, siteB);
+        var builder = new BlogBuilder(api, factory.Services, siteB);
 
         try
         {
@@ -552,16 +562,20 @@ public class BlogListingTests
         }
     }
 
-    private static List<string> Cards(string html) =>
+    internal static List<string> Cards(string html) =>
         Regex.Matches(html, "<article class=\"sb-card\">.*?</article>", RegexOptions.Singleline)
             .Select(m => m.Value).ToList();
 
     private static IEnumerable<SitemapItem> Flatten(IEnumerable<SitemapItem> items) =>
         items.SelectMany(i => new[] { i }.Concat(Flatten(i.Items)));
 
-    private async Task<string> GetAsync(string permalink, string hostname, HttpStatusCode expected)
+    private Task<string> GetAsync(string permalink, string hostname, HttpStatusCode expected) =>
+        GetAsync(_factory, permalink, hostname, expected);
+
+    internal static async Task<string> GetAsync(PiranhaWebApplicationFactory factory, string permalink, string hostname,
+        HttpStatusCode expected)
     {
-        var client = _factory.CreateClient();
+        var client = factory.CreateClient();
         var request = new HttpRequestMessage(HttpMethod.Get, permalink);
         request.Headers.Host = hostname;
 
