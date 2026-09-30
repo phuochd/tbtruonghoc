@@ -13,8 +13,9 @@ namespace TbTruongHoc.Web.Models;
 /// Story 6.1 (Q2): Site A's homepage ("Trang chủ (Site A)"). Carries the
 /// hero - eyebrow, heading, subtext, a primary CTA and a photo list - which
 /// renders through <c>Views/Shared/_SiteAHero.cshtml</c> as a photo carousel
-/// (photos present, >= 768px) or the solid-teal fallback. Story 6.2 extends
-/// this same type with the tile grid and trust band. Every field is
+/// (photos present, >= 768px) or the solid-teal fallback. Story 6.2 adds
+/// the featured-category grid (editor picks, else the hub's first
+/// <see cref="MaxFeatured"/> tiles) and the trust-stat band. Every field is
 /// optional: a blank heading falls back to the page title, a blank/unsafe
 /// CTA link drops the primary button.
 /// </summary>
@@ -42,6 +43,53 @@ public class SiteAHomePage : Page<SiteAHomePage>
 
     [Region(Title = "Hero: ảnh (carousel)", Description = "Ảnh thật về sản phẩm/công trình, khổ ngang rộng (nên 1920×800 trở lên). Nhớ điền Alt text trong thư viện Media; để trống thì dùng tiêu đề hero. Không có ảnh thì hero hiện nền xanh. Trên điện thoại luôn hiện nền xanh, không tải ảnh.")]
     public IList<ImageField> HeroPhotos { get; set; } = new List<ImageField>();
+
+    [Region(Title = "Nhóm sản phẩm nổi bật", Description = "Chọn tối đa 6 trang danh mục để hiện trên trang chủ, theo thứ tự trong danh sách. Khi đã chọn thì CHỈ hiện các danh mục được chọn: danh mục bị ẩn hoặc chưa có sản phẩm sẽ tự bỏ qua (không tự bù), chọn quá 6 thì phần dư bị bỏ. Để trống (hoặc không còn danh mục hợp lệ nào) thì hiện 6 danh mục đầu tiên của trang Sản phẩm.")]
+    public IList<PageField> FeaturedCategories { get; set; } = new List<PageField>();
+
+    [Region(Title = "Dải số liệu uy tín", Description = "Các con số THẬT, ví dụ \"500+\" / \"Trường đã lắp đặt\". Hiện dưới lưới danh mục. Để trống thì không hiện dải này.")]
+    public IList<TrustStat> TrustStats { get; set; } = new List<TrustStat>();
+
+    /// <summary>Story 6.2: featured tiles shown on the homepage, at most.</summary>
+    public const int MaxFeatured = 6;
+
+    /// <summary>Story 6.2: the site's product hub, set by the controller; null when there is none.</summary>
+    public SitemapItem? Hub { get; set; }
+
+    /// <summary>Story 6.2: every visible tile of <see cref="Hub"/>, set by the controller.</summary>
+    public IReadOnlyList<CategoryTileModel> HubTiles { get; set; } = Array.Empty<CategoryTileModel>();
+
+    /// <summary>The tiles for the homepage grid (<see cref="SelectFeatured"/>).</summary>
+    public IReadOnlyList<CategoryTileModel> FeaturedTiles =>
+        SelectFeatured(HubTiles, (FeaturedCategories ?? Enumerable.Empty<PageField>())
+            .Where(f => f != null && f.HasValue)
+            .Select(f => f.Id!.Value));
+
+    /// <summary>The stats with both a number and a label, in order.</summary>
+    public IReadOnlyList<TrustStat> TrustStatItems =>
+        (TrustStats ?? Enumerable.Empty<TrustStat>())
+            .Where(s => s != null && s.NumberText != null && s.LabelText != null)
+            .ToList();
+
+    /// <summary>
+    /// The picks, in pick order and without repeats, that are among
+    /// <paramref name="tiles"/> (so hidden, draft or empty categories drop
+    /// out), at most <see cref="MaxFeatured"/>. No valid pick -> the first
+    /// <see cref="MaxFeatured"/> tiles.
+    /// </summary>
+    public static IReadOnlyList<CategoryTileModel> SelectFeatured(
+        IReadOnlyList<CategoryTileModel> tiles, IEnumerable<Guid> picks)
+    {
+        var byId = tiles.GroupBy(t => t.Id).ToDictionary(g => g.Key, g => g.First());
+        var picked = picks
+            .Distinct()
+            .Where(byId.ContainsKey)
+            .Select(id => byId[id])
+            .Take(MaxFeatured)
+            .ToList();
+
+        return picked.Count > 0 ? picked : tiles.Take(MaxFeatured).ToList();
+    }
 
     /// <summary>The eyebrow, trimmed, or null when blank.</summary>
     public string? HeroEyebrowText => Trimmed(HeroEyebrow?.Value);
@@ -104,4 +152,20 @@ public class SiteAHomePage : Page<SiteAHomePage>
 
     internal static string? Trimmed(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+
+/// <summary>Story 6.2: one number-over-label stat in the homepage trust band.</summary>
+public class TrustStat
+{
+    [Field(Title = "Con số", Description = "Ví dụ \"500+\", \"20 năm\".")]
+    public StringField Number { get; set; } = null!;
+
+    [Field(Title = "Nhãn", Description = "Ví dụ \"Trường đã lắp đặt\".")]
+    public StringField Label { get; set; } = null!;
+
+    /// <summary>The number, trimmed, or null when blank.</summary>
+    public string? NumberText => SiteAHomePage.Trimmed(Number?.Value);
+
+    /// <summary>The label, trimmed, or null when blank.</summary>
+    public string? LabelText => SiteAHomePage.Trimmed(Label?.Value);
 }

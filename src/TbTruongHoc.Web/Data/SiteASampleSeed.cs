@@ -18,8 +18,16 @@ namespace TbTruongHoc.Web.Data;
 /// Opt-in only: runs when the environment is Development AND the config key
 /// <see cref="ConfigKey"/> is true (set by the launchSettings profile, so
 /// `dotnet run` gets it but the test host and production never do).
-/// Skipped entirely once a page with slug <see cref="HubSlug"/> exists on
-/// Site A. Titles, slugs and products are placeholders, not real content.
+/// The hub and its categories are created only when no page with slug
+/// <see cref="HubSlug"/> exists on Site A. Titles, slugs and products are
+/// placeholders, not real content.
+///
+/// Story 6.2: on every run (like the contacts), blank excerpts / "Nhóm lọc"
+/// / "Chứng nhận" of the sample categories and an empty homepage trust band
+/// get sample values - so an existing dev DB shows the aggregate
+/// search/chips and the band too. Filled values are kept. Certifications
+/// and stats (trust claims) are marked "(mẫu)"; excerpts and groups are
+/// neutral sample copy.
 /// </summary>
 public static class SiteASampleSeed
 {
@@ -48,6 +56,35 @@ public static class SiteASampleSeed
         ("Thiết bị mầm non ngoài trời", "thiet-bi-mam-non-ngoai-troi", Array.Empty<string>()),
     };
 
+    /// <summary>
+    /// Story 6.2: sample excerpt, filter groups and certifications per
+    /// category slug (dev only; certifications are marked "(mẫu)").
+    /// </summary>
+    internal static readonly IReadOnlyDictionary<string, (string Excerpt, string Groups, string Certifications)> CategoryDetails =
+        new Dictionary<string, (string, string, string)>
+        {
+            ["du-che-nang-san-truong"] = ("Dù che, mái che di động cho sân chơi và khu vực tập thể dục ngoài trời.", "Ngoài trời", ""),
+            ["noi-that-mam-non"] = ("Bàn ghế, tủ kệ, giường ngủ trưa dành riêng cho lớp học mầm non.", "Mầm non, Nội thất", "CARB P2 (mẫu), ASTM (mẫu)"),
+            ["quan-ao-nghi-thuc-co-doi"] = ("Trang phục nghi thức, cờ đội, phụ kiện phục vụ lễ chào cờ.", "Nghi thức & sự kiện", ""),
+            ["thiet-bi-am-thanh-may-chieu"] = ("Loa, micro, máy chiếu phục vụ giảng dạy và hội trường.", "Thiết bị công nghệ, Nghi thức & sự kiện", ""),
+            ["bang-tuong-tac"] = ("Bảng thông minh tương tác cho lớp học ứng dụng công nghệ.", "Thiết bị công nghệ", ""),
+            ["man-hinh-led-hien-thi"] = ("Màn hình LED trong nhà và ngoài trời cho sự kiện, thông báo.", "Thiết bị công nghệ, Nghi thức & sự kiện", ""),
+            ["thiet-bi-van-phong"] = ("Bàn ghế, tủ hồ sơ, thiết bị văn phòng cho khối hành chính nhà trường.", "Nội thất", ""),
+            ["phong-thi-nghiem-ly-hoa-sinh"] = ("Dụng cụ, mô hình thí nghiệm Vật lý – Hóa học – Sinh học.", "Phòng học bộ môn", ""),
+            ["ban-thi-nghiem"] = ("Bàn thí nghiệm chuyên dụng, mặt chịu hóa chất và chịu nhiệt.", "Phòng học bộ môn, Nội thất", ""),
+            ["thiet-bi-do-dung-day-hoc"] = ("Đồ dùng trực quan, học cụ hỗ trợ giảng dạy các môn học.", "Phòng học bộ môn", ""),
+            ["thiet-bi-mam-non-ngoai-troi"] = ("Đồ chơi vận động, thiết bị sân chơi ngoài trời cho trẻ mầm non.", "Mầm non, Ngoài trời", "ASTM (mẫu)"),
+        };
+
+    /// <summary>Story 6.2: sample homepage trust stats (dev only, marked "(mẫu)").</summary>
+    internal static readonly IReadOnlyList<(string Number, string Label)> SampleStats = new[]
+    {
+        ("500+", "Trường đã lắp đặt (mẫu)"),
+        ("20 năm", "Kinh nghiệm ngành (mẫu)"),
+        ("100%", "Bảo hành chính hãng (mẫu)"),
+        ("24/7", "Hỗ trợ kỹ thuật (mẫu)"),
+    };
+
     public static async Task EnsureSeededAsync(IApi api)
     {
         var site = await api.Sites.GetByInternalIdAsync(SiteSeed.TbTruongHocInternalId);
@@ -63,11 +100,17 @@ public static class SiteASampleSeed
     {
         await FillBlankContactsAsync(api, siteId);
 
-        if (await api.Pages.GetBySlugAsync<PageInfo>(HubSlug, siteId) != null)
+        if (await api.Pages.GetBySlugAsync<PageInfo>(HubSlug, siteId) == null)
         {
-            return;
+            await CreateHubAsync(api, siteId);
         }
 
+        await FillBlankCategoryDetailsAsync(api, siteId);
+        await FillEmptyTrustStatsAsync(api, siteId);
+    }
+
+    private static async Task CreateHubAsync(IApi api, Guid siteId)
+    {
         // Append after the existing top-level pages so "Trang chủ" stays the start page.
         var sitemap = await api.Sites.GetSitemapAsync(siteId, onlyPublished: false);
         var published = DateTime.Now.AddMinutes(-1);
@@ -107,6 +150,63 @@ public static class SiteASampleSeed
                 await api.Posts.SaveAsync(post);
             }
         }
+    }
+
+    /// <summary>Story 6.2: sample category details, only into blank fields.</summary>
+    private static async Task FillBlankCategoryDetailsAsync(IApi api, Guid siteId)
+    {
+        foreach (var (slug, details) in CategoryDetails)
+        {
+            var archive = await api.Pages.GetBySlugAsync<ProductArchive>($"{HubSlug}/{slug}", siteId);
+            if (archive == null)
+            {
+                continue;
+            }
+
+            var changed = false;
+            if (string.IsNullOrWhiteSpace(archive.Excerpt))
+            {
+                archive.Excerpt = details.Excerpt;
+                changed = true;
+            }
+            if (string.IsNullOrWhiteSpace(archive.FilterGroups?.Value) && details.Groups.Length > 0)
+            {
+                archive.FilterGroups = details.Groups;
+                changed = true;
+            }
+            if (string.IsNullOrWhiteSpace(archive.Certifications?.Value) && details.Certifications.Length > 0)
+            {
+                archive.Certifications = details.Certifications;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                await api.Pages.SaveAsync(archive);
+            }
+        }
+    }
+
+    /// <summary>Story 6.2: sample stats on the start page, only when its band is empty.</summary>
+    private static async Task FillEmptyTrustStatsAsync(IApi api, Guid siteId)
+    {
+        var start = await api.Pages.GetStartpageAsync<PageInfo>(siteId);
+        if (start == null || start.TypeId != nameof(SiteAHomePage))
+        {
+            return;
+        }
+
+        var home = await api.Pages.GetByIdAsync<SiteAHomePage>(start.Id);
+        if (home == null || home.TrustStats.Count > 0)
+        {
+            return;
+        }
+
+        foreach (var (number, label) in SampleStats)
+        {
+            home.TrustStats.Add(new TrustStat { Number = number, Label = label });
+        }
+        await api.Pages.SaveAsync(home);
     }
 
     /// <summary>Sample chip/footer contacts, only into fields that are blank.</summary>

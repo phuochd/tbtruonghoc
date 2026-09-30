@@ -1,0 +1,105 @@
+@model ProductHubPage
+@*
+    Story 6.2: Site A's aggregate "Danh mục sản phẩm" page (its
+    ProductHubPage; CmsController picks this view for Site A only, Site B
+    keeps ProductHub.cshtml). Breadcrumb -> header (title + excerpt) -> the
+    hub's own blocks -> `category-search` (live text search + multi-select
+    filter chips, site-a.js) -> every visible category tile (same hide rule
+    as the nav) -> a visitor-facing placeholder tile, always last and never
+    filtered out.
+
+    Chips = the distinct "Nhóm lọc" values of the tiles; no values -> no
+    chip row. Without JS (html:not(.js)) the search/chips are hidden and
+    every tile shows.
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var groups = ProductHubPage.DistinctGroups(Model.Tiles);
+
+    var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
+    var telHref = ContactLinks.TelHref(settings?.Phone?.Value);
+    var contactHref = telHref != null ? "tel:" + telHref : ContactLinks.SafeUrl(settings?.ZaloUrl?.Value);
+    var contactIsZalo = telHref == null && contactHref != null;
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<main class="sa-catalog">
+    <nav class="sa-breadcrumb sa-container" aria-label="Breadcrumb">
+        <a href="~/">Trang chủ</a>
+        <span class="sa-breadcrumb__sep" aria-hidden="true">/</span>
+        <span aria-current="page">@Model.Title</span>
+    </nav>
+
+    <header class="sa-catalog__header sa-container">
+        <h1>@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
+        {
+            <p class="sa-catalog__lead">@Model.Excerpt</p>
+        }
+    </header>
+
+    @foreach (var block in Model.Blocks)
+    {
+        // Story 4.2: the config block renders only on archive/PDP/landing pages.
+        if (block is ConfigBlock)
+        {
+            continue;
+        }
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+
+    <div class="sa-container" data-sa-catalog>
+        @if (Model.Tiles.Count > 0)
+        {
+            <div class="sa-catsearch" role="search">
+                <label class="visually-hidden" for="sa-catsearch-input">Tìm nhóm sản phẩm</label>
+                <input class="sa-catsearch__input" id="sa-catsearch-input" type="search" autocomplete="off"
+                       placeholder="Tìm nhóm sản phẩm…" data-sa-cat-search>
+                @if (groups.Count > 0)
+                {
+                    <div class="sa-catsearch__chips" role="group" aria-label="Lọc theo nhóm">
+                        @foreach (var group in groups)
+                        {
+                            <button type="button" class="sa-chip" aria-pressed="false" data-sa-cat-chip="@ProductHubPage.GroupKey(group)">@group</button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <ul class="sa-cat-grid sa-cat-grid--all">
+            @foreach (var tile in Model.Tiles)
+            {
+                <li data-sa-cat-tile data-sa-search="@($"{tile.Title} {tile.Excerpt}")"
+                    data-sa-groups="@System.Text.Json.JsonSerializer.Serialize(tile.Groups.Select(ProductHubPage.GroupKey))">
+                    @await Html.PartialAsync("_SiteACategoryTile", new SiteACategoryTileViewModel(tile, 2, true))
+                </li>
+            }
+            <li class="sa-cat-grid__placeholder">
+                @if (contactHref != null)
+                {
+                    <a class="sa-tile sa-tile--placeholder" href="@contactHref" target="@(contactIsZalo ? "_blank" : null)" rel="@(contactIsZalo ? "noopener" : null)">
+                        <span class="sa-tile__title">Chưa thấy thiết bị bạn cần?</span>
+                        <span class="sa-tile__desc">Liên hệ để được tư vấn<span class="visually-hidden">@(contactIsZalo ? " (chat Zalo với Ngọc Anh)" : " (gọi Ngọc Anh)")</span></span>
+                    </a>
+                }
+                else
+                {
+                    <div class="sa-tile sa-tile--placeholder">
+                        <span class="sa-tile__title">Chưa thấy thiết bị bạn cần?</span>
+                        <span class="sa-tile__desc">Liên hệ để được tư vấn</span>
+                    </div>
+                }
+            </li>
+        </ul>
+
+        <p class="sa-catsearch__empty" role="status" aria-live="polite" data-sa-cat-empty
+           data-message="Không tìm thấy nhóm sản phẩm phù hợp."></p>
+    </div>
+</main>

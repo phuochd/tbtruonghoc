@@ -24,6 +24,17 @@
  * buttons show one slide ([data-sa-slide], the others get `hidden`) and
  * mark the current dot with aria-current. No auto-advance, no timers.
  *
+ * Story 6.2 - aggregate page category search ([data-sa-catalog]): the
+ * search input ([data-sa-cat-search]) and the filter chips
+ * ([data-sa-cat-chip="key"], aria-pressed toggles) filter the tiles
+ * ([data-sa-cat-tile], `hidden` when filtered out) live. A tile shows when
+ * its data-sa-search text contains the query (case- and diacritic-
+ * insensitive, "đ" = "d") AND - when any chip is pressed - its
+ * data-sa-groups (JSON array of keys) holds at least one pressed chip's
+ * key. The placeholder tile is not a [data-sa-cat-tile], so it always
+ * shows. No match -> the [data-sa-cat-empty] live region gets its
+ * data-message; otherwise it is emptied.
+ *
  * No framework/bundler, same as site-b-nav.js.
  */
 (function () {
@@ -248,7 +259,73 @@
         });
     }
 
-    window.siteA = { initNav: initNav, initCarousel: initCarousel };
+    function fold(text) {
+        var s = String(text || '').toLowerCase();
+        if (typeof s.normalize === 'function') {
+            s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+        return s.replace(/\u0111/g, 'd').replace(/\s+/g, ' ').trim();
+    }
+
+    function initCatalog(root) {
+        var input = root.querySelector('[data-sa-cat-search]');
+        var empty = root.querySelector('[data-sa-cat-empty]');
+        var chips = toArray(root.querySelectorAll('[data-sa-cat-chip]'));
+        var tiles = toArray(root.querySelectorAll('[data-sa-cat-tile]')).map(function (el) {
+            var groups = [];
+            try {
+                groups = JSON.parse(el.getAttribute('data-sa-groups') || '[]') || [];
+            } catch (e) {
+                groups = [];
+            }
+            return { el: el, text: fold(el.getAttribute('data-sa-search')), groups: groups };
+        });
+
+        function apply() {
+            var query = fold(input ? input.value : '');
+            var active = chips.filter(function (chip) {
+                return chip.getAttribute('aria-pressed') === 'true';
+            }).map(function (chip) {
+                return chip.getAttribute('data-sa-cat-chip');
+            });
+            var shown = 0;
+
+            tiles.forEach(function (tile) {
+                var matchesQuery = query === '' || tile.text.indexOf(query) >= 0;
+                var matchesChip = active.length === 0 || active.some(function (key) {
+                    return tile.groups.indexOf(key) >= 0;
+                });
+                if (matchesQuery && matchesChip) {
+                    tile.el.removeAttribute('hidden');
+                    shown++;
+                } else {
+                    tile.el.setAttribute('hidden', 'hidden');
+                }
+            });
+
+            if (empty) {
+                empty.textContent = shown === 0 ? (empty.getAttribute('data-message') || '') : '';
+            }
+        }
+
+        if (input) {
+            input.addEventListener('input', apply);
+        }
+        chips.forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                var pressed = chip.getAttribute('aria-pressed') === 'true';
+                chip.setAttribute('aria-pressed', pressed ? 'false' : 'true');
+                apply();
+            });
+        });
+
+        // A value restored by the browser (back/forward) filters right away.
+        if (input && input.value) {
+            apply();
+        }
+    }
+
+    window.siteA = { initNav: initNav, initCarousel: initCarousel, initCatalog: initCatalog, fold: fold };
 
     function start() {
         var nav = document.querySelector('[data-sa-nav]');
@@ -256,6 +333,7 @@
             initNav(nav);
         }
         toArray(document.querySelectorAll('[data-sa-carousel]')).forEach(initCarousel);
+        toArray(document.querySelectorAll('[data-sa-catalog]')).forEach(initCatalog);
     }
 
     if (document.readyState === 'loading') {
