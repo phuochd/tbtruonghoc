@@ -20,6 +20,41 @@
         .carousel {
             border-radius: .25rem;
             overflow: hidden;
+            background: #333;
+        }
+
+        // Fixed 16:9 frame, photo contained (never cropped by CSS) so mixed
+        // portrait/landscape slides show whole without height jumps; the
+        // letterbox bars show a blurred copy of the same photo.
+        .gallery-block__frame {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+        }
+
+        .gallery-block__backdrop {
+            position: absolute;
+            inset: -40px;
+            background-position: center;
+            background-size: cover;
+            filter: blur(28px) brightness(.8);
+        }
+
+        .gallery-block__image {
+            position: relative;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 0;
+        }
+
+        // Dark chip so the white glyphs read on any photo.
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+            width: 44px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, .5);
+            background-size: 50%;
+            border-radius: 50%;
         }
     }
 }

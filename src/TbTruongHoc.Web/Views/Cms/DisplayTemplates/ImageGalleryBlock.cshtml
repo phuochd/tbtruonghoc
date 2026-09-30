@@ -1,9 +1,20 @@
 @model Piranha.Extend.Blocks.ImageGalleryBlock
 @using Piranha.Extend.Blocks
+@*
+    Gallery fix (Story 5.2 walkthrough): each photo is resized through the
+    ImageBlock overload, so the editor's Aspect setting applies - "Original"
+    (the default) never crops; Landscape / Portrait / Widescreen / Square
+    crop to that ratio. The site CSS puts every slide in a fixed 16:9 frame
+    with object-fit: contain, so mixed portrait / landscape photos show whole
+    and the carousel height never jumps between slides. The letterbox bars
+    show a blurred copy of the same photo (a CSS background of the same URL,
+    so no extra download and no extra <img> needing alt text).
+*@
 @{
     var unique = "gallery-" + Guid.NewGuid().ToString();
     var images = Model.Items
-        .Where(i => i.GetType() == typeof(ImageBlock) && ((ImageBlock)i).Body.HasValue)
+        .OfType<ImageBlock>()
+        .Where(i => i.GetType() == typeof(ImageBlock) && i.Body.HasValue)
         .ToList();
     // Story 2.4 (block-image alt decision A): same alt rule as ImageBlock.
     var altFallback = ViewData["ImageAltFallback"] as string;
@@ -22,8 +33,12 @@
     <div class="carousel-inner">
         @foreach (var item in images)
         {
+            var src = Url.Content(WebApp.Media.ResizeImage(item, 1100));
             <div class="carousel-item @(item == images.First() ? "active" : "")">
-                <img src="@Url.Content(WebApp.Media.ResizeImage(((ImageBlock)item).Body.Media, 1100, 450))" class="d-block w-100" alt="@AltFor(((ImageBlock)item).Body.Media)">
+                <div class="gallery-block__frame">
+                    <div class="gallery-block__backdrop" style="background-image: url('@src')" aria-hidden="true"></div>
+                    <img src="@src" class="d-block w-100 gallery-block__image" alt="@AltFor(item.Body.Media)">
+                </div>
             </div>
         }
     </div>

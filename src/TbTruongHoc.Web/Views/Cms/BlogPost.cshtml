@@ -1,12 +1,16 @@
 @model BlogPost
 @*
-    Story 5.1 (FR-14): minimal article page on the site layout - H1 title,
-    muted date, then the body blocks, with the post's own meta tags.
-    Story 5.2 adds the breadcrumb, related posts / back-link and the rich
-    article layout. Site-agnostic.
+    Story 5.1 (FR-14): article page on the site layout with the post's own
+    meta tags. Story 5.2: breadcrumb "Trang chủ / Blog / [title]", H1 + muted
+    date, the body blocks in a width-limited reading column, then either the
+    "Bài viết liên quan" strip (published posts of the same archive sharing a
+    tag, loaded by the controller) or - with none - a plain back-link to the
+    archive. Never an empty related shell. Site-agnostic (Epic 7 reuses it).
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var archive = Model.ParentArchive;
+    var related = Model.Related ?? Array.Empty<BlogPost>();
 }
 @section head {
     @await Html.PartialAsync("_MetaTags", Model)
@@ -14,32 +18,73 @@
 
 <main class="sb-article">
     <div class="container">
-        <h1 class="sb-article__title">@Model.Title</h1>
-        @if (Model.Published.HasValue)
+        <div class="sb-article__column">
+            <nav class="sb-breadcrumb" aria-label="Đường dẫn trang">
+                <ol class="sb-breadcrumb__list">
+                    <li class="sb-breadcrumb__item"><a class="sb-breadcrumb__link" href="/">Trang chủ</a></li>
+                    @if (archive != null)
+                    {
+                        <li class="sb-breadcrumb__item"><a class="sb-breadcrumb__link" href="@archive.Permalink">@archive.Title</a></li>
+                    }
+                    <li class="sb-breadcrumb__item"><span class="sb-breadcrumb__current" aria-current="page">@Model.Title</span></li>
+                </ol>
+            </nav>
+
+            <article>
+                <header class="sb-article__header">
+                    <h1 class="sb-article__title">@Model.Title</h1>
+                    @if (Model.Published.HasValue)
+                    {
+                        <time class="sb-article__date" datetime="@Model.Published.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)">@Model.Published.Value.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture)</time>
+                    }
+                </header>
+
+                <div class="sb-article__body">
+                    @{
+                        // Block-image alt decision A (as on the PDP): shared ImageBlock /
+                        // ImageGalleryBlock templates fall back to the post title.
+                        ViewData["ImageAltFallback"] = Model.Title;
+                    }
+                    @foreach (var block in Model.Blocks)
+                    {
+                        // Story 4.2: the config block renders only on archive/PDP/landing pages.
+                        if (block is ConfigBlock)
+                        {
+                            continue;
+                        }
+                        <div class="block @block.CssName()">
+                            @Html.DisplayFor(m => block, block.GetType().Name)
+                        </div>
+                    }
+                    @{
+                        ViewData.Remove("ImageAltFallback");
+                    }
+                </div>
+            </article>
+
+            @if (related.Count == 0 && archive != null)
+            {
+                <p class="sb-backlink"><a class="sb-backlink__link" href="@archive.Permalink"><span aria-hidden="true">←</span> Quay lại @archive.Title</a></p>
+            }
+        </div>
+
+        @if (related.Count > 0)
         {
-            <time class="sb-article__date" datetime="@Model.Published.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)">@Model.Published.Value.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture)</time>
+            <section class="sb-related" aria-labelledby="sb-related-title">
+                <h2 class="sb-related__title" id="sb-related-title">Bài viết liên quan</h2>
+                @{
+                    ViewData["CardHeadingTag"] = "h3";
+                }
+                <ul class="sb-grid sb-grid--blog sb-grid--related" data-sb-related>
+                    @foreach (var post in related)
+                    {
+                        <li>@await Html.PartialAsync("_BlogCard", post)</li>
+                    }
+                </ul>
+                @{
+                    ViewData.Remove("CardHeadingTag");
+                }
+            </section>
         }
     </div>
-
-    @{
-        // Block-image alt decision A (as on the PDP): shared ImageBlock /
-        // ImageGalleryBlock templates fall back to the post title.
-        ViewData["ImageAltFallback"] = Model.Title;
-    }
-    @foreach (var block in Model.Blocks)
-    {
-        // Story 4.2: the config block renders only on archive/PDP/landing pages.
-        if (block is ConfigBlock)
-        {
-            continue;
-        }
-        <div class="block @block.CssName()">
-            <div class="container">
-                @Html.DisplayFor(m => block, block.GetType().Name)
-            </div>
-        </div>
-    }
-    @{
-        ViewData.Remove("ImageAltFallback");
-    }
 </main>
