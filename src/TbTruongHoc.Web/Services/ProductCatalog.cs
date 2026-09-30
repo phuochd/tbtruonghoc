@@ -19,7 +19,13 @@ public class ProductCatalog
         _api = api;
     }
 
-    public async Task<IReadOnlyList<CategoryTileModel>> GetHubTilesAsync(Guid siteId, Guid hubId)
+    /// <summary>
+    /// The hub's category tiles in sitemap order. <paramref name="details"/>
+    /// (Story 6.2, Site A's homepage/aggregate page) also loads each
+    /// category's id, primary image, filter groups and certifications; the
+    /// nav and Site B's hub leave it off and skip that extra load.
+    /// </summary>
+    public async Task<IReadOnlyList<CategoryTileModel>> GetHubTilesAsync(Guid siteId, Guid hubId, bool details = false)
     {
         var sitemap = await _api.Sites.GetSitemapAsync(siteId, onlyPublished: false);
         // Full sitemap so a draft preview of an unpublished hub still finds
@@ -54,10 +60,50 @@ public class ProductCatalog
                 continue;
             }
 
-            tiles.Add(new CategoryTileModel(page.Title, page.Excerpt, child.Permalink));
+            var tile = new CategoryTileModel(page.Title, page.Excerpt, child.Permalink) { Id = child.Id };
+            if (details)
+            {
+                tile = await WithDetailsAsync(tile);
+            }
+            tiles.Add(tile);
         }
 
         return tiles;
+    }
+
+    /// <summary>
+    /// Story 6.2: the site's product hub - the first top-level, non-hidden
+    /// <see cref="ProductHubPage"/> in sitemap order (the same one Site A's
+    /// nav turns into the "Sản phẩm" dropdown), or null when there is none.
+    /// </summary>
+    public async Task<SitemapItem> FindSiteHubAsync(Guid siteId)
+    {
+        var sitemap = await _api.Sites.GetSitemapAsync(siteId);
+        return sitemap
+            .OrderBy(i => i.SortOrder)
+            .FirstOrDefault(i => !i.IsHidden && ProductHubPage.IsHub(i));
+    }
+
+    private async Task<CategoryTileModel> WithDetailsAsync(CategoryTileModel tile)
+    {
+        var archive = await _api.Pages.GetByIdAsync<ProductArchive>(tile.Id);
+        if (archive == null)
+        {
+            return tile;
+        }
+
+        var image = archive.PrimaryImage;
+        if (image != null && image.HasValue && image.Media == null)
+        {
+            image.Media = await _api.Media.GetByIdAsync(image.Id.Value);
+        }
+
+        return tile with
+        {
+            Image = image,
+            Groups = archive.FilterGroupList,
+            Certifications = archive.CertificationList,
+        };
     }
 
     private static SitemapItem FindById(IEnumerable<SitemapItem> items, Guid id)

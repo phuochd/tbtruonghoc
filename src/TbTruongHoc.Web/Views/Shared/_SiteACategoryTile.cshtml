@@ -1,0 +1,41 @@
+@model SiteACategoryTileViewModel
+@*
+    Story 6.2: Site A DESIGN.md `category-tile` - a primary icon block (the
+    category's primary image when set, else a plain teal square), the title
+    and the excerpt. The whole tile is one link. Certification pills
+    (`trust-badge` look) only on the aggregate page and only when the
+    category has a real certification entered.
+*@
+@{
+    var tile = Model.Tile;
+    var heading = Model.HeadingLevel == 2 ? "h2" : "h3";
+}
+<a class="sa-tile" href="@tile.Permalink">
+    <span class="sa-tile__icon">
+        @if (tile.HasImage)
+        {
+            <img src="@Url.Content(WebApp.Media.ResizeImage(tile.Image, 96, 96))" alt="" width="48" height="48" loading="lazy">
+        }
+    </span>
+    @if (heading == "h2")
+    {
+        <h2 class="sa-tile__title">@tile.Title</h2>
+    }
+    else
+    {
+        <h3 class="sa-tile__title">@tile.Title</h3>
+    }
+    @if (!string.IsNullOrWhiteSpace(tile.Excerpt))
+    {
+        <span class="sa-tile__desc">@tile.Excerpt</span>
+    }
+    @if (Model.ShowCertifications && tile.Certifications.Count > 0)
+    {
+        <ul class="sa-tile__certs" aria-label="Chứng nhận">
+            @foreach (var cert in tile.Certifications)
+            {
+                <li class="sa-badge">@cert</li>
+            }
+        </ul>
+    }
+</a>

@@ -125,3 +125,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-6-1-site-a-page-shell.md`
   summary: Hero text over a bright photo may drop below AA contrast, since the DESIGN.md overlay stays 5–10% opaque down to 45% of the hero height and a multi-line heading can reach into that band (unverified, medium if true).
   evidence: Story 6.1 review (Blind Hunter). Settle it with a visual check on real hero photography once the client supplies it; the fix (text scrim or a stronger lower overlay) would change the locked hero-overlay token.
+- source_spec: `_bmad-output/implementation-artifacts/spec-6-2-site-a-home-and-category-aggregate.md`
+  summary: The dev-only SiteASampleSeed blank-fill pass (category excerpt/groups/certs, homepage trust stats) has no test asserting it fills or keeps values.
+  evidence: The only seed test runs on a throwaway site without a SiteAHomePage start page and never reads the new fields (verification-gap review, Story 6.2).

@@ -2,11 +2,16 @@
 @*
     Story 6.1: Site A homepage ("Trang chủ (Site A)"). The hero sits
     directly under the teal nav so, in the fallback state, nav and hero read
-    as one band. The page's own content blocks follow; the tile grid and
-    trust band are Story 6.2's.
+    as one band. The page's own content blocks follow.
+    Story 6.2: then the featured-category grid (Model.FeaturedTiles, from
+    the site's hub - omitted when there is no hub or no visible category)
+    with "Xem tất cả {N} nhóm sản phẩm →" (N = the hub's tile count), then
+    the CMS-authored trust-stat band (omitted when empty).
 *@
 @{
     ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var featured = Model.FeaturedTiles;
+    var stats = Model.TrustStatItems;
 }
 @section head {
     @await Html.PartialAsync("_MetaTags", Model)
@@ -27,5 +32,38 @@
                 @Html.DisplayFor(m => block, block.GetType().Name)
             </div>
         </div>
+    }
+
+    @if (Model.Hub != null && featured.Count > 0)
+    {
+        <section class="sa-featured" aria-labelledby="sa-featured-title">
+            <div class="sa-container">
+                <h2 class="sa-featured__title" id="sa-featured-title">Nhóm sản phẩm nổi bật</h2>
+                <ul class="sa-cat-grid sa-cat-grid--home">
+                    @foreach (var tile in featured)
+                    {
+                        <li>@await Html.PartialAsync("_SiteACategoryTile", new SiteACategoryTileViewModel(tile, 3, false))</li>
+                    }
+                </ul>
+                <a class="sa-featured__all" href="@Model.Hub.Permalink">Xem tất cả @Model.HubTiles.Count nhóm sản phẩm →</a>
+            </div>
+        </section>
+    }
+
+    @if (stats.Count > 0)
+    {
+        <section class="sa-trust" aria-label="Ngọc Anh qua các con số">
+            <div class="sa-container">
+                <ul class="sa-trust__list">
+                    @foreach (var stat in stats)
+                    {
+                        <li class="sa-trust__item">
+                            <span class="sa-trust__num">@stat.NumberText</span>
+                            <span class="sa-trust__label">@stat.LabelText</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </section>
     }
 </main>

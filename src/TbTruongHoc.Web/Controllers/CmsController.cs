@@ -108,6 +108,15 @@ public class CmsController : Controller
         try
         {
             var model = await _loader.GetPageAsync<ProductHubPage>(id, HttpContext.User, draft);
+
+            // Story 6.2: Site A's hub is the aggregate "Danh mục sản phẩm"
+            // page with its own view; Site B keeps ProductHub.cshtml as is.
+            if (await IsSiteAAsync(model.SiteId))
+            {
+                model.Tiles = await _catalog.GetHubTilesAsync(model.SiteId, model.Id, details: true);
+                return View("SiteAProductHub", model);
+            }
+
             model.Tiles = await _catalog.GetHubTilesAsync(model.SiteId, model.Id);
 
             return View(model);
@@ -316,12 +325,26 @@ public class CmsController : Controller
                 return NotFound();
             }
 
+            // Story 6.2: featured categories come from the site's hub.
+            model.Hub = await _catalog.FindSiteHubAsync(model.SiteId);
+            if (model.Hub != null)
+            {
+                model.HubTiles = await _catalog.GetHubTilesAsync(model.SiteId, model.Hub.Id, details: true);
+            }
+
             return View(model);
         }
         catch (UnauthorizedAccessException)
         {
             return Unauthorized();
         }
+    }
+
+    /// <summary>Story 6.2: true when the page belongs to Site A (tbtruonghoc.com).</summary>
+    private async Task<bool> IsSiteAAsync(Guid siteId)
+    {
+        var site = await _api.Sites.GetByIdAsync(siteId);
+        return SiteLayout.ForInternalId(site?.InternalId) == SiteLayout.TbTruongHoc;
     }
 
     /// <summary>
