@@ -353,6 +353,11 @@ app.UsePiranha(options =>
     // the sitemap-driven nav shows it even with zero posts. No posts are
     // seeded. Per slug: never modifies an existing page.
     BlogSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+
+    // Story 6.1 (Q3): idempotently seed Site A's published "Trang chủ"
+    // (SiteAHomePage, hero fields blank) - only while Site A has no pages
+    // at all, so existing pages are never touched.
+    SiteAHomeSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
 });
 
 app.Run();

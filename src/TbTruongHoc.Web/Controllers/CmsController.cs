@@ -300,6 +300,31 @@ public class CmsController : Controller
     }
 
     /// <summary>
+    /// Story 6.1: gets Site A's homepage (hero carousel/fallback) with the
+    /// given id.
+    /// </summary>
+    /// <param name="id">The unique page id</param>
+    /// <param name="draft">If a draft is requested</param>
+    [Route("siteahomepage")]
+    public async Task<IActionResult> SiteAHomePage(Guid id, bool draft = false)
+    {
+        try
+        {
+            var model = await _loader.GetPageAsync<SiteAHomePage>(id, HttpContext.User, draft);
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            return View(model);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+    }
+
+    /// <summary>
     /// Saves the given comment and then redirects to the post.
     /// </summary>
     /// <param name="id">The unique post id</param>

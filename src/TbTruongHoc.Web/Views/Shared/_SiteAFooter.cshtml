@@ -1,0 +1,59 @@
+@*
+    Story 6.1: Site A footer strip (DESIGN.md `footer-strip`) - bold white
+    "NGỌC ANH" left; right: Zalo · phone · email, then the address (linked
+    to Maps when MapsUrl is safe; keeps FR-2's per-site address/Maps on
+    Site A, which no longer includes _ContactBlock). Every value comes from
+    this site's SiteSettings through the shared ContactLinks rules; unset or
+    invalid values are omitted. Nothing set -> brand only.
+*@
+@{
+    var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
+    var phone = settings?.Phone?.Value?.Trim();
+    var telHref = ContactLinks.TelHref(phone);
+    var zaloHref = ContactLinks.SafeUrl(settings?.ZaloUrl?.Value);
+    var email = ContactLinks.MailtoAddress(settings?.Email?.Value);
+    var address = string.IsNullOrWhiteSpace(settings?.Address?.Value) ? null : settings.Address.Value.Trim();
+    var mapsHref = ContactLinks.SafeUrl(settings?.MapsUrl?.Value);
+    var hasLine = zaloHref != null || telHref != null || email != null;
+    var hasPlace = address != null || mapsHref != null;
+}
+<footer class="sa-footer">
+    <div class="sa-container sa-footer__inner">
+        <p class="sa-footer__brand">NGỌC ANH</p>
+        @if (hasLine || hasPlace)
+        {
+            <div class="sa-footer__contact">
+                @if (hasLine)
+                {
+                    <p class="sa-footer__line">
+                        @if (zaloHref != null)
+                        {
+                            <a class="sa-footer__zalo" href="@zaloHref" target="_blank" rel="noopener noreferrer" aria-label="Chat Zalo với Ngọc Anh">Zalo</a>
+                        }
+                        @if (telHref != null)
+                        {
+                            <a class="sa-footer__phone" href="tel:@telHref" aria-label="Gọi ngay tới Ngọc Anh – @phone">@phone</a>
+                        }
+                        @if (email != null)
+                        {
+                            <a class="sa-footer__email" href="mailto:@email">@email</a>
+                        }
+                    </p>
+                }
+                @if (hasPlace)
+                {
+                    <p class="sa-footer__address">
+                        @if (mapsHref != null)
+                        {
+                            <a class="sa-footer__maps" href="@mapsHref" target="_blank" rel="noopener noreferrer">@(address ?? "Xem bản đồ")</a>
+                        }
+                        else
+                        {
+                            <span>@address</span>
+                        }
+                    </p>
+                }
+            </div>
+        }
+    </div>
+</footer>

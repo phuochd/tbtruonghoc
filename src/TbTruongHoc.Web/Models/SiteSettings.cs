@@ -31,6 +31,13 @@ public class SiteSettings : SiteContent<SiteSettings>
     [Region(Title = "Maps URL", Description = "Link that opens this location in Google Maps (share/directions link), e.g. https://maps.google.com/?q=... - not an embed/iframe URL.")]
     public StringField MapsUrl { get; set; }
 
+    /// <summary>
+    /// Story 6.1: the public contact email shown in Site A's footer strip as
+    /// a mailto: link - only when it is a single valid address.
+    /// </summary>
+    [Region(Title = "Email", Description = "Public contact email shown to visitors in the footer, e.g. lienhe@example.vn. One plain address only (no name, no list). Leave blank to hide it. An invalid address is not shown on the site.")]
+    public StringField Email { get; set; }
+
     [Region(Title = "GA4 Measurement ID", Description = "This site's own Google Analytics 4 measurement ID, e.g. G-XXXXXXXXXX. Leave blank to disable analytics on this site - no tracking script is emitted while empty.")]
     public StringField Ga4MeasurementId { get; set; }
 

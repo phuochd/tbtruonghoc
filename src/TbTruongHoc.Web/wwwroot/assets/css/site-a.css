@@ -1,0 +1,1042 @@
+/*
+    Story 6.1: Site A (tbtruonghoc.com) "Xanh Lục Bảo Rạng Rỡ" shell styles.
+    Loaded only by _LayoutTbTruongHoc.cshtml. Plain CSS (no gulp/SCSS step),
+    desktop-first design with breakpoints at 768px (tablet) and 1024px
+    (desktop nav). Token values come from ux-tbtruonghoc DESIGN.md's
+    frontmatter - change them there first. Nothing here is shared with Site
+    B's Mộc Trầm system.
+
+    Bootstrap CSS is still loaded (shared partials use its utilities); its
+    font/color variables are re-pointed at the tokens below so nothing on
+    Site A falls back to Bootstrap's own palette or system font.
+
+    Shadows: only the contact chip and the dropdown panel (the survey modal
+    is Story 6.5). The only gradient is the hero photo overlay.
+*/
+
+/* ---------- Tokens ---------- */
+:root {
+    --sa-bg: #FCFEFD;
+    --sa-surface: #FFFFFF;
+    --sa-primary: #0E7A6C;
+    --sa-primary-rgb: 14, 122, 108;
+    --sa-text: #123832;
+    --sa-text-rgb: 18, 56, 50;
+    --sa-text-muted: #4F6E68;
+    --sa-border: #D3EEE7;
+    --sa-border-neutral: #E3ECE9;
+    --sa-banner-bg: #0E7A6C;
+    --sa-banner-text: #FFFFFF;
+    --sa-banner-link: #CDEDE6;
+    --sa-banner-subtext: #D8F3EC;
+    --sa-banner-outline: #6FBFAE;
+    --sa-cta: #E3A63B;
+    --sa-cta-text: #2B1B02;
+    --sa-accent-soft: #FCEDD1;
+    --sa-accent-ink: #8A5F14;
+    --sa-trust-bg: #DFF6EE;
+    --sa-trust-border: #B7E7D9;
+    --sa-trust-ink: #0E7A6C;
+    --sa-on-primary: #E7FBF5;
+    --sa-surface-tint: #EFF8F6;
+    --sa-border-tint: #BFE3DA;
+    --sa-warning-bg: #FFF7E8;
+    --sa-warning-border: #F0D7A0;
+    --sa-warning-ink: #6B4E10;
+    --sa-error: #C0511F;
+
+    --sa-font: Mulish, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    --sa-radius-sm: 6px;
+    --sa-radius-md: 8px;
+    --sa-radius-lg: 10px;
+    --sa-radius-xl: 12px;
+    --sa-radius-full: 9999px;
+
+    --sa-space-1: 4px;
+    --sa-space-2: 8px;
+    --sa-space-3: 12px;
+    --sa-space-4: 16px;
+    --sa-space-5: 20px;
+    --sa-space-6: 24px;
+    --sa-space-8: 32px;
+    --sa-gutter: 16px;
+    --sa-content-max: 1200px;
+    --sa-section-gap: 48px;
+    --sa-card-gap: 20px;
+    --sa-field-gap: 14px;
+
+    --sa-nav-h: 64px;
+    --sa-shadow-chip: 0 3px 10px rgba(0, 0, 0, .2);
+    --sa-shadow-dropdown: 0 14px 30px rgba(0, 0, 0, .18);
+    --sa-hero-overlay: linear-gradient(180deg, rgba(14, 122, 108, .05) 0%, rgba(14, 122, 108, .10) 45%, rgba(14, 122, 108, .72) 100%);
+
+    /* Bootstrap variable overrides */
+    --bs-body-font-family: var(--sa-font);
+    --bs-body-font-size: 13.5px;
+    --bs-body-line-height: 1.6;
+    --bs-body-color: var(--sa-text);
+    --bs-body-color-rgb: var(--sa-text-rgb);
+    --bs-body-bg: var(--sa-bg);
+    --bs-body-bg-rgb: 252, 254, 253;
+    --bs-emphasis-color: var(--sa-text);
+    --bs-secondary-color: var(--sa-text-muted);
+    --bs-heading-color: var(--sa-text);
+    --bs-link-color: var(--sa-primary);
+    --bs-link-color-rgb: var(--sa-primary-rgb);
+    --bs-link-hover-color: var(--sa-primary);
+    --bs-link-hover-color-rgb: var(--sa-primary-rgb);
+    --bs-primary: var(--sa-primary);
+    --bs-primary-rgb: var(--sa-primary-rgb);
+    --bs-secondary: var(--sa-text-muted);
+    --bs-secondary-rgb: 79, 110, 104;
+    --bs-danger: var(--sa-error);
+    --bs-danger-rgb: 192, 81, 31;
+    --bs-form-invalid-color: var(--sa-error);
+    --bs-form-invalid-border-color: var(--sa-error);
+    --bs-border-color: var(--sa-border-neutral);
+    --bs-border-radius: var(--sa-radius-sm);
+    --bs-border-radius-sm: var(--sa-radius-sm);
+    --bs-border-radius-lg: var(--sa-radius-lg);
+    --bs-focus-ring-color: rgba(var(--sa-primary-rgb), .35);
+}
+
+@media (min-width: 768px) {
+    :root {
+        --sa-gutter: 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    :root {
+        --sa-gutter: 40px;
+    }
+}
+
+/* ---------- Base ---------- */
+html {
+    background: var(--sa-bg);
+}
+
+/* Keep focused / anchored content clear of the sticky nav. */
+html:has(> body.sa-has-nav) {
+    scroll-padding-top: var(--sa-nav-h);
+}
+
+body.site-a {
+    font-family: var(--sa-font);
+    font-size: 13.5px;
+    line-height: 1.6;
+    background: var(--sa-bg);
+    color: var(--sa-text);
+}
+
+.site-a h1, .site-a h2, .site-a h3, .site-a h4, .site-a h5, .site-a h6 {
+    font-family: var(--sa-font);
+    color: var(--sa-text);
+}
+
+.site-a h1 { font-size: 25px; font-weight: 800; line-height: 1.3; }
+.site-a h2 { font-size: 19px; font-weight: 700; line-height: 1.3; }
+.site-a h3 { font-size: 17px; font-weight: 800; line-height: 1.3; }
+.site-a h4 { font-size: 15px; font-weight: 800; line-height: 1.3; }
+
+.site-a a {
+    color: var(--sa-primary);
+}
+
+.site-a :focus-visible {
+    outline: 3px solid var(--sa-primary);
+    outline-offset: 2px;
+}
+
+/* On teal surfaces the focus ring flips to white so it stays visible. */
+.site-a .sa-nav :focus-visible,
+.site-a .sa-hero :focus-visible,
+.site-a .sa-footer :focus-visible {
+    outline-color: var(--sa-banner-text);
+}
+
+.site-a .sa-dropdown :focus-visible {
+    outline-color: var(--sa-primary);
+}
+
+.site-a .container,
+.sa-container {
+    --bs-gutter-x: calc(var(--sa-gutter) * 2);
+}
+
+.site-a .container {
+    max-width: var(--sa-content-max);
+}
+
+.sa-container {
+    width: 100%;
+    max-width: var(--sa-content-max);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--sa-gutter);
+    padding-right: var(--sa-gutter);
+}
+
+.site-a .btn-primary {
+    --bs-btn-bg: var(--sa-cta);
+    --bs-btn-border-color: var(--sa-cta);
+    --bs-btn-color: var(--sa-cta-text);
+    --bs-btn-hover-bg: var(--sa-cta);
+    --bs-btn-hover-border-color: var(--sa-cta);
+    --bs-btn-hover-color: var(--sa-cta-text);
+    --bs-btn-active-bg: var(--sa-cta);
+    --bs-btn-active-border-color: var(--sa-cta);
+    --bs-btn-active-color: var(--sa-cta-text);
+    --bs-btn-disabled-bg: var(--sa-cta);
+    --bs-btn-disabled-border-color: var(--sa-cta);
+    --bs-btn-disabled-color: var(--sa-cta-text);
+    --bs-btn-focus-shadow-rgb: var(--sa-primary-rgb);
+    --bs-btn-font-weight: 700;
+    --bs-btn-font-size: 14px;
+    --bs-btn-border-radius: var(--sa-radius-sm);
+}
+
+.site-a .form-control,
+.site-a .form-select {
+    border-color: var(--sa-border-tint);
+    border-radius: var(--sa-radius-sm);
+}
+
+.site-a .form-control:focus,
+.site-a .form-select:focus {
+    border-color: var(--sa-primary);
+    box-shadow: 0 0 0 .2rem rgba(var(--sa-primary-rgb), .2);
+}
+
+/* ---------- Buttons (DESIGN.md cta-buttons) ---------- */
+.sa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sa-space-2);
+    min-height: 44px;
+    padding: 10px 22px;
+    border: 1.5px solid transparent;
+    border-radius: var(--sa-radius-sm);
+    font-family: var(--sa-font);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.site-a .sa-btn--primary {
+    background: var(--sa-cta);
+    border-color: var(--sa-cta);
+    color: var(--sa-cta-text);
+}
+
+.site-a .sa-btn--primary:hover {
+    filter: brightness(.95);
+    color: var(--sa-cta-text);
+}
+
+.site-a .sa-btn--secondary {
+    background: transparent;
+    border-color: var(--sa-primary);
+    color: var(--sa-primary);
+}
+
+.site-a .sa-btn--secondary:hover {
+    background: var(--sa-surface-tint);
+}
+
+/* A secondary button carrying two destinations ("Gọi ngay · Zalo tư vấn"). */
+.sa-btn--split {
+    padding: 0;
+    gap: 0;
+    cursor: default;
+}
+
+.site-a .sa-btn--split:hover {
+    background: transparent;
+}
+
+.site-a .sa-btn__part {
+    display: inline-flex;
+    align-items: center;
+    min-height: 41px;
+    padding: 0 16px;
+    color: inherit;
+    text-decoration: none;
+    border-radius: var(--sa-radius-sm);
+}
+
+.site-a .sa-btn__part:hover {
+    text-decoration: underline;
+}
+
+.sa-btn__sep {
+    opacity: .8;
+}
+
+/* ---------- Skip link ---------- */
+.sa-skip-link {
+    position: absolute;
+    left: var(--sa-space-2);
+    top: -100px;
+    z-index: 1100;
+    padding: var(--sa-space-2) var(--sa-space-4);
+    background: var(--sa-cta);
+    color: var(--sa-cta-text) !important;
+    border-radius: var(--sa-radius-sm);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.sa-skip-link:focus {
+    top: var(--sa-space-2);
+}
+
+.sa-main:focus {
+    outline: none;
+}
+
+/* ---------- Nav (sticky on every width) ---------- */
+.sa-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background: var(--sa-banner-bg);
+    color: var(--sa-banner-text);
+}
+
+.sa-nav__bar {
+    display: flex;
+    align-items: center;
+    gap: var(--sa-space-4);
+    min-height: var(--sa-nav-h);
+}
+
+.site-a .sa-nav__brand {
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: .02em;
+    color: var(--sa-banner-text);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.sa-nav__toggle,
+.sa-nav__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--sa-radius-sm);
+    background: transparent;
+    color: var(--sa-banner-text);
+}
+
+.sa-nav__list,
+.sa-dropdown__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.site-a .sa-nav__link {
+    display: flex;
+    align-items: center;
+    gap: var(--sa-space-1);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: var(--sa-font);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--sa-banner-link);
+    text-decoration: none;
+    text-align: left;
+}
+
+.site-a .sa-nav__link:hover,
+.site-a .sa-nav__item.is-active > .sa-nav__link {
+    color: var(--sa-banner-text);
+}
+
+.sa-nav__trigger[aria-expanded="true"] .sa-nav__chevron {
+    transform: rotate(180deg);
+}
+
+.sa-dropdown__divider {
+    margin: var(--sa-space-2) 0;
+    border: 0;
+    border-top: 1px solid var(--sa-border-neutral);
+    opacity: 1;
+}
+
+.site-a .sa-dropdown__link,
+.site-a .sa-dropdown__all {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px var(--sa-space-3);
+    border-radius: var(--sa-radius-sm);
+    text-decoration: none;
+    line-height: 1.35;
+}
+
+/* Contact chip (DESIGN.md contact-chip) - the one always-visible contact surface. */
+.sa-chip {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 2px;
+    margin-left: auto;
+    padding: 2px;
+    background: rgba(255, 255, 255, .16);
+    border: 1px solid rgba(255, 255, 255, .3);
+    border-radius: var(--sa-radius-full);
+    box-shadow: var(--sa-shadow-chip);
+}
+
+.site-a .sa-chip__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 40px;
+    min-height: 40px;
+    justify-content: center;
+    padding: 0 10px;
+    border-radius: var(--sa-radius-full);
+    color: var(--sa-banner-text);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.site-a .sa-chip__link:hover {
+    background: rgba(255, 255, 255, .14);
+}
+
+/* Below desktop the chip is icon-only. */
+.sa-chip__text {
+    display: none;
+}
+
+/* ----- Below desktop (< 1024px): hamburger + right-side sheet ----- */
+@media (max-width: 1023.98px) {
+    .sa-nav__brand {
+        margin-right: auto;
+    }
+
+    .sa-nav__toggle {
+        order: 3;
+    }
+
+    .sa-chip {
+        order: 2;
+    }
+
+    .sa-nav__menu {
+        order: 4;
+    }
+
+    .js .sa-nav__menu {
+        position: fixed;
+        top: var(--sa-nav-h);
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1030;
+        overflow-y: auto;
+        padding: 0 var(--sa-gutter) var(--sa-space-8);
+        background: var(--sa-banner-bg);
+        border-top: 1px solid rgba(255, 255, 255, .18);
+        transform: translateX(100%);
+        visibility: hidden;
+        transition: transform .25s ease, visibility 0s linear .25s;
+    }
+
+    .js .sa-nav[data-menu-open="true"] .sa-nav__menu {
+        transform: none;
+        visibility: visible;
+        transition: transform .25s ease, visibility 0s;
+    }
+
+    .js body:has(.sa-nav[data-menu-open="true"]) {
+        overflow: hidden;
+    }
+
+    .sa-nav__sheet-head {
+        display: flex;
+        justify-content: flex-end;
+        padding: var(--sa-space-2) 0;
+    }
+
+    html:not(.js) .sa-nav__sheet-head {
+        display: none;
+    }
+
+    .sa-nav__item {
+        border-bottom: 1px solid rgba(255, 255, 255, .18);
+    }
+
+    .site-a .sa-nav__link {
+        width: 100%;
+        min-height: 52px;
+        font-size: 16px;
+        justify-content: space-between;
+    }
+
+    /* "Sản phẩm" accordion: the same panel, inline. */
+    .sa-dropdown {
+        padding: 0 0 var(--sa-space-3) var(--sa-space-3);
+    }
+
+    .js .sa-dropdown {
+        display: none;
+    }
+
+    .js .sa-nav__trigger[aria-expanded="true"] + .sa-dropdown {
+        display: block;
+    }
+
+    .site-a .sa-dropdown__link,
+    .site-a .sa-dropdown__all {
+        min-height: 44px;
+        font-size: 15px;
+        color: var(--sa-banner-link);
+    }
+
+    .site-a .sa-dropdown__all {
+        font-weight: 700;
+        color: var(--sa-banner-text);
+    }
+
+    .sa-dropdown__divider {
+        border-top-color: rgba(255, 255, 255, .18);
+    }
+
+    /* No JS: the whole list shows in normal flow under the bar. */
+    html:not(.js) .sa-nav__bar {
+        flex-wrap: wrap;
+    }
+
+    html:not(.js) .sa-nav__toggle {
+        display: none;
+    }
+
+    html:not(.js) .sa-nav__menu {
+        width: 100%;
+        padding-bottom: var(--sa-space-4);
+    }
+
+    html:not(.js) .sa-nav {
+        position: static;
+    }
+}
+
+/* ----- Desktop (>= 1024px): inline links, dropdown, chip with text ----- */
+@media (min-width: 1024px) {
+    .sa-nav__toggle,
+    .sa-nav__sheet-head {
+        display: none;
+    }
+
+    .sa-nav__bar {
+        height: var(--sa-nav-h);
+        gap: var(--sa-space-8);
+    }
+
+    .sa-nav__menu {
+        align-self: stretch;
+    }
+
+    .sa-nav__list {
+        display: flex;
+        align-items: stretch;
+        gap: var(--sa-space-6);
+        height: 100%;
+    }
+
+    .sa-nav__item {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .site-a .sa-nav__link {
+        height: 100%;
+        font-size: 12.5px;
+        white-space: nowrap;
+        border-top: 2px solid transparent;
+        border-bottom: 2px solid transparent;
+    }
+
+    .site-a .sa-nav__item.is-active > .sa-nav__link {
+        border-bottom-color: var(--sa-banner-text);
+    }
+
+    .sa-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: calc(var(--sa-space-3) * -1);
+        z-index: 1040;
+        min-width: 300px;
+        padding: var(--sa-space-2);
+        background: var(--sa-surface);
+        border: 1px solid var(--sa-border-neutral);
+        border-radius: var(--sa-radius-lg);
+        box-shadow: var(--sa-shadow-dropdown);
+    }
+
+    .sa-nav__trigger[aria-expanded="true"] + .sa-dropdown,
+    html:not(.js) .sa-nav__item:hover > .sa-dropdown,
+    html:not(.js) .sa-nav__item:focus-within > .sa-dropdown {
+        display: block;
+    }
+
+    .site-a .sa-dropdown__link {
+        font-size: 13.5px;
+        color: var(--sa-text);
+    }
+
+    .site-a .sa-dropdown__link:hover,
+    .site-a .sa-dropdown__link:focus-visible,
+    .site-a .sa-dropdown__all:hover,
+    .site-a .sa-dropdown__all:focus-visible {
+        background: var(--sa-surface-tint);
+    }
+
+    .site-a .sa-dropdown__all {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--sa-primary);
+    }
+
+    .sa-chip__text {
+        display: inline;
+    }
+}
+
+/* ---------- Hero (DESIGN.md hero-carousel / hero-fallback) ---------- */
+.sa-hero {
+    position: relative;
+    background: var(--sa-banner-bg);
+    color: var(--sa-banner-text);
+    overflow: hidden;
+}
+
+.sa-hero__content {
+    position: relative;
+    z-index: 2;
+    padding-top: var(--sa-space-8);
+    padding-bottom: var(--sa-section-gap);
+}
+
+.sa-hero__eyebrow {
+    display: inline-block;
+    margin: 0 0 var(--sa-space-4);
+    padding: 4px 12px;
+    border: 1px solid var(--sa-banner-outline);
+    border-radius: var(--sa-radius-full);
+    color: var(--sa-banner-subtext);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.site-a .sa-hero__heading {
+    max-width: 22ch;
+    margin: 0 0 var(--sa-space-3);
+    color: var(--sa-banner-text);
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.22;
+}
+
+.sa-hero__subtext {
+    max-width: 60ch;
+    margin: 0 0 var(--sa-space-6);
+    color: var(--sa-banner-subtext);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.sa-hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sa-space-3);
+}
+
+/* On the teal band the secondary outline uses banner-outline + white ink. */
+.site-a .sa-hero .sa-btn--secondary {
+    border-color: var(--sa-banner-outline);
+    color: var(--sa-banner-text);
+}
+
+/* The photo layer is desktop/tablet only; phones get the solid fallback. */
+.sa-hero__media {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .site-a .sa-hero__heading {
+        font-size: 34px;
+    }
+
+    .sa-hero__content {
+        padding-top: var(--sa-section-gap);
+        padding-bottom: 64px;
+    }
+
+    .sa-hero--carousel {
+        display: flex;
+        align-items: flex-end;
+        min-height: 520px;
+    }
+
+    .sa-hero--carousel .sa-hero__media {
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+    }
+
+    .sa-hero--carousel .sa-hero__content {
+        padding-bottom: 88px;
+    }
+
+    .sa-hero__slide {
+        position: absolute;
+        inset: 0;
+    }
+
+    .sa-hero__slide[hidden] {
+        display: none;
+    }
+
+    .sa-hero__img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .sa-hero__overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: var(--sa-hero-overlay);
+    }
+
+    .sa-hero__controls {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: var(--sa-space-5);
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--sa-space-3);
+    }
+
+    html:not(.js) .sa-hero__controls {
+        display: none;
+    }
+
+    .sa-hero__arrow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, .5);
+        border-radius: var(--sa-radius-full);
+        background: rgba(14, 122, 108, .55);
+        color: var(--sa-banner-text);
+    }
+
+    .sa-hero__dots {
+        display: flex;
+        gap: var(--sa-space-1);
+    }
+
+    .sa-hero__dot {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+
+    .sa-hero__dot::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 10px;
+        height: 10px;
+        margin: -5px 0 0 -5px;
+        border: 1.5px solid var(--sa-banner-text);
+        border-radius: var(--sa-radius-full);
+    }
+
+    .sa-hero__dot[aria-current="true"]::before {
+        background: var(--sa-banner-text);
+    }
+}
+
+/* ---------- Page header / blocks (Cms/Page, Post, Archive markup) ---------- */
+.sa-main > header {
+    position: relative;
+    padding: var(--sa-space-8) 0 var(--sa-space-6);
+    background: var(--sa-bg);
+    border-bottom: 1px solid var(--sa-border-neutral);
+}
+
+.sa-main > header h1 {
+    margin-bottom: var(--sa-space-2);
+}
+
+.sa-main > header .lead {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--sa-text-muted);
+}
+
+.sa-main > header .dimmer {
+    display: none;
+}
+
+.sa-main > header.has-image {
+    background-size: cover;
+    background-position: center;
+    padding: var(--sa-section-gap) 0;
+    border-bottom: 0;
+}
+
+.sa-main > header.has-image .dimmer {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background: rgba(var(--sa-text-rgb), .6);
+}
+
+.sa-main > header.has-image .container {
+    position: relative;
+}
+
+.sa-main > header.has-image h1,
+.sa-main > header.has-image .lead,
+.sa-main > header.has-image .post-meta,
+.sa-main > header.has-image .post-meta a {
+    color: var(--sa-banner-text);
+}
+
+.sa-main .post-meta {
+    font-size: 12.5px;
+    color: var(--sa-text-muted);
+}
+
+.sa-main .post-meta span + span {
+    margin-left: var(--sa-space-3);
+}
+
+.sa-main .block {
+    padding: var(--sa-space-4) 0;
+}
+
+.sa-main main {
+    padding-bottom: var(--sa-section-gap);
+}
+
+.sa-main .block img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--sa-radius-lg);
+}
+
+.sa-main blockquote {
+    margin: 0;
+    padding: var(--sa-space-4) var(--sa-space-5);
+    border-left: 3px solid var(--sa-primary);
+    background: var(--sa-surface-tint);
+    border-radius: 0 var(--sa-radius-md) var(--sa-radius-md) 0;
+}
+
+/* Generic Site A grid: 3 columns desktop, 2 tablet, 1 phone. */
+.sa-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sa-card-gap);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+@media (min-width: 768px) {
+    .sa-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .sa-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* ---------- Footer strip (DESIGN.md footer-strip) ---------- */
+.sa-footer {
+    background: var(--sa-primary);
+    color: var(--sa-on-primary);
+    padding: var(--sa-space-5) 0;
+}
+
+.sa-footer__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sa-space-2);
+}
+
+.sa-footer__brand {
+    margin: 0;
+    color: var(--sa-banner-text);
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    line-height: 1.2;
+}
+
+.sa-footer__contact {
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.sa-footer__contact p {
+    margin: 0;
+}
+
+.sa-footer__line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--sa-space-2);
+}
+
+.sa-footer__line a + a::before {
+    content: "·";
+    display: inline-block;
+    margin-right: var(--sa-space-2);
+    text-decoration: none;
+}
+
+.site-a .sa-footer a {
+    color: var(--sa-on-primary);
+    text-decoration: none;
+}
+
+.site-a .sa-footer a:hover {
+    color: var(--sa-banner-text);
+    text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+    .sa-footer__inner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sa-space-6);
+    }
+
+    .sa-footer__contact {
+        text-align: right;
+    }
+
+    .sa-footer__line {
+        justify-content: flex-end;
+    }
+}
+
+/* ---------- Shared quote form (_QuoteRequestForm) under Site A tokens ---------- */
+.site-a .quote-request-form {
+    max-width: 560px;
+    margin: var(--sa-space-6) 0 var(--sa-section-gap);
+}
+
+.site-a .quote-request-form .mb-3 {
+    margin-bottom: var(--sa-field-gap) !important;
+}
+
+.site-a .quote-request-form label {
+    display: block;
+    margin-bottom: var(--sa-space-1);
+    font-weight: 700;
+}
+
+.site-a .quote-request-form label span {
+    color: var(--sa-error);
+}
+
+.site-a .quote-request-form input,
+.site-a .quote-request-form textarea {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--sa-border-tint);
+    border-radius: var(--sa-radius-sm);
+    background: var(--sa-surface);
+    color: var(--sa-text);
+    font: inherit;
+}
+
+.site-a .quote-request-form input:focus-visible,
+.site-a .quote-request-form textarea:focus-visible {
+    border-color: var(--sa-primary);
+    outline-offset: 0;
+}
+
+.site-a .quote-request-form__error,
+.site-a .quote-request-form__submit-error {
+    display: block;
+    color: var(--sa-error);
+    font-size: 12.5px;
+}
+
+.site-a .quote-request-form button[type="submit"] {
+    min-height: 44px;
+    padding: 10px 22px;
+    border: 1.5px solid var(--sa-cta);
+    border-radius: var(--sa-radius-sm);
+    background: var(--sa-cta);
+    color: var(--sa-cta-text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Cookie-consent banner (shared partial): dark text-colour panel instead of Bootstrap's bg-dark. */
+.site-a .cookie-consent {
+    background: var(--sa-text) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .js .sa-nav__menu,
+    .js .sa-nav[data-menu-open="true"] .sa-nav__menu {
+        transition: none;
+    }
+}

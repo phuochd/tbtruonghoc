@@ -1,5 +1,7 @@
 #nullable enable
 
+using System.Linq;
+using System.Net.Mail;
 using System.Text.RegularExpressions;
 
 namespace TbTruongHoc.Web.Models;
@@ -53,4 +55,36 @@ public static class ContactLinks
     /// </summary>
     public static string? SafeUrl(string? url) =>
         url != null && SiteSettingsValidation.IsSafeAbsoluteUrl(url) ? url : null;
+
+    /// <summary>
+    /// Story 6.1: the address for a <c>mailto:</c> href - one plain email
+    /// address (no display name, no list), trimmed. <c>null</c> when unset
+    /// or not a valid address, so the caller omits the link.
+    /// </summary>
+    public static string? MailtoAddress(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return null;
+        }
+
+        var trimmed = email.Trim();
+        // '%' could percent-decode and '#' fragment-cut the mailto: href to a
+        // different recipient; control chars never belong in an address.
+        if (trimmed.IndexOfAny(new[] { ',', ';', ' ', '<', '>', '"', '?', '&', '%', '#' }) >= 0
+            || trimmed.Any(char.IsControl))
+        {
+            return null;
+        }
+
+        if (!MailAddress.TryCreate(trimmed, out var parsed)
+            || parsed.Address != trimmed
+            || string.IsNullOrEmpty(parsed.Host)
+            || !parsed.Host.Contains('.'))
+        {
+            return null;
+        }
+
+        return trimmed;
+    }
 }
