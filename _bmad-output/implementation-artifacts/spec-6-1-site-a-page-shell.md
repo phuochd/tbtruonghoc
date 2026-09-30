@@ -103,6 +103,16 @@ context:
 
 ## Spec Change Log
 
+- Walkthrough patch (2026-09-30), owner-renegotiated after comparing rendered mocks (`_bmad-output/planning-artifacts/ux-designs/ux-tbtruonghoc-2026-09-18/.working/hero-box-mo.html`, chosen option "A1+"). The DESIGN.md teal gradient overlay tinted every photo, and the white text was still hard to read. Changes:
+  - **Photos and box.** The hero keeps full-bleed photos (object-fit cover, min-height 560px at >= 768px) with **no overlay**; the `hero-carousel.overlay` token is dropped. All text sits in one frosted box at the bottom-left. The box is about 1/3 of the content width (min 360px; up to 440px at 768–1023px), with teal at 22% opacity, `backdrop-filter: blur(3px)`, a white hairline border at 28% opacity and a text-shadow. Only the photo behind the box is blurred.
+  - **Text.** The eyebrow is a solid pill: teal over photos, white on the fallback. The heading is amber `#FFC857`; the owner relaxed DESIGN.md's "amber only for CTAs" rule for this heading. The subtext is white.
+  - **CTAs.** The combined secondary "Gọi ngay · Zalo tư vấn" button is replaced by **one row of three ghost buttons**: "Nhận báo giá" (amber text), "Gọi ngay" (white, phone icon) and "Zalo" (Zalo blue `#3D8BFF`, chat icon). Each has a dark frosted fill and the box's hairline border. On hover/focus each fills with its own colour: amber with cta-text, white with teal text, and Zalo `#0068FF` with white text. Each button is omitted when its value is unset; the order is fixed (quote, call, Zalo).
+  - **Controls and markup order.** Carousel controls sit bottom-right on dark chips. Before this patch they were unclickable, because the media layer's z-index trapped them under the text. The carousel markup now follows the text, so text and CTAs come first in reading and tab order.
+  - **Image sizes.** srcset includes the original width, capped at 2560 and never upscaled, so wide or HiDPI screens don't stretch a 1280px copy.
+  - **Phones.** Unchanged: solid teal and no photo downloads.
+  - **Gallery.** The 5.2 gallery-block styling is restored for Site A in `site-a.css`. It lived in `style.min.css`, which the new Site A layout no longer loads.
+  - **Still to do.** DESIGN.md `hero-carousel` and `cta-buttons` still describe the old overlay and the combined secondary button, and need the same amendment.
+
 ## Review Triage Log
 
 Pass 1 (blind = B, edge-case = E, verification-gap = V):

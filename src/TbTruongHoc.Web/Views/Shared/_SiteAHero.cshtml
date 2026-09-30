@@ -1,19 +1,25 @@
 @model SiteAHomePage
 @*
     Story 6.1: Site A homepage hero (DESIGN.md `hero-carousel` /
-    `hero-fallback`). The eyebrow / heading / subtext / CTAs render once:
-    - photos present: .sa-hero--carousel (a labelled region; the slides'
-      wrapper is aria-live="polite" so manual slide changes are announced). At >= 768px the slides fill the
-      band under the DESIGN.md gradient overlay, with manual dot/arrow
-      controls (no auto-advance, Q1). Each slide is a <picture> whose only
-      real source is media="(min-width: 768px)"; the <img> fallback is an
-      inline 1x1 GIF, so phones never download hero photos. Below 768px
-      the media is hidden and the band is the solid-teal fallback.
-    - no photos: .sa-hero--fallback, solid teal, no controls.
-    The heading falls back to the page title, so the hero is never empty.
-    Primary (amber) CTA only when its link is set and safe; the secondary
-    (outline) "Gọi ngay · Zalo tư vấn" uses SiteSettings' phone/Zalo, each
-    half omitted when unset. Never inverted.
+    `hero-fallback`, amended in the 6.1 walkthrough - option "A1+", mock
+    _bmad-output/planning-artifacts/ux-designs/ux-tbtruonghoc-2026-09-18/.working/hero-box-mo.html).
+    - photos present: .sa-hero--carousel. At >= 768px the photos fill the
+      band (full-bleed, no tint over them). All text sits in one frosted box
+      (bottom-left, ~1/3 of the content width): a light teal glass that
+      blurs only the photo behind it. Manual dot/arrow controls bottom-right
+      (no auto-advance, Q1); the slides' wrapper is aria-live="polite".
+      Each slide is a <picture> whose only real source is
+      media="(min-width: 768px)"; the <img> fallback is an inline 1x1 GIF,
+      so phones never download hero photos. Below 768px the media is
+      hidden and the band is the solid-teal fallback.
+    - no photos: .sa-hero--fallback, solid teal, no controls, same box
+      content without the glass.
+    Eyebrow = solid teal pill; heading in amber; subtext white. The heading
+    falls back to the page title, so the hero is never empty.
+    CTAs: one row of three ghost buttons - "Nhận báo giá" (amber text; only
+    when its link is set and safe), "Gọi ngay" (white) and "Zalo" (Zalo
+    blue), each from SiteSettings and omitted when unset. Hover/focus fills
+    each with its own colour. Order is fixed: quote, call, Zalo.
 *@
 @{
     var photos = Model.HeroPhotoItems;
@@ -31,6 +37,43 @@
     const string blankGif = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 }
 <section class="sa-hero @(hasPhotos ? "sa-hero--carousel" : "sa-hero--fallback")" aria-labelledby="sa-hero-heading">
+    <div class="sa-hero__inner sa-container">
+        <div class="sa-hero__box">
+            @if (eyebrow != null)
+            {
+                <p class="sa-hero__eyebrow">@eyebrow</p>
+            }
+            <h1 class="sa-hero__heading" id="sa-hero-heading">@heading</h1>
+            @if (subtext != null)
+            {
+                <p class="sa-hero__subtext">@subtext</p>
+            }
+            @if (ctaHref != null || telHref != null || zaloHref != null)
+            {
+                <div class="sa-hero__ctas">
+                    @if (ctaHref != null)
+                    {
+                        <a class="sa-hero__cta sa-hero__cta--quote" href="@ctaHref">@Model.HeroCtaText</a>
+                    }
+                    @if (telHref != null)
+                    {
+                        <a class="sa-hero__cta sa-hero__cta--call" href="tel:@telHref" aria-label="Gọi ngay tới Ngọc Anh – @phone">
+                            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" fill="currentColor"/></svg>
+                            Gọi ngay
+                        </a>
+                    }
+                    @if (zaloHref != null)
+                    {
+                        <a class="sa-hero__cta sa-hero__cta--zalo" href="@zaloHref" target="_blank" rel="noopener noreferrer" aria-label="Chat Zalo với Ngọc Anh">
+                            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3C6.5 3 2 6.8 2 11.5c0 2.6 1.4 4.9 3.6 6.5L5 21l3.6-1.9c1.1.3 2.2.4 3.4.4 5.5 0 10-3.8 10-8.5S17.5 3 12 3z" fill="currentColor"/></svg>
+                            Zalo
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
     @if (hasPhotos)
     {
         <div class="sa-hero__media" data-sa-carousel role="region" aria-roledescription="carousel" aria-label="Ảnh công trình">
@@ -38,10 +81,24 @@
             @for (var i = 0; i < photos.Count; i++)
             {
                 var photo = photos[i];
+                // Full-bleed at up to 2x DPR: the steps below the original plus
+                // the original itself (capped at 2560), never an upscale, so
+                // wide/HiDPI screens don't stretch a 1280 copy into a blur.
+                var original = photo.Media.Width ?? 0;
+                var widths = new[] { 1280, 1920, 2560 }.Where(w => w < original).ToList();
+                if (original > 0 && original <= 2560)
+                {
+                    widths.Add(original);
+                }
+                if (widths.Count == 0)
+                {
+                    widths.Add(1280);
+                }
+                var srcset = string.Join(", ", widths.Select(w => Url.Content(WebApp.Media.ResizeImage(photo, w)) + " " + w + "w"));
                 <div class="sa-hero__slide" data-sa-slide role="group" aria-roledescription="slide" aria-label="@(i + 1) / @photos.Count" hidden="@(i == 0 ? null : "hidden")">
                     <picture>
                         <source media="(min-width: 768px)"
-                                srcset="@Url.Content(WebApp.Media.ResizeImage(photo, 1280)) 1280w@(photo.Media.Width >= 1920 ? ", " + Url.Content(WebApp.Media.ResizeImage(photo, 1920)) + " 1920w" : "")"
+                                srcset="@srcset"
                                 sizes="100vw">
                         <img class="sa-hero__img" src="@blankGif" alt="@Model.HeroAltText(photo)"
                              width="@photo.Media.Width" height="@photo.Media.Height"
@@ -50,7 +107,6 @@
                 </div>
             }
             </div>
-            <div class="sa-hero__overlay" aria-hidden="true"></div>
             @if (photos.Count > 1)
             {
                 <div class="sa-hero__controls" data-sa-carousel-controls>
@@ -74,42 +130,4 @@
             }
         </div>
     }
-
-    <div class="sa-hero__content sa-container">
-        @if (eyebrow != null)
-        {
-            <p class="sa-hero__eyebrow">@eyebrow</p>
-        }
-        <h1 class="sa-hero__heading" id="sa-hero-heading">@heading</h1>
-        @if (subtext != null)
-        {
-            <p class="sa-hero__subtext">@subtext</p>
-        }
-        @if (ctaHref != null || telHref != null || zaloHref != null)
-        {
-            <div class="sa-hero__ctas">
-                @if (ctaHref != null)
-                {
-                    <a class="sa-btn sa-btn--primary" href="@ctaHref">@Model.HeroCtaText</a>
-                }
-                @if (telHref != null || zaloHref != null)
-                {
-                    <span class="sa-btn sa-btn--secondary sa-btn--split">
-                        @if (telHref != null)
-                        {
-                            <a class="sa-btn__part" href="tel:@telHref" aria-label="Gọi ngay tới Ngọc Anh – @phone">Gọi ngay</a>
-                        }
-                        @if (telHref != null && zaloHref != null)
-                        {
-                            <span class="sa-btn__sep" aria-hidden="true">·</span>
-                        }
-                        @if (zaloHref != null)
-                        {
-                            <a class="sa-btn__part" href="@zaloHref" target="_blank" rel="noopener noreferrer" aria-label="Chat Zalo với Ngọc Anh">Zalo tư vấn</a>
-                        }
-                    </span>
-                }
-            </div>
-        }
-    </div>
 </section>

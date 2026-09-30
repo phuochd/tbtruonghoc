@@ -94,8 +94,10 @@ public class SiteAShellTests
             var nav = Section(html, "<header class=\"sa-nav\"", "</header>");
 
             Assert.Contains($"class=\"sa-nav__link\" href=\"{hub.Permalink}\" aria-current=\"page\">", nav);
+            // Scoped to this hub, not the whole nav: Site A may hold other
+            // hubs (e.g. the dev sample seed). The plain-link assert above
+            // already rules out the dropdown branch for this hub.
             Assert.DoesNotContain("sa-dd-" + hub.Id.ToString("N"), nav);
-            Assert.DoesNotContain("data-sa-dropdown", nav);
             Assert.DoesNotContain(empty.Permalink, nav);
         });
     }
@@ -266,6 +268,16 @@ public class SiteAShellTests
                 Assert.Contains("src=\"data:image/gif;base64,", img.Value);
             }
 
+            // Walkthrough "A1+": no tint over the photos, all text in one box,
+            // and no photo URL outside the desktop-only <source> (phones fetch
+            // nothing).
+            Assert.DoesNotContain("sa-hero__overlay", hero);
+            Assert.DoesNotContain("background-image", hero);
+            Assert.Equal(1, Count(hero, "class=\"sa-hero__box\""));
+            // Text and CTAs come before the carousel (reading and tab order).
+            Assert.True(hero.IndexOf("<h1", StringComparison.Ordinal) < hero.IndexOf("data-sa-carousel", StringComparison.Ordinal));
+            Assert.True(hero.IndexOf("sa-hero__ctas", StringComparison.Ordinal) < hero.IndexOf("data-sa-carousel-prev", StringComparison.Ordinal));
+
             // Only the first slide shows up front; the second is hidden.
             var slides = Regex.Matches(hero, "<div class=\"sa-hero__slide\"[^>]*>").Select(m => m.Value).ToList();
             Assert.DoesNotContain("hidden", slides[0]);
@@ -281,7 +293,7 @@ public class SiteAShellTests
             Assert.Contains($">Heading {h.Suffix}</h1>", decoded);
             Assert.Contains("<p class=\"sa-hero__eyebrow\">Thiết bị trường học</p>", decoded);
             Assert.Contains("<p class=\"sa-hero__subtext\">Mô tả ngắn</p>", decoded);
-            Assert.Contains("<a class=\"sa-btn sa-btn--primary\" href=\"/lien-he\">Nhận báo giá</a>", decoded);
+            Assert.Contains("<a class=\"sa-hero__cta sa-hero__cta--quote\" href=\"/lien-he\">Nhận báo giá</a>", decoded);
 
             // Manual only: no auto-advance hooks in the markup.
             Assert.DoesNotContain("data-interval", hero);
@@ -314,13 +326,14 @@ public class SiteAShellTests
             Assert.DoesNotContain("<picture", hero);
             Assert.Contains($">{page.Title}</h1>", Decode(hero));
 
-            // Unsafe link: no primary; the secondary (phone + Zalo) still renders.
-            Assert.DoesNotContain("sa-btn--primary", hero);
+            // Unsafe link: no quote button; call and Zalo still render as two
+            // distinct buttons.
+            Assert.DoesNotContain("sa-hero__cta--quote", hero);
             Assert.DoesNotContain("javascript:", hero);
-            var secondary = Section(hero, "<span class=\"sa-btn sa-btn--secondary sa-btn--split\">", "</div>");
-            Assert.Contains("href=\"tel:0909998888\"", secondary);
-            Assert.Contains(">Gọi ngay</a>", Decode(secondary));
-            Assert.Contains("href=\"https://zalo.me/hero-test\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Chat Zalo với Ngọc Anh\">Zalo tư vấn</a>", Decode(secondary));
+            var ctas = Decode(Section(hero, "<div class=\"sa-hero__ctas\">", "</div>"));
+            Assert.Contains("<a class=\"sa-hero__cta sa-hero__cta--call\" href=\"tel:0909998888\" aria-label=\"Gọi ngay tới Ngọc Anh – 090 999 8888\">", ctas);
+            Assert.Contains("Gọi ngay", ctas);
+            Assert.Contains("<a class=\"sa-hero__cta sa-hero__cta--zalo\" href=\"https://zalo.me/hero-test\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Chat Zalo với Ngọc Anh\">", ctas);
         });
     }
 
@@ -341,11 +354,11 @@ public class SiteAShellTests
 
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(siteA));
             var ctas = Decode(Section(html, "<div class=\"sa-hero__ctas\">", "</div>"));
-            var primaryAt = ctas.IndexOf("<a class=\"sa-btn sa-btn--primary\" href=\"https://tbtruonghoc.com/lien-he\">Yêu cầu tư vấn</a>", StringComparison.Ordinal);
-            var secondaryAt = ctas.IndexOf("sa-btn sa-btn--secondary", StringComparison.Ordinal);
-            Assert.True(primaryAt >= 0 && secondaryAt > primaryAt, "Primary (amber) comes first, secondary (outline) second.");
-            Assert.DoesNotContain("Zalo tư vấn", ctas);
-            Assert.DoesNotContain("sa-btn__sep", ctas);
+            var quoteAt = ctas.IndexOf("<a class=\"sa-hero__cta sa-hero__cta--quote\" href=\"https://tbtruonghoc.com/lien-he\">Yêu cầu tư vấn</a>", StringComparison.Ordinal);
+            var callAt = ctas.IndexOf("sa-hero__cta--call", StringComparison.Ordinal);
+            Assert.True(quoteAt >= 0 && callAt > quoteAt, "Quote comes first, then call.");
+            // Zalo unset: its button is omitted.
+            Assert.DoesNotContain("sa-hero__cta--zalo", ctas);
         });
     }
 
@@ -621,6 +634,58 @@ public class SiteAShellTests
     public void Startup_Seed_Targets_Site_A()
     {
         Assert.Equal(SiteSeed.TbTruongHocInternalId, SiteAHomeSeed.TargetInternalId);
+    }
+
+    [Fact]
+    public async Task Dev_Sample_Seed_Builds_A_Hub_Whose_Empty_Category_Is_Hidden_And_Rerun_Changes_Nothing()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var catalog = scope.ServiceProvider.GetRequiredService<TbTruongHoc.Web.Services.ProductCatalog>();
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var site = new Site
+        {
+            Id = Guid.NewGuid(),
+            InternalId = $"sa-sample-{suffix}",
+            Title = $"Site A Sample {suffix}",
+            Hostnames = $"sa-sample-{suffix}.local",
+            IsDefault = false
+        };
+
+        try
+        {
+            await api.Sites.SaveAsync(site);
+
+            await SiteASampleSeed.EnsureSeededAsync(api, site.Id);
+            await SiteASampleSeed.EnsureSeededAsync(api, site.Id);
+
+            var hub = Assert.Single(await api.Sites.GetSitemapAsync(site.Id, onlyPublished: false));
+            Assert.True(ProductHubPage.IsHub(hub));
+            Assert.Equal(SiteASampleSeed.Categories.Count, hub.Items.Count);
+
+            var tiles = await catalog.GetHubTilesAsync(site.Id, hub.Id);
+            Assert.Equal(SiteASampleSeed.Categories.Count - 1, tiles.Count);
+            Assert.DoesNotContain(tiles, t => t.Title == SiteASampleSeed.Categories[^1].Title);
+        }
+        finally
+        {
+            foreach (var top in await api.Sites.GetSitemapAsync(site.Id, onlyPublished: false))
+            {
+                foreach (var child in top.Items)
+                {
+                    foreach (var post in await api.Posts.GetAllAsync<PostInfo>(child.Id))
+                    {
+                        await api.Posts.DeleteAsync(post.Id);
+                    }
+                    await api.Pages.DeleteAsync(child.Id);
+                }
+                await api.Pages.DeleteAsync(top.Id);
+            }
+            if (await api.Sites.GetByIdAsync(site.Id) != null)
+            {
+                await api.Sites.DeleteAsync(site.Id);
+            }
+        }
     }
 
     [Fact]
