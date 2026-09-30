@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Piranha;
+using Piranha.Extend;
 using Piranha.Extend.Blocks;
 using Piranha.Extend.Fields;
 using Piranha.Models;
@@ -419,7 +420,8 @@ public class BlogListingTests
         public async Task<BlogPost> PostAsync(PageBase archive, string title, bool published = true,
             string? excerpt = null, DateTime? publishedAt = null, string? blockHtml = null,
             string? metaTitle = null, string? metaDescription = null, Guid? primaryImage = null,
-            ConfigBlock? configBlock = null, string? category = null, IEnumerable<string>? tags = null)
+            ConfigBlock? configBlock = null, string? category = null, IEnumerable<string>? tags = null,
+            IEnumerable<Block>? blocks = null)
         {
             var post = await _api.Posts.CreateAsync<BlogPost>();
             post.BlogId = archive.Id;
@@ -448,6 +450,20 @@ public class BlogListingTests
             }
             await _api.Posts.SaveAsync(post);
             _posts.Add(post.Id);
+            if (blocks != null)
+            {
+                // Own DI scope (as ProductDetailPageTests.UpdatePostAsync): nested
+                // blocks saved through this builder's DbContext stay tracked and
+                // make the cleanup delete fail with a concurrency exception.
+                using var scope = _services.CreateScope();
+                var api = scope.ServiceProvider.GetRequiredService<IApi>();
+                var saved = (await api.Posts.GetByIdAsync<BlogPost>(post.Id))!;
+                foreach (var block in blocks)
+                {
+                    saved.Blocks.Add(block);
+                }
+                await api.Posts.SaveAsync(saved);
+            }
             return (await _api.Posts.GetByIdAsync<BlogPost>(post.Id))!;
         }
 

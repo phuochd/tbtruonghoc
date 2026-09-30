@@ -3,6 +3,8 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Piranha.Extend.Blocks;
+using Piranha.Extend.Fields;
 using TbTruongHoc.Web.Models;
 using Xunit;
 using static TbTruongHoc.Web.Tests.BlogListingTests;
@@ -196,6 +198,39 @@ public class ArticleDetailTests
             var body = column[column.IndexOf("<div class=\"sb-article__body\">", StringComparison.Ordinal)..];
             Assert.Contains($"<h2>Chọn gỗ {marker}</h2>", body);
             Assert.Contains($"<h3>Phơi gỗ {marker}</h3>", body);
+        });
+    }
+
+    // Gallery fix: each photo honours its ImageBlock Aspect ("Original" never
+    // crops, no fixed 1100x450 crop) and carries the contained-frame class.
+    [Fact]
+    public async Task Gallery_Photos_Follow_Their_Aspect_Setting_And_Are_Never_Force_Cropped()
+    {
+        await WithBlogAsync(_factory, async (api, siteB, b) =>
+        {
+            var archive = await b.ArchiveAsync("Gallery");
+            var original = await b.UploadAsync();
+            var landscape = await b.UploadAsync();
+            var gallery = new ImageGalleryBlock();
+            gallery.Items.Add(new ImageBlock { Body = original });
+            gallery.Items.Add(new ImageBlock
+            {
+                Body = landscape,
+                Aspect = new SelectField<ImageAspect> { Value = ImageAspect.Landscape }
+            });
+            var post = await b.PostAsync(archive, "Gallery post", blocks: new[] { gallery });
+
+            var html = await GetAsync(_factory, post.Permalink, HostnameOf(siteB), HttpStatusCode.OK);
+            var carousel = Section(html, "<div class=\"carousel-inner\">", "carousel-control-prev");
+            var imgs = Regex.Matches(carousel, "<img [^>]*>").Select(m => m.Value).ToList();
+            Assert.Equal(2, imgs.Count);
+            Assert.All(imgs, img => Assert.Contains("gallery-block__image", img));
+            Assert.DoesNotContain("x450", carousel);
+
+            // Original: width-only version, the photo keeps its own ratio.
+            Assert.Matches($"src=\"[^\"]*{original}[^\"]*_1100[.]png\"", imgs[0]);
+            // Landscape: cropped to 3:2 at the same width.
+            Assert.Matches($"src=\"[^\"]*{landscape}[^\"]*_1100x733[.]png\"", imgs[1]);
         });
     }
 

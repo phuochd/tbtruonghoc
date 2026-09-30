@@ -1,9 +1,18 @@
 @model Piranha.Extend.Blocks.ImageGalleryBlock
 @using Piranha.Extend.Blocks
+@*
+    Gallery fix (Story 5.2 walkthrough): each photo is resized through the
+    ImageBlock overload, so the editor's Aspect setting applies - "Original"
+    (the default) never crops; Landscape / Portrait / Widescreen / Square
+    crop to that ratio. The site CSS puts every slide in a fixed 4:3 frame
+    with object-fit: contain, so mixed portrait / landscape photos show whole
+    and the carousel height never jumps between slides.
+*@
 @{
     var unique = "gallery-" + Guid.NewGuid().ToString();
     var images = Model.Items
-        .Where(i => i.GetType() == typeof(ImageBlock) && ((ImageBlock)i).Body.HasValue)
+        .OfType<ImageBlock>()
+        .Where(i => i.GetType() == typeof(ImageBlock) && i.Body.HasValue)
         .ToList();
     // Story 2.4 (block-image alt decision A): same alt rule as ImageBlock.
     var altFallback = ViewData["ImageAltFallback"] as string;
@@ -23,7 +32,7 @@
         @foreach (var item in images)
         {
             <div class="carousel-item @(item == images.First() ? "active" : "")">
-                <img src="@Url.Content(WebApp.Media.ResizeImage(((ImageBlock)item).Body.Media, 1100, 450))" class="d-block w-100" alt="@AltFor(((ImageBlock)item).Body.Media)">
+                <img src="@Url.Content(WebApp.Media.ResizeImage(item, 1100))" class="d-block w-100 gallery-block__image" alt="@AltFor(item.Body.Media)">
             </div>
         }
     </div>

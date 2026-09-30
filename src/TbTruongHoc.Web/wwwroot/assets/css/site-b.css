@@ -977,6 +977,45 @@ body.site-b.sb-has-bar:has(> [data-consent-banner]:not([hidden])) {
     }
 }
 
+/* ---------- image gallery block (shared template) ----------
+   Fixed 4:3 surface frame; every photo is contained, never cropped by CSS,
+   so portrait and landscape slides show whole and the height never jumps.
+   Controls/indicators sit on a dark chip - white Bootstrap glyphs would
+   vanish on the white letterbox bars. */
+.site-b .gallery-block {
+    background: var(--sb-surface);
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md);
+    overflow: hidden;
+}
+
+.site-b .gallery-block .gallery-block__image {
+    aspect-ratio: 4 / 3;
+    height: auto;
+    object-fit: contain;
+    background: var(--sb-surface);
+    border-radius: 0;
+}
+
+.site-b .gallery-block .carousel-control-prev,
+.site-b .gallery-block .carousel-control-next {
+    width: 56px;
+    opacity: 1;
+}
+
+.site-b .gallery-block .carousel-control-prev-icon,
+.site-b .gallery-block .carousel-control-next-icon {
+    width: 44px;
+    height: 44px;
+    background-color: rgba(58, 46, 34, 0.6);
+    background-size: 50%;
+    border-radius: var(--sb-radius-full);
+}
+
+.site-b .gallery-block .carousel-indicators [data-bs-target] {
+    background-color: var(--sb-on-surface);
+}
+
 /* ---------- product-detail-page (Story 2.4) ---------- */
 .sb-pdp {
     padding-top: var(--sb-space-5);

@@ -88,6 +88,8 @@ context:
 
 ## Implementation Notes
 
+- Walkthrough patch (2026-09-30): the shared `ImageGalleryBlock` template hard-cropped every photo to 1100x450 and ignored the per-image `Aspect` setting. It now resizes through the `ImageBlock` overload (`Original` = no crop), and both site stylesheets frame slides at 4:3 with `object-fit: contain`, with dark-chip controls so they stay visible on letterbox bars. This affects every page with a gallery on both sites, not only blog posts.
+
 ## Spec Change Log
 
 ## Review Triage Log
