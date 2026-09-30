@@ -88,7 +88,7 @@ context:
 
 ## Implementation Notes
 
-- Walkthrough patch (2026-09-30): the shared `ImageGalleryBlock` template hard-cropped every photo to 1100x450 and ignored the per-image `Aspect` setting. It now resizes through the `ImageBlock` overload (`Original` = no crop), and both site stylesheets frame slides at 4:3 with `object-fit: contain`, with dark-chip controls so they stay visible on letterbox bars. This affects every page with a gallery on both sites, not only blog posts.
+- Walkthrough patch (2026-09-30): the shared `ImageGalleryBlock` template hard-cropped every photo to 1100x450 and ignored the per-image `Aspect` setting. It now resizes through the `ImageBlock` overload (`Original` = no crop), and both site stylesheets frame slides at 16:9 with `object-fit: contain` over a blurred copy of the same photo (CSS background, same URL), with dark-chip controls. 16:9 was chosen after comparing 4:3/16:9 x white/blurred mocks; the owner will require editors to supply photos suited to 16:9. This affects every page with a gallery on both sites, not only blog posts.
 
 ## Spec Change Log
 

@@ -202,7 +202,8 @@ public class ArticleDetailTests
     }
 
     // Gallery fix: each photo honours its ImageBlock Aspect ("Original" never
-    // crops, no fixed 1100x450 crop) and carries the contained-frame class.
+    // crops, no fixed 1100x450 crop) and sits in a frame with a blurred
+    // backdrop of the same photo.
     [Fact]
     public async Task Gallery_Photos_Follow_Their_Aspect_Setting_And_Are_Never_Force_Cropped()
     {
@@ -231,6 +232,13 @@ public class ArticleDetailTests
             Assert.Matches($"src=\"[^\"]*{original}[^\"]*_1100[.]png\"", imgs[0]);
             // Landscape: cropped to 3:2 at the same width.
             Assert.Matches($"src=\"[^\"]*{landscape}[^\"]*_1100x733[.]png\"", imgs[1]);
+
+            // Each slide: a frame whose decorative backdrop reuses the photo URL
+            // (blurred letterbox bars) and stays out of the accessibility tree.
+            var frames = Regex.Matches(carousel,
+                "<div class=\"gallery-block__frame\">\\s*<div class=\"gallery-block__backdrop\" style=\"background-image: url\\('([^']+)'\\)\" aria-hidden=\"true\"></div>\\s*<img src=\"([^\"]+)\"");
+            Assert.Equal(2, frames.Count);
+            Assert.All(frames, f => Assert.Equal(f.Groups[2].Value, f.Groups[1].Value));
         });
     }
 
