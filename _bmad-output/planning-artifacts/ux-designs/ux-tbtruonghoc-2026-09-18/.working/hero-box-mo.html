@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero Site A – ảnh full màn hình + box nền mờ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;600;700;800&display=swap">
+<style>
+:root {
+    --bg: #FCFEFD; --primary: #0E7A6C; --primary-rgb: 14,122,108; --text: #123832; --text-rgb: 18,56,50;
+    --muted: #4F6E68; --banner-text: #FFFFFF; --banner-subtext: #D8F3EC; --banner-outline: #6FBFAE;
+    --cta: #E3A63B; --cta-text: #2B1B02; --border: #E3ECE9;
+    --font: Mulish, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+
+/* Mock-only header */
+.intro { padding: 32px 0 8px; }
+.intro h1 { font-size: 22px; margin: 0 0 8px; }
+.intro p { margin: 4px 0; color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 90ch; }
+.option-label { padding: 40px 0 12px; }
+.option-label h2 { margin: 0; font-size: 18px; }
+.option-label h2 span { display: inline-block; min-width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 999px; background: var(--primary); color: #fff; margin-right: 8px; font-size: 14px; }
+.option-label p { margin: 6px 0 0; font-size: 13.5px; color: var(--muted); }
+
+/* Nav (same as the built shell) */
+.nav { background: var(--primary); color: #fff; }
+.nav__bar { display: flex; align-items: center; gap: 28px; height: 64px; }
+.nav__brand { font-weight: 800; letter-spacing: .04em; font-size: 18px; }
+.nav__links { display: flex; gap: 22px; font-size: 14px; font-weight: 600; color: #CDEDE6; flex: 1; }
+.nav__chip { background: #fff; color: var(--primary); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.2); }
+
+/* Hero: full-bleed photo, NO overlay on the photo itself */
+.hero { position: relative; height: 560px; overflow: hidden; background: #0b4f46; }
+.hero__slide { position: absolute; inset: 0; opacity: 0; transition: opacity .35s; }
+.hero__slide.is-on { opacity: 1; }
+.hero__slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero__inner { position: relative; z-index: 2; height: 100%; display: flex; }
+
+/* The frosted box: blurs whatever photo is behind it */
+.box { color: #fff; border-radius: 14px; padding: 28px 32px; max-width: 560px;
+       -webkit-backdrop-filter: blur(14px) saturate(1.1); backdrop-filter: blur(14px) saturate(1.1); }
+.box__eyebrow { display: inline-block; margin: 0 0 14px; padding: 4px 12px; border: 1px solid var(--banner-outline); border-radius: 999px;
+                color: var(--banner-subtext); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.box__heading { margin: 0 0 12px; font-size: 34px; font-weight: 800; line-height: 1.22; }
+.box__subtext { margin: 0 0 22px; font-size: 15px; line-height: 1.6; color: var(--banner-subtext); }
+.ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn { display: inline-flex; align-items: center; height: 46px; padding: 0 20px; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; }
+.btn--primary { background: var(--cta); color: var(--cta-text); }
+.btn--secondary { border: 1.5px solid var(--banner-outline); color: #fff; }
+
+/* Controls on dark chips (same as gallery) */
+.controls { position: absolute; z-index: 3; bottom: 20px; right: 40px; display: flex; align-items: center; gap: 10px; }
+.arrow { width: 40px; height: 40px; border-radius: 999px; border: 0; background: rgba(var(--text-rgb), .6); color: #fff; font-size: 18px; cursor: pointer; }
+.dots { display: flex; gap: 6px; padding: 8px 10px; border-radius: 999px; background: rgba(var(--text-rgb), .6); }
+.dot { width: 10px; height: 10px; border-radius: 999px; border: 1.5px solid #fff; background: transparent; padding: 0; cursor: pointer; }
+.dot.is-on { background: #fff; }
+
+/* --- Option A (chốt hướng): box trái-dưới, kính teal, ~1/3 chiều rộng ---
+   Box = 1/3 of the 1200px content width (~373px after gutters), so the
+   heading steps down to 28px to stay 2-3 lines. A thin light border and a
+   soft text-shadow keep the edge and the white text readable while the
+   photo stays visible through the box. */
+[class^="optA"] .hero__inner { align-items: flex-end; padding-bottom: 72px; }
+[class^="optA"] .box { width: calc((100% - 80px) / 3); min-width: 340px; max-width: none; padding: 24px 24px;
+                       border: 1px solid rgba(255,255,255,.28); text-shadow: 0 1px 3px rgba(0,0,0,.35); }
+[class^="optA"] .box__heading { font-size: 28px; }
+[class^="optA"] .box__subtext { font-size: 14.5px; color: #fff; }
+[class^="optA"] .btn { text-shadow: none; }
+
+/* A1 box for every variant: teal 22%, blur 3px */
+[class^="optA1"] .box { background: rgba(var(--primary-rgb), .22);
+                        -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+
+/* A1 chốt: tiêu đề vàng amber, phần còn lại trắng, bóng chữ đậm */
+[class^="optA1"] .box { text-shadow: 0 1px 2px rgba(0,0,0,.55), 0 0 12px rgba(0,0,0,.35); }
+[class^="optA1"] .box__heading { color: #FFC857; }
+
+/* Eyebrow: solid pill so it reads on any photo */
+[class^="optA1"] .box__eyebrow { border: 0; background: var(--primary); color: #fff; text-shadow: none; padding: 5px 12px; }
+
+/* CTAs: one row of three frosted ghost buttons, border + text in the same
+   colour: amber (báo giá), white (gọi), Zalo blue (Zalo). A dark frosted
+   fill under each keeps the coloured text readable on bright photos. */
+.ctas--row { display: flex; flex-wrap: nowrap; gap: 8px; }
+.ctas--row .btn { flex: 1 1 auto; justify-content: center; gap: 6px; height: 42px; padding: 0 12px; font-size: 14px; white-space: nowrap;
+                  border: 1px solid rgba(255,255,255,.28); background: rgba(var(--text-rgb), .38);
+                  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); text-shadow: none;
+                  transition: background-color .15s, color .15s, border-color .15s; }
+.ctas--row .btn--quote { color: #FFC857; }
+.ctas--row .btn--call { color: #fff; }
+.ctas--row .btn--zalo { color: #3D8BFF; }
+/* Hover / keyboard focus: darker fill + white text; Zalo turns Zalo blue */
+.ctas--row .btn:hover, .ctas--row .btn:focus-visible { background: rgba(var(--text-rgb), .68); color: #fff; }
+.ctas--row .btn--zalo:hover, .ctas--row .btn--zalo:focus-visible { background: #0068FF; border-color: #0068FF; color: #fff; }
+.ctas--row .btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* Đề xuất: hover fills each button with its own colour */
+.optA1f .ctas--row .btn--quote:hover, .optA1f .ctas--row .btn--quote:focus-visible { background: var(--cta); border-color: var(--cta); color: var(--cta-text); }
+.optA1f .ctas--row .btn--call:hover, .optA1f .ctas--row .btn--call:focus-visible { background: #fff; border-color: #fff; color: var(--primary); }
+.btn svg { flex: none; }
+
+/* Browsers without backdrop-filter: a denser tint keeps text readable */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    [class^="optA"] .box { background: rgba(var(--primary-rgb), .6); }
+}
+
+/* Phone: unchanged from the build – solid teal fallback, no photos */
+.phone-note { margin: 48px auto 0; }
+.phone { width: 375px; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-top: 12px; }
+.phone .hero-fb { background: var(--primary); color: #fff; padding: 32px 16px 48px; }
+.phone .box__heading { font-size: 26px; }
+
+@media (max-width: 900px) {
+    .container { padding: 0 16px; }
+    .nav__links { display: none; }
+    .box__heading { font-size: 26px; }
+    [class^="optA"] .box { width: auto; min-width: 0; }
+    .controls { right: 16px; }
+}
+footer.end { padding: 48px 0 80px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="container intro">
+    <h1>Hero trang chủ Site A: ảnh full màn hình + box nền mờ chứa chữ</h1>
+    <p>Ảnh phủ kín toàn bộ hero như bản đầu, <strong>không còn lớp phủ xanh trên ảnh</strong>. Toàn bộ chữ (nhãn, tiêu đề, mô tả, 2 nút) nằm trong một box kính mờ: phần ảnh sau box bị làm mờ, phần còn lại giữ nguyên nét.</p>
+    <p>Dùng 3 ảnh bạn vừa upload. Bấm mũi tên/chấm để đổi ảnh và xem chữ có đọc được trên từng ảnh không. Chữ trong mock chỉ là chữ giữ chỗ.</p>
+    <p><strong>Lưu ý ảnh:</strong> 3 ảnh này rộng 1280px, tỉ lệ 4:3. Khi phủ kín màn rộng, ảnh sẽ bị cắt bớt trên/dưới và hơi mềm trên màn lớn hơn 1280px. Để đẹp, biên tập viên nên dùng ảnh ngang, rộng từ 1920px trở lên.</p>
+</div>
+
+<!-- A1: amber heading, solid eyebrow pill, 3 ghost buttons on one row -->
+<div class="container option-label">
+    <h2><span>A1</span>Tiêu đề amber · 3 nút mờ có viền trên 1 hàng: vàng · trắng · xanh Zalo</h2>
+    <p>Mỗi nút: nền tối mờ, viền mảnh giống viền box, chữ vàng / trắng / xanh. Di chuột (hoặc Tab tới): nền đậm hơn, chữ trắng; riêng Zalo đổi sang nền xanh Zalo, chữ trắng. Nhãn Zalo rút gọn thành “Zalo” để 3 nút vừa 1 hàng trong box 1/3.</p>
+</div>
+<section class="optA1" data-hero></section>
+
+<div class="container option-label">
+    <h2><span>A1+</span>Đề xuất: di chuột tô đặc bằng chính màu của nút</h2>
+    <p>Báo giá → nền vàng amber, chữ tối · Gọi ngay → nền trắng, chữ teal · Zalo → nền xanh Zalo, chữ trắng. Trạng thái bình thường giống hệt A1.</p>
+</div>
+<section class="optA1f" data-hero></section>
+
+<div class="container phone-note">
+    <h2 style="font-size:18px;margin:0">Điện thoại (&lt;768px): giữ như bản đã build</h2>
+    <p style="font-size:13.5px;color:var(--muted);margin:6px 0 0">Nền teal đặc, không tải ảnh hero. Áp dụng cho mọi biến thể.</p>
+    <div class="phone">
+        <div class="nav"><div class="nav__bar" style="padding:0 16px;justify-content:space-between"><span class="nav__brand">NGỌC ANH</span><span class="nav__chip">☎</span></div></div>
+        <div class="hero-fb">
+            <p class="box__eyebrow" style="border:0;background:#fff;color:var(--primary)">Thiết bị trường học</p>
+            <h1 class="box__heading" style="color:#FFC857">Giải pháp thiết bị trường học trọn gói</h1>
+            <p class="box__subtext">Mô tả ngắn 1–2 câu do biên tập viên nhập trong CMS.</p>
+            <div class="ctas ctas--row">
+                <a class="btn btn--quote" href="#">Nhận báo giá</a>
+                <a class="btn btn--call" href="#">☎ Gọi ngay</a>
+                <a class="btn btn--zalo" href="#">Zalo</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container"><footer class="end">Mock để chốt phương án – không phải code thật. Chốt A1 hoặc chỉnh tiếp.</footer></div>
+
+<template id="hero-tpl">
+    <div class="nav"><div class="container nav__bar"><span class="nav__brand">NGỌC ANH</span><span class="nav__links"><span>Trang chủ</span><span>Sản phẩm ▾</span><span>Dự án</span><span>Blog</span><span>Liên hệ</span></span><span class="nav__chip">☎ 0900 000 000 · Zalo</span></div></div>
+    <div class="hero">
+        <div class="hero__slide is-on"><img src="../../../../../src/TbTruongHoc.Web/wwwroot/uploads/1a5ad5b6-4a56-49cd-9e0c-5cbcbb5427c0/Du_che_ngoai_troi.jpg" alt=""></div>
+        <div class="hero__slide"><img src="../../../../../src/TbTruongHoc.Web/wwwroot/uploads/c83161dd-e3a2-4d4d-afb6-a08a8e449732/Du_che_hien_dai.jpg" alt=""></div>
+        <div class="hero__slide"><img src="../../../../../src/TbTruongHoc.Web/wwwroot/uploads/82b98589-8f56-4a9a-985e-9eacbda489b6/273_dth07_mamnon-1.jpg" alt=""></div>
+        <div class="container hero__inner">
+            <div class="box">
+                <p class="box__eyebrow">Thiết bị trường học</p>
+                <h1 class="box__heading">Giải pháp thiết bị trường học trọn gói</h1>
+                <p class="box__subtext">Mô tả ngắn 1–2 câu do biên tập viên nhập trong CMS, ví dụ về phạm vi sản phẩm và dịch vụ lắp đặt.</p>
+                <div class="ctas ctas--row">
+                    <a class="btn btn--quote" href="#">Nhận báo giá</a>
+                    <a class="btn btn--call" href="#"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" fill="currentColor"/></svg>Gọi ngay</a>
+                    <a class="btn btn--zalo" href="#"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.5 3 2 6.8 2 11.5c0 2.6 1.4 4.9 3.6 6.5L5 21l3.6-1.9c1.1.3 2.2.4 3.4.4 5.5 0 10-3.8 10-8.5S17.5 3 12 3z" fill="currentColor"/></svg>Zalo</a>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="arrow" data-prev aria-label="Ảnh trước">‹</button>
+            <div class="dots"><button class="dot is-on" data-dot="0"></button><button class="dot" data-dot="1"></button><button class="dot" data-dot="2"></button></div>
+            <button class="arrow" data-next aria-label="Ảnh tiếp theo">›</button>
+        </div>
+    </div>
+</template>
+
+<script>
+document.querySelectorAll('[data-hero]').forEach(function (host) {
+    host.appendChild(document.getElementById('hero-tpl').content.cloneNode(true));
+    var slides = host.querySelectorAll('.hero__slide'), dots = host.querySelectorAll('.dot'), cur = 0;
+    function go(i) {
+        cur = (i + slides.length) % slides.length;
+        slides.forEach(function (s, k) { s.classList.toggle('is-on', k === cur); });
+        dots.forEach(function (d, k) { d.classList.toggle('is-on', k === cur); });
+    }
+    host.querySelector('[data-prev]').onclick = function () { go(cur - 1); };
+    host.querySelector('[data-next]').onclick = function () { go(cur + 1); };
+    dots.forEach(function (d, k) { d.onclick = function () { go(k); }; });
+});
+</script>
+</body>
+</html>

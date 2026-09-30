@@ -210,12 +210,16 @@ public class SiteSettingsTests
                 s.ZaloUrl = string.Empty;
                 s.Address = string.Empty;
                 s.MapsUrl = string.Empty;
+                s.Email = string.Empty;
             });
 
             page = await CreatePublishedPageAsync(api, site, $"Garbage Phone Test {suffix}", $"garbage-phone-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
-            Assert.DoesNotContain("contact-block", html);
+            // Story 6.1: Site A's contact surfaces are the nav chip and the
+            // footer strip - neither may show a garbage phone.
+            Assert.DoesNotContain("class=\"sa-chip\"", html);
+            Assert.DoesNotContain("sa-footer__contact", html);
             Assert.DoesNotContain("href=\"tel:", html);
         }
         finally
@@ -589,21 +593,25 @@ public class SiteSettingsTests
 
         try
         {
-            // All four fields explicitly cleared - the whole contact block,
-            // and each individual element, must be omitted rather than
-            // rendered with an empty/broken href.
+            // All contact fields explicitly cleared - the chip, the footer's
+            // contact line, and each individual element, must be omitted
+            // rather than rendered with an empty/broken href.
             await SaveSettingsAsync(api, site.Id, s =>
             {
                 s.Phone = string.Empty;
                 s.ZaloUrl = string.Empty;
                 s.Address = string.Empty;
                 s.MapsUrl = string.Empty;
+                s.Email = string.Empty;
             });
 
             page = await CreatePublishedPageAsync(api, site, $"Empty Contact Test {suffix}", $"empty-contact-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
-            Assert.DoesNotContain("contact-block", html);
+            // Story 6.1: with every contact field empty, neither the nav chip
+            // nor the footer strip's contact line renders at all.
+            Assert.DoesNotContain("class=\"sa-chip\"", html);
+            Assert.DoesNotContain("sa-footer__contact", html);
             Assert.DoesNotContain("href=\"tel:", html);
         }
         finally
@@ -637,9 +645,9 @@ public class SiteSettingsTests
         try
         {
             // A realistic partially-filled state: Phone and Address set,
-            // ZaloUrl/MapsUrl left blank - proves each @if block in
-            // _ContactBlock.cshtml is gated independently rather than all
-            // four rising or falling together.
+            // ZaloUrl/MapsUrl left blank - proves each @if block in Site A's
+            // chip and footer is gated independently rather than all four
+            // rising or falling together.
             await SaveSettingsAsync(api, site.Id, s =>
             {
                 s.Phone = phone;
@@ -651,11 +659,15 @@ public class SiteSettingsTests
             page = await CreatePublishedPageAsync(api, site, $"Mixed State Test {suffix}", $"mixed-state-test-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(site));
 
-            Assert.Contains("contact-block", html);
-            Assert.Contains("href=\"tel:", html);
+            // Story 6.1: Site A renders these through the nav chip and the
+            // footer strip.
+            Assert.Contains("class=\"sa-chip\"", html);
+            Assert.Contains("sa-chip__link--call\" href=\"tel:", html);
+            Assert.Contains("sa-footer__phone\" href=\"tel:", html);
             Assert.Contains(address, html);
-            Assert.DoesNotContain("contact-block__zalo", html);
-            Assert.DoesNotContain("contact-block__maps", html);
+            Assert.DoesNotContain("sa-chip__link--zalo", html);
+            Assert.DoesNotContain("sa-footer__zalo", html);
+            Assert.DoesNotContain("sa-footer__maps", html);
         }
         finally
         {
@@ -845,7 +857,8 @@ public class SiteSettingsTests
             settings?.MapsUrl?.Value,
             settings?.Ga4MeasurementId?.Value,
             settings?.SearchConsoleVerification?.Value,
-            settings?.NotificationEmails?.Value);
+            settings?.NotificationEmails?.Value,
+            settings?.Email?.Value);
     }
 
     private static async Task RestoreAsync(IApi api, Guid siteId, SiteSettingsSnapshot original)
@@ -859,6 +872,7 @@ public class SiteSettingsTests
             s.Ga4MeasurementId = original.Ga4MeasurementId;
             s.SearchConsoleVerification = original.SearchConsoleVerification;
             s.NotificationEmails = original.NotificationEmails;
+            s.Email = original.Email;
         });
     }
 
@@ -869,7 +883,8 @@ public class SiteSettingsTests
         string? MapsUrl,
         string? Ga4MeasurementId,
         string? SearchConsoleVerification,
-        string? NotificationEmails);
+        string? NotificationEmails,
+        string? Email);
 
     /// <summary>
     /// See <see cref="PerPageSeoFieldsTests.HostnameOf"/> - reads the site's

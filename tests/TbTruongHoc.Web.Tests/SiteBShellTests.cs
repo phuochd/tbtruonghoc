@@ -15,8 +15,8 @@ namespace TbTruongHoc.Web.Tests;
 /// <summary>
 /// Story 2.1: Site B (trongdoitam.net) gets its own Mộc Trầm layout - nav
 /// from the CMS sitemap, footer and a sticky contact bar fed by that site's
-/// <see cref="SiteSettings"/> - while Site A keeps rendering the shared
-/// <c>_Layout</c>. Real HTTP render against the real MariaDB-backed app,
+/// <see cref="SiteSettings"/> - while Site A renders its own shell (Story
+/// 6.1, see <see cref="SiteAShellTests"/>). Real HTTP render against the real MariaDB-backed app,
 /// following <see cref="SiteSettingsTests"/>'s snapshot/restore pattern.
 /// </summary>
 [Collection(PiranhaAppCollection.Name)]
@@ -203,7 +203,7 @@ public class SiteBShellTests
 
     [Theory]
     [InlineData(SiteSeed.TrongDoiTamInternalId, SiteLayout.TrongDoiTam)]
-    [InlineData(SiteSeed.TbTruongHocInternalId, SiteLayout.Default)]
+    [InlineData(SiteSeed.TbTruongHocInternalId, SiteLayout.TbTruongHoc)]
     [InlineData(null, SiteLayout.Default)]
     [InlineData("some-future-site", SiteLayout.Default)]
     public void Layout_Is_Selected_Per_Site(string? internalId, string expected)
@@ -331,7 +331,7 @@ public class SiteBShellTests
     }
 
     [Fact]
-    public async Task Site_A_Keeps_The_Shared_Layout()
+    public async Task Site_A_Uses_Its_Own_Layout_Never_Site_B_Shell()
     {
         using var scope = _factory.Services.CreateScope();
         var api = scope.ServiceProvider.GetRequiredService<IApi>();
@@ -354,20 +354,21 @@ public class SiteBShellTests
             page = await CreatePublishedPageAsync(api, siteA, $"Shell A {suffix}", $"shell-a-{suffix}");
             var html = await GetHtmlAsync(page.Permalink, HostnameOf(siteA));
 
-            Assert.Contains("<html lang=\"en\">", html);
-            Assert.Contains("style.min.css", html);
-            Assert.Contains("family=Lato", html);
-            Assert.Contains("navbar navbar-expand-lg", html);
-            Assert.Contains("class=\"contact-block\"", html);
-            Assert.Contains("contact-block__phone", html);
-            Assert.Contains("contact-block__zalo", html);
-            Assert.Contains("contact-block__maps", html);
+            // Story 6.1: Site A's own "Xanh Lục Bảo Rạng Rỡ" shell...
+            Assert.Contains("<html lang=\"vi\">", html);
+            Assert.Contains("/assets/css/site-a.css", html);
+            Assert.Contains("family=Mulish", html);
+            Assert.Contains("<header class=\"sa-nav\"", html);
+            Assert.Contains("<footer class=\"sa-footer\"", html);
 
+            // ...never Site B's (nor the sample theme's).
             Assert.DoesNotContain("site-b.css", html);
             Assert.DoesNotContain("site-b-nav.js", html);
             Assert.DoesNotContain("sb-contact-bar", html);
             Assert.DoesNotContain("sb-nav", html);
             Assert.DoesNotContain("Be+Vietnam+Pro", html);
+            Assert.DoesNotContain("style.min.css", html);
+            Assert.DoesNotContain("contact-block", html);
         }
         finally
         {
@@ -536,7 +537,8 @@ public class SiteBShellTests
             s?.MapsUrl?.Value,
             s?.Ga4MeasurementId?.Value,
             s?.SearchConsoleVerification?.Value,
-            s?.NotificationEmails?.Value);
+            s?.NotificationEmails?.Value,
+            s?.Email?.Value);
     }
 
     private static Task RestoreAsync(IApi api, Guid siteId, Snapshot o) =>
@@ -549,6 +551,7 @@ public class SiteBShellTests
             s.Ga4MeasurementId = o.Ga4MeasurementId;
             s.SearchConsoleVerification = o.SearchConsoleVerification;
             s.NotificationEmails = o.NotificationEmails;
+            s.Email = o.Email;
         });
 
     private sealed record Snapshot(
@@ -558,7 +561,8 @@ public class SiteBShellTests
         string? MapsUrl,
         string? Ga4MeasurementId,
         string? SearchConsoleVerification,
-        string? NotificationEmails);
+        string? NotificationEmails,
+        string? Email);
 
     private static string HostnameOf(Site site)
     {

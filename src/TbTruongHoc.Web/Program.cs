@@ -353,6 +353,19 @@ app.UsePiranha(options =>
     // the sitemap-driven nav shows it even with zero posts. No posts are
     // seeded. Per slug: never modifies an existing page.
     BlogSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+
+    // Story 6.1 (Q3): idempotently seed Site A's published "Trang chủ"
+    // (SiteAHomePage, hero fields blank) - only while Site A has no pages
+    // at all, so existing pages are never touched.
+    SiteAHomeSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+
+    // DEV-ONLY: Site A sample hub/categories/products + blank contacts, so
+    // the 6.1 shell (dropdown, chip, footer) can be viewed locally. Opt-in
+    // via launchSettings; the test host and production never set the flag.
+    if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>(SiteASampleSeed.ConfigKey))
+    {
+        SiteASampleSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+    }
 });
 
 app.Run();

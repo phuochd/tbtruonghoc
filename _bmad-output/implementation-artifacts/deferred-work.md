@@ -117,3 +117,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-5-1-blog-listing-page.md`
   summary: `CmsController.ProductPost` returns 500 (null model render) when a visitor opens an unpublished product post instead of 404.
   evidence: Story 5.1 implementer probe showed the 500 on a draft ProductPost; `BlogPost` got a `model == null → NotFound()` guard, `ProductPost` has none.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-6-1-site-a-page-shell.md`
+  summary: Site A's locked on-teal inks fall short of WCAG AA for small text — `banner-link` #CDEDE6 on #0E7A6C ≈ 4.20:1 (nav links, sheet/accordion) and `banner-subtext` #D8F3EC ≈ 4.47:1 (hero subtext, eyebrow); confirm the AA target with the client and adjust the DESIGN.md tokens if it holds.
+  evidence: Story 6.1 review (Blind Hunter), ratios recomputed during triage. The values are the DESIGN.md locked palette implemented faithfully; changing them is a design decision, and WCAG AA is itself still an unconfirmed assumption in EXPERIENCE.md.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-6-1-site-a-page-shell.md`
+  summary: Hero text over a bright photo may drop below AA contrast, since the DESIGN.md overlay stays 5–10% opaque down to 45% of the hero height and a multi-line heading can reach into that band (unverified, medium if true).
+  evidence: Story 6.1 review (Blind Hunter). Settle it with a visual check on real hero photography once the client supplies it; the fix (text scrim or a stronger lower overlay) would change the locked hero-overlay token.

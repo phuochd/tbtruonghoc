@@ -1,0 +1,31 @@
+@model SiteAHomePage
+@*
+    Story 6.1: Site A homepage ("Trang chủ (Site A)"). The hero sits
+    directly under the teal nav so, in the fallback state, nav and hero read
+    as one band. The page's own content blocks follow; the tile grid and
+    trust band are Story 6.2's.
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<main class="sa-home">
+    @await Html.PartialAsync("_SiteAHero", Model)
+
+    @foreach (var block in Model.Blocks)
+    {
+        // Story 4.2: the config block renders only on archive/PDP/landing pages.
+        if (block is ConfigBlock)
+        {
+            continue;
+        }
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+</main>
