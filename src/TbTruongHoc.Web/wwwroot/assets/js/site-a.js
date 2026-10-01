@@ -35,6 +35,19 @@
  * shows. No match -> the [data-sa-cat-empty] live region gets its
  * data-message; otherwise it is emptied.
  *
+ * Story 6.4 - modal opener ([data-sa-modal-open="{dialog id}"]): a click
+ * opens that native <dialog> with showModal() (the opener's aria-expanded
+ * follows it). The dialog closes on a [data-sa-modal-close] button inside
+ * it, on Esc (native), and on a click on its backdrop (a click whose target
+ * is the <dialog> itself - the visible panel fills it). On close, focus
+ * returns to the opener. Generic, so 6.5's survey modal reuses it.
+ *
+ * Story 6.4 - PDP photo badge ([data-sa-pdp-gallery="true"]): after a click in the
+ * gallery (sb-gallery.js has already swapped the image on the thumbnail's
+ * own listener), the main image's [data-sa-photo-badge] shows only while the
+ * current thumbnail (aria-current="true") is a genuine project photo
+ * (data-genuine="true"). sb-gallery.js itself is untouched.
+ *
  * No framework/bundler, same as site-b-nav.js.
  */
 (function () {
@@ -325,7 +338,88 @@
         }
     }
 
-    window.siteA = { initNav: initNav, initCarousel: initCarousel, initCatalog: initCatalog, fold: fold };
+    function initModal(dialog) {
+        var opener = null;
+
+        toArray(dialog.querySelectorAll('[data-sa-modal-close]')).forEach(function (button) {
+            button.addEventListener('click', function () {
+                dialog.close();
+            });
+        });
+
+        // Backdrop: the panel fills the dialog box, so a click whose target
+        // is the dialog element itself landed on the ::backdrop.
+        dialog.addEventListener('click', function (event) {
+            if (event.target === dialog) {
+                dialog.close();
+            }
+        });
+
+        // Fires for every close path (button, Esc, backdrop).
+        dialog.addEventListener('close', function () {
+            if (opener) {
+                opener.setAttribute('aria-expanded', 'false');
+                opener.focus();
+            }
+        });
+
+        return {
+            open: function (from) {
+                if (dialog.open) {
+                    return;
+                }
+                opener = from;
+                dialog.showModal();
+                from.setAttribute('aria-expanded', 'true');
+            }
+        };
+    }
+
+    function initModalOpeners(openers) {
+        var modals = {};
+        openers.forEach(function (opener) {
+            var id = opener.getAttribute('data-sa-modal-open');
+            var dialog = id ? document.getElementById(id) : null;
+            if (!dialog || typeof dialog.showModal !== 'function') {
+                return;
+            }
+            var modal = modals[id] || (modals[id] = initModal(dialog));
+            opener.setAttribute('aria-expanded', 'false');
+            opener.addEventListener('click', function () {
+                modal.open(opener);
+            });
+        });
+    }
+
+    function initPhotoBadge(root) {
+        var badge = root.querySelector('[data-sa-photo-badge]');
+        var thumbs = toArray(root.querySelectorAll('[data-sb-gallery-thumb]'));
+        if (!badge || thumbs.length === 0) {
+            return;
+        }
+
+        function sync() {
+            var current = null;
+            thumbs.forEach(function (t) {
+                if (t.getAttribute('aria-current') === 'true') {
+                    current = t;
+                }
+            });
+            if (current && current.getAttribute('data-genuine') === 'true') {
+                badge.removeAttribute('hidden');
+            } else {
+                badge.setAttribute('hidden', 'hidden');
+            }
+        }
+
+        // Bubbles up after sb-gallery.js's own thumbnail listener ran.
+        root.addEventListener('click', sync);
+    }
+
+    window.siteA = {
+        initNav: initNav, initCarousel: initCarousel, initCatalog: initCatalog, fold: fold,
+        initModalOpeners: initModalOpeners, initPhotoBadge: initPhotoBadge
+    };
 
     function start() {
         var nav = document.querySelector('[data-sa-nav]');
@@ -334,6 +428,8 @@
         }
         toArray(document.querySelectorAll('[data-sa-carousel]')).forEach(initCarousel);
         toArray(document.querySelectorAll('[data-sa-catalog]')).forEach(initCatalog);
+        initModalOpeners(toArray(document.querySelectorAll('[data-sa-modal-open]')));
+        toArray(document.querySelectorAll('[data-sa-pdp-gallery="true"]')).forEach(initPhotoBadge);
     }
 
     if (document.readyState === 'loading') {

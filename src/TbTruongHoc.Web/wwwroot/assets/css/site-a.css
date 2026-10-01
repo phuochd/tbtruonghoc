@@ -10,8 +10,8 @@
     font/color variables are re-pointed at the tokens below so nothing on
     Site A falls back to Bootstrap's own palette or system font.
 
-    Shadows: only the contact chip and the dropdown panel (the survey modal
-    is Story 6.5). The only gradient is the hero photo overlay.
+    Shadows: only the contact chip, the dropdown panel and the modal panel
+    (Story 6.4's quote modal; 6.5's survey modal reuses it). The only gradient is the hero photo overlay.
 */
 
 /* ---------- Tokens ---------- */
@@ -1586,6 +1586,365 @@ html:not(.js) .sa-catsearch {
     font-weight: 700;
 }
 
+/* ---------- Story 6.4: Site A product detail page (shared scaffold) ---------- */
+.sa-pdp {
+    padding-bottom: var(--sa-section-gap);
+}
+
+/* Stacked below 1024px: gallery -> info. */
+.sa-pdp__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sa-space-6);
+    padding-top: var(--sa-space-4);
+}
+
+@media (min-width: 1024px) {
+    .sa-pdp__layout--gallery {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 46px;
+    }
+}
+
+.sa-pdp__figure {
+    position: relative;
+}
+
+.sa-pdp__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border: 1px solid var(--sa-border-neutral);
+    border-radius: var(--sa-radius-lg);
+    background: var(--sa-surface-tint);
+}
+
+.sa-pdp__figure .sa-photo-badge {
+    position: absolute;
+    left: var(--sa-space-3);
+    bottom: var(--sa-space-3);
+}
+
+.sa-pdp__thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    margin: var(--sa-space-3) 0 0;
+    padding: 0;
+}
+
+.sa-pdp__thumb {
+    position: relative;
+    display: block;
+    width: 78px;
+    height: 78px;
+    border: 2px solid transparent;
+    border-radius: var(--sa-radius-md);
+    overflow: hidden;
+}
+
+.sa-pdp__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sa-pdp__thumb[aria-current="true"] {
+    border-color: var(--sa-primary);
+}
+
+.sa-pdp__title {
+    margin: 0 0 var(--sa-space-2);
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.sa-pdp__sku {
+    margin: 0 0 var(--sa-space-2);
+    color: var(--sa-text-muted);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.sa-pdp__excerpt {
+    margin: 0 0 var(--sa-space-5);
+    color: var(--sa-text-muted);
+    font-size: 13.5px;
+    line-height: 1.65;
+}
+
+/* DESIGN.md `price-block`: one block, same position, for both states. */
+.sa-price-block {
+    margin-bottom: var(--sa-space-5);
+    padding: var(--sa-space-4) 18px;
+    background: var(--sa-surface-tint);
+    border: 1px solid var(--sa-border-tint);
+    border-radius: var(--sa-radius-lg);
+}
+
+.sa-price-block p {
+    margin: 0;
+}
+
+.sa-price-block .sa-price-block__label {
+    margin-bottom: var(--sa-space-1);
+    color: var(--sa-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+.sa-price-block__price {
+    color: var(--sa-primary);
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.sa-price-block__price--fallback {
+    color: var(--sa-text);
+    font-size: 20px;
+}
+
+.sa-price-block .sa-price-block__note {
+    margin-top: 6px;
+    color: var(--sa-text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* DESIGN.md `shipping-note`. */
+.sa-shipping-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 var(--sa-space-5);
+    padding: 10px 14px;
+    background: var(--sa-surface-tint);
+    border: 1px solid var(--sa-border-tint);
+    border-radius: var(--sa-radius-md);
+    color: var(--sa-primary);
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.sa-shipping-note svg {
+    flex-shrink: 0;
+}
+
+.sa-pdp__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sa-space-3);
+    margin-bottom: var(--sa-space-5);
+}
+
+/* Phones: full-width stacked CTAs. */
+@media (max-width: 767.98px) {
+    .sa-pdp__ctas {
+        flex-direction: column;
+    }
+
+    .sa-pdp__ctas .sa-btn {
+        width: 100%;
+    }
+}
+
+/* DESIGN.md `trust-badge` chips and the photo badge: informational spans. */
+.sa-pdp__trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sa-space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sa-trust-chip,
+.sa-photo-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    background: var(--sa-trust-bg);
+    border: 1px solid var(--sa-trust-border);
+    border-radius: var(--sa-radius-full);
+    color: var(--sa-trust-ink);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.sa-photo-badge[hidden] {
+    display: none;
+}
+
+/* On a 78px thumbnail: one clipped line pinned to the bottom edge. */
+.sa-pdp__thumb .sa-photo-badge--thumb {
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    padding: 1px 5px;
+    font-size: 8.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sa-pdp__specs {
+    margin-top: var(--sa-section-gap);
+}
+
+.sa-pdp__specs h2 {
+    margin: 0 0 14px;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.sa-spec-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sa-spec-table tr {
+    border-bottom: 1px solid var(--sa-border-neutral);
+}
+
+.sa-spec-table th,
+.sa-spec-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.sa-spec-table th {
+    width: 220px;
+    background: var(--sa-surface-tint);
+    color: var(--sa-text);
+    font-weight: 700;
+    text-align: left;
+}
+
+@media (max-width: 767.98px) {
+    .sa-spec-table th {
+        width: 40%;
+    }
+}
+
+/* ---------- Story 6.4: modal (native <dialog>; 6.5's survey modal reuses it) ---------- */
+body.site-a:has(dialog.sa-modal[open]) {
+    overflow: hidden;
+}
+
+/* No padding on the <dialog> itself: the panel fills it, so a click whose
+   target is the dialog element is a backdrop click (site-a.js). */
+.sa-modal {
+    width: min(560px, calc(100% - 2 * var(--sa-gutter)));
+    max-width: none;
+    max-height: calc(100% - 2 * var(--sa-space-8));
+    padding: 0;
+    border: 0;
+    border-radius: var(--sa-radius-xl);
+    background: var(--sa-surface);
+    color: var(--sa-text);
+    box-shadow: 0 24px 60px rgba(var(--sa-text-rgb), .35);
+}
+
+.sa-modal::backdrop {
+    background: rgba(18, 56, 50, .62);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+}
+
+.sa-modal__panel {
+    padding: var(--sa-space-6);
+}
+
+.sa-modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--sa-space-4);
+    margin-bottom: var(--sa-space-4);
+}
+
+.sa-modal__title {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.sa-modal__close {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 8px 14px;
+    background: transparent;
+    border: 1.5px solid var(--sa-border-tint);
+    border-radius: var(--sa-radius-sm);
+    color: var(--sa-text);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sa-modal__close:hover {
+    background: var(--sa-surface-tint);
+}
+
+.site-a .sa-modal .quote-request-form {
+    max-width: none;
+    margin: 0;
+}
+
+.site-a .sa-modal .quote-request-form button[type="submit"] {
+    width: 100%;
+}
+
+.site-a .sa-modal .quote-request-form__success {
+    padding: var(--sa-space-4);
+    background: var(--sa-surface-tint);
+    border: 1px solid var(--sa-border-tint);
+    border-radius: var(--sa-radius-md);
+    font-weight: 700;
+}
+
+/* Phones: full-screen bottom sheet. */
+@media (max-width: 767.98px) {
+    .sa-modal {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    /* Fill the sheet so blank space below the form is never a "backdrop" click. */
+    .sa-modal__panel {
+        box-sizing: border-box;
+        min-height: 100%;
+        padding: var(--sa-space-5) var(--sa-gutter);
+    }
+
+    .sa-modal[open] {
+        animation: sa-sheet-up .2s ease-out;
+    }
+}
+
+@keyframes sa-sheet-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
 /* Cookie-consent banner (shared partial): dark text-colour panel instead of Bootstrap's bg-dark. */
 .site-a .cookie-consent {
     background: var(--sa-text) !important;
@@ -1595,5 +1954,9 @@ html:not(.js) .sa-catsearch {
     .js .sa-nav__menu,
     .js .sa-nav[data-menu-open="true"] .sa-nav__menu {
         transition: none;
+    }
+
+    .sa-modal[open] {
+        animation: none;
     }
 }
