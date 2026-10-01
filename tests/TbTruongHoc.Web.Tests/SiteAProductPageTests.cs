@@ -279,15 +279,139 @@ public class SiteAProductPageTests
             var main = Section(html, "<main class=\"sa-pdp\">", "</main>");
             Assert.DoesNotContain("sa-shipping-note", main);
             Assert.DoesNotContain("Giao hàng toàn quốc", main);
-            // Rest of the scaffold unchanged.
+            // Rest of the scaffold unchanged (6.5 swaps the CTA for the survey one).
             Assert.Contains("<p class=\"sa-price-block__price\">từ 5.000.000đ</p>", main);
-            Assert.Contains(">Yêu cầu báo giá</button>", main);
+            Assert.Contains(">Đăng ký khảo sát miễn phí</button>", main);
             Assert.Equal(new[] { "Bảo hành 12 tháng" }, Chips(main));
 
             // The shippable sibling keeps both the note and the category's claim.
             var shipMain = Decode(Section(await GetHtmlAsync(shipped.Permalink, HostnameOf(siteA)), "<main class=\"sa-pdp\">", "</main>"));
             Assert.Contains(Shipping, shipMain);
             Assert.Equal(new[] { "Giao hàng toàn quốc", "Bảo hành 12 tháng" }, Chips(shipMain));
+        });
+    }
+
+    // Story 6.5 matrix: Installation PDP (blank price) + Shippable PDP.
+    [Fact]
+    public async Task Installation_Product_Renders_Survey_Variant_And_Shippable_Does_Not()
+    {
+        await WithSiteAAsync(async (api, siteA, c, media) =>
+        {
+            await SaveContactAsync(api, siteA.Id, "0909 123 456", "https://zalo.me/0909123456");
+
+            var hub = await c.HubAsync("Pdp Survey Hub");
+            var archive = await c.ArchiveAsync(hub, "Pdp Survey Cat", 0);
+            var installed = await c.PostAsync(archive, "Du che <b>");
+            await UpdatePostAsync(installed.Id, p => p.RequiresInstallation = true);
+            var shipped = await c.PostAsync(archive, "Ship");
+
+            var html = await GetHtmlAsync(installed.Permalink, HostnameOf(siteA));
+            var main = Decode(Section(html, "<main class=\"sa-pdp\">", "</main>"));
+
+            // CTA row: survey first, then call/Zalo; no quote button.
+            var ctas = Section(main, "<div class=\"sa-pdp__ctas\">", "</div>");
+            Assert.Contains("data-sa-modal-open=\"sa-survey-modal\" aria-haspopup=\"dialog\" aria-controls=\"sa-survey-modal\">Đăng ký khảo sát miễn phí</button>", ctas);
+            Assert.True(ctas.IndexOf("Đăng ký khảo sát", StringComparison.Ordinal) < ctas.IndexOf("Gọi 0909 123 456", StringComparison.Ordinal));
+            Assert.Contains("Zalo tư vấn", ctas);
+            Assert.DoesNotContain("Yêu cầu báo giá", main);
+            Assert.DoesNotContain("sa-quote-modal", html);
+            Assert.DoesNotContain("Giao hàng toàn quốc", main);
+
+            // Blank price: fallback + the installation note.
+            Assert.Contains("Liên hệ để nhận báo giá", main);
+            Assert.Contains("Giá phụ thuộc điều kiện thi công thực tế — báo giá chính xác sau khi khảo sát hiện trường.", main);
+            Assert.DoesNotContain("Giá phụ thuộc số lượng và yêu cầu cụ thể", main);
+
+            // Service-area then process-strip, after the info column.
+            var info = main.IndexOf("sa-pdp__ctas", StringComparison.Ordinal);
+            var area = main.IndexOf("<section class=\"sa-service-area\"", StringComparison.Ordinal);
+            var strip = main.IndexOf("<section class=\"sa-process-strip\"", StringComparison.Ordinal);
+            Assert.True(info < area && area < strip, $"order: ctas {info}, area {area}, strip {strip}");
+            Assert.Contains("Khu vực phục vụ: Miền Bắc – Thanh Hóa", main);
+            Assert.Contains("Ngoài khu vực này, quý khách vẫn có thể gửi đăng ký khảo sát", main);
+            var steps = Regex.Matches(Section(main, "<ol class=\"sa-process-strip__steps\">", "</ol>"), "<h3>([^<]*)</h3>").Select(m => m.Groups[1].Value);
+            Assert.Equal(new[] { "Khảo sát", "Hợp đồng", "Thi công" }, steps);
+
+            // Survey dialog: product prefilled read-only, 3 required fields, warning hidden.
+            var dialog = Section(html, "<dialog class=\"sa-modal\" id=\"sa-survey-modal\"", "</dialog>");
+            var decodedDialog = Decode(dialog);
+            Assert.Contains("aria-label=\"Đóng hộp thoại đăng ký khảo sát\"", decodedDialog);
+            Assert.Equal("survey", Regex.Match(dialog, "name=\"formType\" value=\"([^\"]*)\"").Groups[1].Value);
+            var product = Regex.Match(dialog, "<input[^>]*name=\"productOfInterest\"[^>]*>").Value;
+            Assert.Equal(installed.Title, AttrOf(product, "value"));
+            Assert.Contains(" readonly", product);
+            Assert.DoesNotContain("<b>", dialog);
+            foreach (var field in new[] { "locationAddress", "name", "phone" })
+            {
+                var input = Regex.Match(dialog, $"<input[^>]*name=\"{field}\"[^>]*>").Value;
+                Assert.Equal("true", AttrOf(input, "aria-required"));
+                var id = AttrOf(input, "id");
+                Assert.Matches($"<label for=\"{id}\">[^<]+<span aria-hidden=\"true\">\\*</span></label>", decodedDialog);
+            }
+            Assert.Equal("500", AttrOf(Regex.Match(dialog, "<input[^>]*name=\"locationAddress\"[^>]*>").Value, "maxlength"));
+            var location = decodedDialog.IndexOf("name=\"locationAddress\"", StringComparison.Ordinal);
+            var warning = decodedDialog.IndexOf("data-sa-survey-warning", StringComparison.Ordinal);
+            var nameField = decodedDialog.IndexOf("name=\"name\"", StringComparison.Ordinal);
+            Assert.True(location < warning && warning < nameField);
+            Assert.Contains("class=\"sa-warning-banner\" id=\"surveyLocationWarning\" data-sa-survey-warning hidden", dialog);
+            Assert.Contains("Ngoài khu vực phục vụ trực tiếp", decodedDialog);
+            Assert.Contains(">Gửi đăng ký</button>", decodedDialog);
+            var areas = AttrOf(Regex.Match(dialog, "<div[^>]*data-sa-survey-areas=\"[^\"]*\"[^>]*>").Value, "data-sa-survey-areas");
+            Assert.Equal(ServiceArea.OutsideTerms, JsonSerializer.Deserialize<string[]>(areas!));
+
+            // The shippable sibling has none of it.
+            var shipHtml = await GetHtmlAsync(shipped.Permalink, HostnameOf(siteA));
+            Assert.DoesNotContain("sa-service-area", shipHtml);
+            Assert.DoesNotContain("sa-process-strip", shipHtml);
+            Assert.DoesNotContain("sa-survey-modal", shipHtml);
+            Assert.DoesNotContain("data-sa-survey-areas", shipHtml);
+            Assert.Contains(">Yêu cầu báo giá</button>", Decode(shipHtml));
+            Assert.Contains("Giá phụ thuộc số lượng và yêu cầu cụ thể — gửi yêu cầu để nhận báo giá.", Decode(shipHtml));
+        });
+    }
+
+    // Story 6.5 matrix: Installation + price. AC: the rendered survey form stores a survey lead.
+    [Fact]
+    public async Task Installation_Product_With_Price_And_Rendered_Survey_Stores_Survey_Lead()
+    {
+        await WithSiteAAsync(async (api, siteA, c, media) =>
+        {
+            var hub = await c.HubAsync("Pdp Survey Lead Hub");
+            var archive = await c.ArchiveAsync(hub, "Pdp Survey Lead Cat", 0);
+            var post = await c.PostAsync(archive, "Survey Lead", price: "12.000.000đ <i>");
+            await UpdatePostAsync(post.Id, p => p.RequiresInstallation = true);
+
+            var html = await GetHtmlAsync(post.Permalink, HostnameOf(siteA));
+            var rawMain = Section(html, "<main class=\"sa-pdp\">", "</main>");
+            Assert.DoesNotContain("<i>", rawMain);
+            var main = Decode(rawMain);
+            Assert.Contains("<p class=\"sa-price-block__price\">12.000.000đ <i></p>", main);
+            Assert.Contains("Giá tham khảo — liên hệ để nhận báo giá ưu đãi khi đặt số lượng lớn.", main);
+
+            var dialog = Decode(Section(html, "<dialog class=\"sa-modal\" id=\"sa-survey-modal\"", "</dialog>"));
+            var formType = Regex.Match(dialog, "name=\"formType\" value=\"([^\"]*)\"").Groups[1].Value;
+            var product = Regex.Match(dialog, "name=\"productOfInterest\" value=\"([^\"]*)\"").Groups[1].Value;
+
+            var name = $"Pdp Survey {c.Suffix}";
+            const string address = "Trường Tiểu học Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh";
+            var client = _factory.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/leads")
+            {
+                Content = new StringContent(JsonSerializer.Serialize(new { name, phone = "0987654321", productOfInterest = product, message = "", formType, locationAddress = address }), Encoding.UTF8)
+            };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            request.Headers.Host = HostnameOf(siteA);
+            var response = await client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            using var scope = _factory.Services.CreateScope();
+            var leadDb = scope.ServiceProvider.GetRequiredService<LeadDbContext>();
+            var saved = await leadDb.FormSubmissions.AsNoTracking().SingleAsync(s => s.Name == name);
+            Assert.Equal("survey", saved.FormType);
+            Assert.Equal(post.Title, saved.ProductOfInterest);
+            Assert.Equal(address, saved.LocationAddress);
+            Assert.True(saved.IsOutsideServiceArea);
+            Assert.Equal(siteA.Id, saved.SiteId);
         });
     }
 

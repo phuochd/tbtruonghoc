@@ -48,6 +48,13 @@
  * current thumbnail (aria-current="true") is a genuine project photo
  * (data-genuine="true"). sb-gallery.js itself is untouched.
  *
+ * Story 6.5 - survey out-of-area warning ([data-sa-survey-areas], a JSON
+ * list of folded place names outside Miền Bắc – Thanh Hóa from
+ * ServiceArea.OutsideTerms): on every input in [data-sa-survey-location],
+ * a whole-word match shows [data-sa-survey-warning], tints the field and
+ * adds the banner to its aria-describedby; no match hides it again. It
+ * never disables submit - the warning is non-blocking by design (FR-8).
+ *
  * No framework/bundler, same as site-b-nav.js.
  */
 (function () {
@@ -416,9 +423,58 @@
         root.addEventListener('click', sync);
     }
 
+    /** fold() plus every non-letter/digit run to one space; mirrors ServiceArea.Fold (C#). */
+    function foldPlace(text) {
+        return fold(text).replace(/[^a-z0-9]+/g, ' ').trim();
+    }
+
+    function initSurveyWarning(root) {
+        var field = root.querySelector('[data-sa-survey-location]');
+        var banner = root.querySelector('[data-sa-survey-warning]');
+        var terms;
+        try {
+            terms = JSON.parse(root.getAttribute('data-sa-survey-areas') || '[]');
+        } catch (e) {
+            terms = [];
+        }
+        if (!field || !banner || !Array.isArray(terms) || terms.length === 0) {
+            return;
+        }
+        var errorId = (field.getAttribute('aria-describedby') || '').split(/\s+/)[0];
+
+        function isOutside(value) {
+            var text = ' ' + foldPlace(value) + ' ';
+            return terms.some(function (term) {
+                return text.indexOf(' ' + term + ' ') !== -1;
+            });
+        }
+
+        function sync() {
+            var outside = isOutside(field.value);
+            if (outside) {
+                banner.removeAttribute('hidden');
+                field.classList.add('sa-survey-form__field--warn');
+                field.setAttribute('aria-describedby', (errorId ? errorId + ' ' : '') + banner.id);
+            } else {
+                banner.setAttribute('hidden', 'hidden');
+                field.classList.remove('sa-survey-form__field--warn');
+                if (errorId) {
+                    field.setAttribute('aria-describedby', errorId);
+                } else {
+                    field.removeAttribute('aria-describedby');
+                }
+            }
+        }
+
+        // Live, never blocking: nothing here touches the submit button.
+        field.addEventListener('input', sync);
+        sync();
+    }
+
     window.siteA = {
         initNav: initNav, initCarousel: initCarousel, initCatalog: initCatalog, fold: fold,
-        initModalOpeners: initModalOpeners, initPhotoBadge: initPhotoBadge
+        initModalOpeners: initModalOpeners, initPhotoBadge: initPhotoBadge,
+        initSurveyWarning: initSurveyWarning, foldPlace: foldPlace
     };
 
     function start() {
@@ -430,6 +486,7 @@
         toArray(document.querySelectorAll('[data-sa-catalog]')).forEach(initCatalog);
         initModalOpeners(toArray(document.querySelectorAll('[data-sa-modal-open]')));
         toArray(document.querySelectorAll('[data-sa-pdp-gallery="true"]')).forEach(initPhotoBadge);
+        toArray(document.querySelectorAll('[data-sa-survey-areas]')).forEach(initSurveyWarning);
     }
 
     if (document.readyState === 'loading') {

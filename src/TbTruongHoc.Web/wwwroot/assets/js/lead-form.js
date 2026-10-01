@@ -57,7 +57,9 @@
         Name: 'name',
         Phone: 'phone',
         ProductOfInterest: 'productOfInterest',
-        Message: 'message'
+        Message: 'message',
+        // Story 6.5: the survey form's địa điểm (absent elsewhere).
+        LocationAddress: 'locationAddress'
     };
 
     function ready(fn) {
@@ -97,7 +99,10 @@
                 phone: getValue('phone'),
                 productOfInterest: getValue('productOfInterest'),
                 message: withConfigSummary(getValue('message')),
-                formType: getValue('formType')
+                formType: getValue('formType'),
+                // Story 6.5: '' on forms without the field; the server
+                // only reads it for formType "survey".
+                locationAddress: getValue('locationAddress')
             };
 
             setBusy(true);
@@ -173,7 +178,10 @@
 
                 var inputName = FIELD_MAP[dtoField] || dtoField;
                 var input = form.querySelector('[name="' + inputName + '"]');
-                var errorId = input ? input.getAttribute('aria-describedby') : null;
+                // The error slot is the first aria-describedby id (6.5's
+                // survey fields also reference a hint/warning after it).
+                var describedBy = input ? input.getAttribute('aria-describedby') : null;
+                var errorId = describedBy ? describedBy.split(/\s+/)[0] : null;
                 var errorEl = errorId ? document.getElementById(errorId) : null;
                 var messages = errors[dtoField];
                 var text = Array.isArray(messages) ? messages.join(' ') : String(messages);

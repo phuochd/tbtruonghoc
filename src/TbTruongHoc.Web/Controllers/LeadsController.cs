@@ -70,6 +70,14 @@ public class LeadsController : ControllerBase
             return ValidationProblem();
         }
 
+        var formType = AllowedFormTypes.Contains(request.FormType ?? string.Empty)
+            ? request.FormType!.ToLowerInvariant()
+            : "general";
+        // Story 6.5 (FR-8): a survey's location is required (SurveyLocation
+        // attribute, already enforced by the automatic 400 above) but never
+        // blocks on *where* it is - out-of-area only warns.
+        var isSurvey = formType == "survey";
+
         FormSubmission savedSubmission;
 
         try
@@ -88,10 +96,6 @@ public class LeadsController : ControllerBase
                     statusCode: StatusCodes.Status500InternalServerError);
             }
 
-            var formType = AllowedFormTypes.Contains(request.FormType ?? string.Empty)
-                ? request.FormType!.ToLowerInvariant()
-                : "general";
-
             var submission = new FormSubmission
             {
                 Id = Guid.NewGuid(),
@@ -101,6 +105,9 @@ public class LeadsController : ControllerBase
                 Phone = request.Phone!.Trim(),
                 ProductOfInterest = string.IsNullOrWhiteSpace(request.ProductOfInterest) ? null : request.ProductOfInterest!.Trim(),
                 Message = string.IsNullOrWhiteSpace(request.Message) ? null : request.Message!.Trim(),
+                // Story 6.5: survey-only; the flag is always the server's own reading.
+                LocationAddress = isSurvey ? request.LocationAddress!.Trim() : null,
+                IsOutsideServiceArea = isSurvey ? ServiceArea.IsOutside(request.LocationAddress) : null,
                 CreatedAt = DateTimeOffset.UtcNow
             };
 

@@ -1,0 +1,74 @@
+@model TbTruongHoc.Web.Models.QuoteRequestFormViewModel
+@*
+    Story 6.5 (FR-8): Site A's "Đăng ký khảo sát miễn phí" form, shown inside
+    the installation-required PDP's survey <dialog>. Same submit path as
+    _QuoteRequestForm (data-quote-request-form -> lead-form.js -> POST
+    /api/leads, success/error inline, values kept on failure), with
+    formType "survey" and the extra locationAddress field. Ids differ from
+    _QuoteRequestForm's so both can share a page.
+
+    Fields: sản phẩm quan tâm (prefilled, read-only, "linked" styling) ->
+    địa điểm* -> [out-of-area warning-banner] -> họ tên* -> số điện thoại*.
+    Required fields carry a visible error-coloured "*" and aria-required.
+
+    The warning-banner is hidden until site-a.js reads the địa điểm text as
+    outside Miền Bắc – Thanh Hóa (ServiceArea.OutsideTerms, handed over in
+    data-sa-survey-areas - one list for page and server). It never disables
+    submit; the server recomputes the stored flag itself. While shown, the
+    banner joins the field's aria-describedby (after the error slot, which
+    lead-form.js reads as the first id).
+*@
+@{
+    var productOfInterest = Model?.ProductOfInterest;
+    var areas = System.Text.Json.JsonSerializer.Serialize(ServiceArea.OutsideTerms);
+}
+<div class="quote-request-form sa-survey-form" data-quote-request-form data-sa-survey-areas="@areas">
+    <form novalidate>
+        <input type="hidden" name="formType" value="survey">
+
+        <div class="mb-3">
+            <label for="surveyProduct">Sản phẩm quan tâm</label>
+            <input type="text" id="surveyProduct" name="productOfInterest" value="@productOfInterest" readonly
+                   class="sa-survey-form__linked" aria-describedby="surveyProductError surveyProductHint">
+            <span id="surveyProductHint" class="sa-survey-form__hint">Tự động liên kết từ trang sản phẩm đang xem</span>
+            <span id="surveyProductError" class="quote-request-form__error" role="alert"></span>
+        </div>
+
+        <div class="mb-3">
+            <label for="surveyLocation">Địa điểm / địa chỉ lắp đặt <span aria-hidden="true">*</span></label>
+            <input type="text" id="surveyLocation" name="locationAddress" required aria-required="true" maxlength="500"
+                   autocomplete="street-address" data-sa-survey-location
+                   aria-describedby="surveyLocationError" aria-invalid="false">
+            <span id="surveyLocationError" class="quote-request-form__error" role="alert"></span>
+        </div>
+
+        <div aria-live="polite">
+            <div class="sa-warning-banner" id="surveyLocationWarning" data-sa-survey-warning hidden>
+                <span class="sa-warning-banner__icon" aria-hidden="true">!</span>
+                <p class="sa-warning-banner__text">
+                    <strong>Ngoài khu vực phục vụ trực tiếp</strong>
+                    Địa điểm bạn nhập nằm ngoài khu vực phục vụ trực tiếp (Miền Bắc – Thanh Hóa). Chúng tôi vẫn ghi nhận và sẽ liên hệ để tư vấn phương án phù hợp.
+                </p>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="surveyName">Họ tên <span aria-hidden="true">*</span></label>
+            <input type="text" id="surveyName" name="name" required aria-required="true" autocomplete="name"
+                   aria-describedby="surveyNameError" aria-invalid="false">
+            <span id="surveyNameError" class="quote-request-form__error" role="alert"></span>
+        </div>
+
+        <div class="mb-3">
+            <label for="surveyPhone">Số điện thoại <span aria-hidden="true">*</span></label>
+            <input type="tel" id="surveyPhone" name="phone" required aria-required="true" autocomplete="tel"
+                   aria-describedby="surveyPhoneError" aria-invalid="false">
+            <span id="surveyPhoneError" class="quote-request-form__error" role="alert"></span>
+        </div>
+
+        <div class="quote-request-form__submit-error" role="alert"></div>
+
+        <button type="submit">Gửi đăng ký</button>
+        <p class="sa-survey-form__note">Miễn phí khảo sát · Không phát sinh chi phí trước hợp đồng</p>
+    </form>
+</div>
