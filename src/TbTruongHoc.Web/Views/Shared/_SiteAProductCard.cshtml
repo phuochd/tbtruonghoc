@@ -1,0 +1,38 @@
+@model ProductPost
+@*
+    Story 6.3 (Q2): Site A product card - one link over the whole card
+    (surface, border-neutral hairline, rounded.lg, flat). A 4:3 image (alt =
+    product title) or a plain teal placeholder block, never a broken image;
+    then the title and the price in primary. The price is the editor's free
+    text, HTML-encoded; blank -> "Liên hệ để nhận báo giá" in the same
+    position. No button. The link's accessible name is the product title
+    (aria-labelledby); the price is its description.
+*@
+@{
+    var post = Model;
+    var price = post.PriceText;
+    var idBase = $"sa-pcard-{post.Id:N}";
+}
+<a class="sa-pcard" href="@post.Permalink" aria-labelledby="@(idBase)-title" aria-describedby="@(idBase)-price">
+    @if (post.PrimaryImage.HasValue)
+    {
+        <div class="sa-pcard__media">
+            <img src="@Url.Content(WebApp.Media.ResizeImage(post.PrimaryImage, 600, 450))" alt="@post.Title" width="600" height="450" loading="lazy">
+        </div>
+    }
+    else
+    {
+        <div class="sa-pcard__media sa-pcard__media--empty"></div>
+    }
+    <div class="sa-pcard__body">
+        <h2 class="sa-pcard__title" id="@(idBase)-title">@post.Title</h2>
+        @if (price != null)
+        {
+            <span class="sa-pcard__price" id="@(idBase)-price">@price</span>
+        }
+        else
+        {
+            <span class="sa-pcard__price sa-pcard__price--contact" id="@(idBase)-price">Liên hệ để nhận báo giá</span>
+        }
+    </div>
+</a>

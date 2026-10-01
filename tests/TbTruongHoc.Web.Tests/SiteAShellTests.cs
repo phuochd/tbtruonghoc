@@ -661,11 +661,11 @@ public class SiteAShellTests
 
             var hub = Assert.Single(await api.Sites.GetSitemapAsync(site.Id, onlyPublished: false));
             Assert.True(ProductHubPage.IsHub(hub));
-            Assert.Equal(SiteASampleSeed.Categories.Count, hub.Items.Count);
+            Assert.Equal(SiteACatalogSeed.Categories.Count, hub.Items.Count);
 
             var tiles = await catalog.GetHubTilesAsync(site.Id, hub.Id);
-            Assert.Equal(SiteASampleSeed.Categories.Count - 1, tiles.Count);
-            Assert.DoesNotContain(tiles, t => t.Title == SiteASampleSeed.Categories[^1].Title);
+            Assert.Equal(SiteACatalogSeed.Categories.Count - 1, tiles.Count);
+            Assert.DoesNotContain(tiles, t => t.Title == SiteACatalogSeed.Categories[^1].Title);
         }
         finally
         {

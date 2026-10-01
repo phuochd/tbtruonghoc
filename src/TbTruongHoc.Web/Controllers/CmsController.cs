@@ -143,6 +143,14 @@ public class CmsController : Controller
             model.Archive = await _api.Archives.GetByIdAsync<ProductPost>(id, page, null, null, null, null,
                 Models.ProductArchive.PageSize);
 
+            // Story 6.3: Site A's category page has its own view (breadcrumb
+            // + Site A product cards); Site B keeps ProductArchive.cshtml.
+            if (await IsSiteAAsync(model.SiteId))
+            {
+                model.ParentHub = await LoadParentHubAsync(model.ParentId);
+                return View("SiteAProductArchive", model);
+            }
+
             return View(model);
         }
         catch (UnauthorizedAccessException)
@@ -338,6 +346,28 @@ public class CmsController : Controller
         {
             return Unauthorized();
         }
+    }
+
+    /// <summary>
+    /// Story 6.3: the breadcrumb's hub step - the parent page when it is a
+    /// published <see cref="ProductHubPage"/>, else null ("Trang chủ /
+    /// {category}"). An unpublished hub is skipped so the trail never links
+    /// to a page visitors can't open.
+    /// </summary>
+    private async Task<PageInfo> LoadParentHubAsync(Guid? parentId)
+    {
+        if (!parentId.HasValue)
+        {
+            return null;
+        }
+
+        var parent = await _api.Pages.GetByIdAsync<PageInfo>(parentId.Value);
+        if (parent == null || parent.TypeId != nameof(ProductHubPage)
+            || !parent.Published.HasValue || parent.Published.Value > DateTime.Now)
+        {
+            return null;
+        }
+        return parent;
     }
 
     /// <summary>Story 6.2: true when the page belongs to Site A (tbtruonghoc.com).</summary>

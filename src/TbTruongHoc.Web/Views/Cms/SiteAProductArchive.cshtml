@@ -1,0 +1,85 @@
+@model ProductArchive
+@*
+    Story 6.3: Site A category page (its ProductArchive; CmsController picks
+    this view for Site A only, Site B keeps ProductArchive.cshtml).
+    Breadcrumb "Trang chủ / {hub} / {category}" (hub step only when the
+    parent is a published ProductHubPage) -> header (H1 + excerpt) -> the
+    editor's blocks (ConfigBlock skipped, as on the Site A hub) -> Site A
+    product cards, 12 per page, prev/next + "Trang x / y" only when there is
+    more than one page. An empty category renders header + blocks only - no
+    grid, no pager, no "no products" text. No closing contact band (Q3).
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var posts = Model.Archive?.Posts ?? new List<ProductPost>();
+    var currentPage = Math.Max(1, Model.Archive?.CurrentPage ?? 1);
+    var totalPages = Model.Archive?.TotalPages ?? 0;
+    var hub = Model.ParentHub;
+
+    string PageLink(int n) => n <= 1 ? Model.Permalink : $"{Model.Permalink}/page/{n}";
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<main class="sa-catalog">
+    <nav class="sa-breadcrumb sa-container" aria-label="Breadcrumb">
+        <a href="~/">Trang chủ</a>
+        <span class="sa-breadcrumb__sep" aria-hidden="true">/</span>
+        @if (hub != null)
+        {
+            <a href="@hub.Permalink">@hub.Title</a>
+            <span class="sa-breadcrumb__sep" aria-hidden="true">/</span>
+        }
+        <span aria-current="page">@Model.Title</span>
+    </nav>
+
+    <header class="sa-catalog__header sa-container">
+        <h1>@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
+        {
+            <p class="sa-catalog__lead">@Model.Excerpt</p>
+        }
+    </header>
+
+    @foreach (var block in Model.Blocks)
+    {
+        // Story 4.2's config block is not part of Site A's category page.
+        if (block is ConfigBlock)
+        {
+            continue;
+        }
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+
+    @if (posts.Count > 0)
+    {
+        <div class="sa-container">
+            <ul class="sa-product-grid" data-sa-product-grid>
+                @foreach (var post in posts)
+                {
+                    <li>@await Html.PartialAsync("_SiteAProductCard", post)</li>
+                }
+            </ul>
+
+            @if (totalPages > 1)
+            {
+                <nav class="sa-pager" aria-label="Phân trang">
+                    @if (currentPage > 1)
+                    {
+                        <a class="sa-pager__link sa-pager__link--prev" href="@PageLink(currentPage - 1)" rel="prev">Trang trước</a>
+                    }
+                    <span class="sa-pager__status">Trang @currentPage / @totalPages</span>
+                    @if (currentPage < totalPages)
+                    {
+                        <a class="sa-pager__link sa-pager__link--next" href="@PageLink(currentPage + 1)" rel="next">Trang sau</a>
+                    }
+                </nav>
+            }
+        </div>
+    }
+</main>

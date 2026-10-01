@@ -38,6 +38,13 @@ public class ProductArchive : Page<ProductArchive>
     /// </summary>
     public PostArchive<ProductPost> Archive { get; set; }
 
+    /// <summary>
+    /// Story 6.3 (Site A only): the breadcrumb's hub step - the published
+    /// parent <see cref="ProductHubPage"/>, or null for a top-level category.
+    /// Set by the controller; not a region.
+    /// </summary>
+    public PageInfo ParentHub { get; set; }
+
     /// <summary>The filter groups, parsed with <see cref="SplitList"/>.</summary>
     public IReadOnlyList<string> FilterGroupList => SplitList(FilterGroups?.Value);
 
