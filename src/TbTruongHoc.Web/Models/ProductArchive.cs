@@ -34,6 +34,13 @@ public class ProductArchive : Page<ProductArchive>
     public StringField Certifications { get; set; }
 
     /// <summary>
+    /// Story 6.4 (Q4): default trust claims for this category's Site A
+    /// product pages; a product's own non-blank value replaces them.
+    /// </summary>
+    [Region(Title = "Cam kết (Site A)", Description = "Chỉ dùng cho Site A: các cam kết THẬT áp dụng cho mọi sản phẩm trong danh mục, cách nhau bằng dấu phẩy, ví dụ \"Bảo hành 12 tháng, Hàng chính hãng\" (hiện tối đa 3 trên trang sản phẩm; \"Giao hàng toàn quốc\" tự ẩn trên sản phẩm cần thi công). Sản phẩm có cam kết riêng sẽ dùng cam kết riêng. Site B không dùng trường này.")]
+    public StringField TrustClaims { get; set; }
+
+    /// <summary>
     /// The currently loaded page of products.
     /// </summary>
     public PostArchive<ProductPost> Archive { get; set; }

@@ -171,6 +171,20 @@ public class CmsController : Controller
         {
             var model = await _loader.GetPostAsync<ProductPost>(id, HttpContext.User, draft);
 
+            // Story 6.4: Site A's product page has its own view (breadcrumb,
+            // price-block, shipping note, quote modal); Site B keeps
+            // ProductPost.cshtml as is. A post has no SiteId: its category does.
+            if (model != null)
+            {
+                var categoryInfo = await _api.Pages.GetByIdAsync<PageInfo>(model.BlogId);
+                if (categoryInfo != null && await IsSiteAAsync(categoryInfo.SiteId))
+                {
+                    model.ParentCategory = await _api.Pages.GetByIdAsync<ProductArchive>(model.BlogId);
+                    model.ParentHub = await LoadParentHubAsync(categoryInfo.ParentId);
+                    return View("SiteAProductPost", model);
+                }
+            }
+
             return View(model);
         }
         catch (UnauthorizedAccessException)

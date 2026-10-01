@@ -1,0 +1,250 @@
+@model ProductPost
+@*
+    Story 6.4: Site A product detail page - the shared PDP scaffold plus the
+    shippable variant (CmsController picks this view for Site A only; Site B
+    keeps ProductPost.cshtml). Story 6.5 layers the installation-required
+    variant on top.
+
+    Order (= keyboard order): breadcrumb "Trang chủ / {hub} / {category} /
+    {product}" (hub step only for a published ProductHubPage parent, 6.3's
+    rule) -> two columns at >= 1024px (gallery | info), stacked below ->
+    full-width "Thông số kỹ thuật" table -> the editor's blocks (ConfigBlock
+    skipped, as on 6.2/6.3). No Site B trust block.
+
+    Info column: H1 -> "Mã: …" -> excerpt -> price-block (price or
+    "Liên hệ để nhận báo giá", same block) -> shipping-note (shippable only,
+    Q1) -> CTA row (amber "Yêu cầu báo giá" opens the quote <dialog>; teal
+    outline call/Zalo from SiteSettings, each omitted when unset) -> trust
+    chips ("Cam kết (Site A)", product over category, max 3, Q4).
+
+    Gallery: the Site B rules (PrimaryImage, Photos, alt = media AltText else
+    "{title} – ảnh n"), then the genuine project photos (Q3), the only ones
+    carrying the "Hình ảnh thi công thực tế" photo-badge. 2+ images reuse
+    sb-gallery.js through its data-sb-gallery* hooks; site-a.js keeps the
+    main image's badge in step with the selected thumbnail. No images -> no
+    gallery column, info full width.
+
+    Quote modal (Q2): native <dialog> holding _QuoteRequestForm (formType
+    general, product prefilled); site-a.js opens it from
+    [data-sa-modal-open], closes it on "Đóng" / Esc / backdrop click and
+    returns focus to the CTA. lead-form.js keeps success/error inside it.
+*@
+@{
+    ViewData["Title"] = !string.IsNullOrEmpty(Model.MetaTitle) ? Model.MetaTitle : Model.Title;
+    var price = Model.PriceText;
+    var sku = Model.SkuText;
+    var specs = Model.SpecRows;
+    var images = Model.SiteAGalleryImages;
+    var anyGenuine = images.Any(i => i.Genuine);
+    var chips = Model.TrustChipList;
+    var category = Model.ParentCategory;
+    var hub = Model.ParentHub;
+    var shippable = !Model.IsInstallationRequired;
+    var productOfInterest = Model.Title?.Length > 200 ? Model.Title[..200] : Model.Title;
+    var layoutClass = images.Count > 0 ? "sa-pdp__layout sa-pdp__layout--gallery" : "sa-pdp__layout";
+
+    var settings = await WebApp.Site.GetContentAsync<SiteSettings>();
+    var phone = settings?.Phone?.Value?.Trim();
+    var telHref = ContactLinks.TelHref(phone);
+    var zaloHref = ContactLinks.SafeUrl(settings?.ZaloUrl?.Value);
+
+    const string modalId = "sa-quote-modal";
+    const string photoBadge = "Hình ảnh thi công thực tế";
+
+    string AltFor(Piranha.Extend.Fields.ImageField field, int n) =>
+        !string.IsNullOrWhiteSpace(field.Media?.AltText) ? field.Media.AltText.Trim() : $"{Model.Title} – ảnh {n}";
+    string LargeUrl(Piranha.Extend.Fields.ImageField field) => Url.Content(WebApp.Media.ResizeImage(field, 1140));
+}
+@section head {
+    @await Html.PartialAsync("_MetaTags", Model)
+}
+
+<main class="sa-pdp">
+    <nav class="sa-breadcrumb sa-container" aria-label="Breadcrumb">
+        <a href="~/">Trang chủ</a>
+        <span class="sa-breadcrumb__sep" aria-hidden="true">/</span>
+        @if (hub != null)
+        {
+            <a href="@hub.Permalink">@hub.Title</a>
+            <span class="sa-breadcrumb__sep" aria-hidden="true">/</span>
+        }
+        @if (category != null)
+        {
+            <a href="@category.Permalink">@category.Title</a>
+            <span class="sa-breadcrumb__sep" aria-hidden="true">/</span>
+        }
+        <span aria-current="page">@Model.Title</span>
+    </nav>
+
+    <div class="sa-container">
+        <div class="@layoutClass">
+            @if (images.Count > 0)
+            {
+                var first = images[0];
+                var multi = images.Count > 1;
+                @* Razor always renders data-* attributes (a null value becomes =""), so
+                   the single-photo and gallery variants are separate branches. *@
+                if (!multi)
+                {
+                    <div class="sa-pdp__gallery">
+                        <div class="sa-pdp__figure">
+                            <img class="sa-pdp__image" fetchpriority="high" src="@LargeUrl(first.Image)" alt="@AltFor(first.Image, 1)" width="@first.Image.Media.Width" height="@first.Image.Media.Height">
+                            @if (first.Genuine)
+                            {
+                                <span class="sa-photo-badge" data-sa-photo-badge>@photoBadge</span>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="sa-pdp__gallery" data-sb-gallery data-sa-pdp-gallery="@(anyGenuine ? "true" : "false")">
+                        <div class="sa-pdp__figure">
+                            <img class="sa-pdp__image" data-sb-gallery-main fetchpriority="high" src="@LargeUrl(first.Image)" alt="@AltFor(first.Image, 1)" width="@first.Image.Media.Width" height="@first.Image.Media.Height">
+                            @if (anyGenuine)
+                            {
+                                <span class="sa-photo-badge" data-sa-photo-badge hidden="@(first.Genuine ? null : "hidden")">@photoBadge</span>
+                            }
+                        </div>
+                        <ul class="sa-pdp__thumbs">
+                            @for (var i = 0; i < images.Count; i++)
+                            {
+                                var image = images[i].Image;
+                                var genuine = images[i].Genuine;
+                                var n = i + 1;
+                                var alt = AltFor(image, n);
+                                <li>
+                                    <a class="sa-pdp__thumb" href="@LargeUrl(image)" aria-label="@(genuine ? $"Xem ảnh {n} – {photoBadge}" : $"Xem ảnh {n}")"
+                                       data-sb-gallery-thumb data-alt="@alt" data-width="@image.Media.Width" data-height="@image.Media.Height"
+                                       data-genuine="@(genuine ? "true" : "false")"
+                                       aria-current="@(i == 0 ? "true" : null)">
+                                        <img src="@Url.Content(WebApp.Media.ResizeImage(image, 160, 160))" alt="@alt" width="160" height="160" loading="lazy">
+                                        @if (genuine)
+                                        {
+                                            <span class="sa-photo-badge sa-photo-badge--thumb" title="@photoBadge">@photoBadge</span>
+                                        }
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            }
+
+            <div class="sa-pdp__info">
+                <h1 class="sa-pdp__title">@Model.Title</h1>
+                @if (sku != null)
+                {
+                    <p class="sa-pdp__sku">Mã: @sku</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Excerpt))
+                {
+                    <p class="sa-pdp__excerpt">@Model.Excerpt</p>
+                }
+
+                <div class="sa-price-block">
+                    <p class="sa-price-block__label">Giá bán</p>
+                    @if (price != null)
+                    {
+                        <p class="sa-price-block__price">@price</p>
+                        <p class="sa-price-block__note">Giá tham khảo — liên hệ để nhận báo giá ưu đãi khi đặt số lượng lớn.</p>
+                    }
+                    else
+                    {
+                        <p class="sa-price-block__price sa-price-block__price--fallback">Liên hệ để nhận báo giá</p>
+                        <p class="sa-price-block__note">Giá phụ thuộc số lượng và yêu cầu cụ thể — gửi yêu cầu để nhận báo giá.</p>
+                    }
+                </div>
+
+                @if (shippable)
+                {
+                    <p class="sa-shipping-note">
+                        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7" cy="17.5" r="1.8" fill="currentColor"/><circle cx="17" cy="17.5" r="1.8" fill="currentColor"/></svg>
+                        Giao hàng toàn quốc — 3–7 ngày làm việc tùy khu vực
+                    </p>
+                }
+
+                <div class="sa-pdp__ctas">
+                    <button type="button" class="sa-btn sa-btn--primary" data-sa-modal-open="@modalId" aria-haspopup="dialog" aria-controls="@modalId">Yêu cầu báo giá</button>
+                    @if (telHref != null)
+                    {
+                        <a class="sa-btn sa-btn--secondary" href="tel:@telHref">Gọi @phone</a>
+                    }
+                    @if (zaloHref != null)
+                    {
+                        <a class="sa-btn sa-btn--secondary" href="@zaloHref" target="_blank" rel="noopener noreferrer" aria-label="Zalo tư vấn – nhắn tin qua Zalo (mở tab mới)">Zalo tư vấn</a>
+                    }
+                </div>
+
+                @if (chips.Count > 0)
+                {
+                    <ul class="sa-pdp__trust" aria-label="Cam kết">
+                        @foreach (var chip in chips)
+                        {
+                            <li><span class="sa-trust-chip">@chip</span></li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        @if (specs.Count > 0)
+        {
+            <section class="sa-pdp__specs" aria-labelledby="sa-pdp-specs-title">
+                <h2 id="sa-pdp-specs-title">Thông số kỹ thuật</h2>
+                <table class="sa-spec-table">
+                    <tbody>
+                        @foreach (var row in specs)
+                        {
+                            <tr>
+                                <th scope="row">@row.Label</th>
+                                <td>@row.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
+    </div>
+
+    @{
+        // Block-image alt decision A (as on Site B's PDP): shared image block
+        // templates fall back to the product title when media has no AltText.
+        ViewData["ImageAltFallback"] = Model.Title;
+    }
+    @foreach (var block in Model.Blocks)
+    {
+        // Story 4.2's config block is not part of Site A's product page.
+        if (block is ConfigBlock)
+        {
+            continue;
+        }
+        <div class="block @block.CssName()">
+            <div class="container">
+                @Html.DisplayFor(m => block, block.GetType().Name)
+            </div>
+        </div>
+    }
+    @{
+        ViewData.Remove("ImageAltFallback");
+    }
+</main>
+
+<dialog class="sa-modal" id="@modalId" aria-labelledby="sa-quote-modal-title">
+    <div class="sa-modal__panel">
+        <div class="sa-modal__header">
+            <h2 class="sa-modal__title" id="sa-quote-modal-title">Yêu cầu báo giá</h2>
+            <button type="button" class="sa-modal__close" data-sa-modal-close aria-label="Đóng hộp thoại yêu cầu báo giá">
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+                Đóng
+            </button>
+        </div>
+        @await Html.PartialAsync("_QuoteRequestForm", new QuoteRequestFormViewModel { ProductOfInterest = productOfInterest, FormType = "general" })
+    </div>
+</dialog>
+
+@if (images.Count > 1)
+{
+    <script src="~/assets/js/sb-gallery.js" asp-append-version="true"></script>
+}
+<script src="~/assets/js/lead-form.js" asp-append-version="true"></script>
