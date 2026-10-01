@@ -208,6 +208,137 @@ public class LeadSubmissionTests
         Assert.Null(saved);
     }
 
+    // --- Story 6.5: survey form (formType "survey" + location) ---
+
+    // Matrix: In-area / Out-of-area survey. Also the deferred 6.x check that
+    // a non-default formType is saved verbatim.
+    [Theory]
+    [InlineData("Trường MN Hoa Sen, số 12 đường Lê Lợi, TP. Thanh Hóa", false)]
+    [InlineData("Trường Tiểu học Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh", true)]
+    [InlineData("Da Nang", true)]
+    public async Task Survey_Stores_Location_And_Server_Computed_Area_Flag(string location, bool outside)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+
+        var name = $"Survey Visitor {Guid.NewGuid():N}";
+
+        // The client's own flag is ignored: always the opposite of the truth here.
+        var response = await PostAsync(HostnameOf(site), new
+        {
+            name,
+            phone = "0912345678",
+            productOfInterest = "Dù che sân trường học",
+            formType = "survey",
+            locationAddress = "  " + location + "  ",
+            isOutsideServiceArea = !outside
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var saved = await GetSavedSubmissionAsync(name);
+        Assert.NotNull(saved);
+        Assert.Equal("survey", saved!.FormType);
+        Assert.Equal(location, saved.LocationAddress);
+        Assert.Equal(outside, saved.IsOutsideServiceArea);
+        Assert.Equal("Dù che sân trường học", saved.ProductOfInterest);
+        Assert.Equal(site.Id, saved.SiteId);
+    }
+
+    // Matrix: Missing location.
+    [Theory]
+    [InlineData(null)]
+    [InlineData("   ")]
+    public async Task Survey_Without_Location_Returns_400_With_Location_Field_Error(string location)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+
+        var name = $"Survey No Location {Guid.NewGuid():N}";
+
+        var response = await PostAsync(HostnameOf(site), new { name, phone = "0912345678", formType = "survey", locationAddress = location });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        using var problem = JsonDocument.Parse(body);
+        Assert.True(problem.RootElement.GetProperty("errors").TryGetProperty("LocationAddress", out _), $"Expected a 'LocationAddress' field error in: {body}");
+        Assert.Null(await GetSavedSubmissionAsync(name));
+    }
+
+    // Review: the location error comes back in the same 400 as Name/Phone
+    // (not on a second submit), and the 500-character limit holds.
+    [Fact]
+    public async Task Survey_Location_Error_Arrives_With_The_Other_Field_Errors()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+
+        var response = await PostAsync(HostnameOf(site), new { name = "", phone = "", formType = "Survey", locationAddress = "" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        using var problem = JsonDocument.Parse(body);
+        var errors = problem.RootElement.GetProperty("errors");
+        foreach (var field in new[] { "Name", "Phone", "LocationAddress" })
+        {
+            Assert.True(errors.TryGetProperty(field, out _), $"Expected a '{field}' field error in: {body}");
+        }
+    }
+
+    [Theory]
+    [InlineData("survey", HttpStatusCode.BadRequest)]
+    [InlineData("general", HttpStatusCode.OK)]
+    public async Task Location_Over_500_Characters_Fails_Only_A_Survey(string formType, HttpStatusCode expected)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+
+        var name = $"Long Location {formType} {Guid.NewGuid():N}";
+
+        var response = await PostAsync(HostnameOf(site), new { name, phone = "0912345678", formType, locationAddress = new string('x', 501) });
+
+        Assert.Equal(expected, response.StatusCode);
+        var saved = await GetSavedSubmissionAsync(name);
+        if (expected == HttpStatusCode.BadRequest)
+        {
+            using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            Assert.True(problem.RootElement.GetProperty("errors").TryGetProperty("LocationAddress", out _));
+            Assert.Null(saved);
+        }
+        else
+        {
+            Assert.NotNull(saved);
+            Assert.Null(saved!.LocationAddress);
+        }
+    }
+
+    // Matrix: General lead with location / Unknown formType.
+    [Theory]
+    [InlineData("general", "general")]
+    [InlineData("foo", "general")]
+    [InlineData("landing", "landing")]
+    public async Task Non_Survey_Leads_Ignore_Location(string sentType, string storedType)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var api = scope.ServiceProvider.GetRequiredService<IApi>();
+        var site = await GetSiteAsync(api, SiteSeed.TbTruongHocInternalId);
+
+        var name = $"Non Survey {sentType} {Guid.NewGuid():N}";
+
+        var response = await PostAsync(HostnameOf(site), new { name, phone = "0912345678", formType = sentType, locationAddress = "Quận 1, TP. Hồ Chí Minh" });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var saved = await GetSavedSubmissionAsync(name);
+        Assert.NotNull(saved);
+        Assert.Equal(storedType, saved!.FormType);
+        Assert.Null(saved.LocationAddress);
+        Assert.Null(saved.IsOutsideServiceArea);
+    }
+
     private async Task<HttpResponseMessage> PostAsync(string hostname, object payload)
     {
         var client = _factory.CreateClient();

@@ -5,6 +5,14 @@
     keeps ProductPost.cshtml). Story 6.5 layers the installation-required
     variant on top.
 
+    Story 6.5 - installation-required variant ("Cần thi công (Site A)"
+    ticked): the CTA row leads with amber "Đăng ký khảo sát miễn phí", which
+    opens the survey <dialog> (_SurveyRequestForm, formType survey) instead
+    of the quote one; a blank price gets the survey-specific note; the
+    fixed "Khu vực phục vụ" service-area block and the 3-step "Quy trình
+    thi công" process-strip follow the specs table (focus order: specs ->
+    service-area -> process-strip). No shipping-note, no quote dialog.
+
     Order (= keyboard order): breadcrumb "Trang chủ / {hub} / {category} /
     {product}" (hub step only for a published ProductHubPage parent, 6.3's
     rule) -> two columns at >= 1024px (gallery | info), stacked below ->
@@ -48,7 +56,7 @@
     var telHref = ContactLinks.TelHref(phone);
     var zaloHref = ContactLinks.SafeUrl(settings?.ZaloUrl?.Value);
 
-    const string modalId = "sa-quote-modal";
+    var modalId = shippable ? "sa-quote-modal" : "sa-survey-modal";
     const string photoBadge = "Hình ảnh thi công thực tế";
 
     string AltFor(Piranha.Extend.Fields.ImageField field, int n) =>
@@ -152,7 +160,9 @@
                     else
                     {
                         <p class="sa-price-block__price sa-price-block__price--fallback">Liên hệ để nhận báo giá</p>
-                        <p class="sa-price-block__note">Giá phụ thuộc số lượng và yêu cầu cụ thể — gửi yêu cầu để nhận báo giá.</p>
+                        <p class="sa-price-block__note">@(shippable
+                            ? "Giá phụ thuộc số lượng và yêu cầu cụ thể — gửi yêu cầu để nhận báo giá."
+                            : "Giá phụ thuộc điều kiện thi công thực tế — báo giá chính xác sau khi khảo sát hiện trường.")</p>
                     }
                 </div>
 
@@ -165,7 +175,7 @@
                 }
 
                 <div class="sa-pdp__ctas">
-                    <button type="button" class="sa-btn sa-btn--primary" data-sa-modal-open="@modalId" aria-haspopup="dialog" aria-controls="@modalId">Yêu cầu báo giá</button>
+                    <button type="button" class="sa-btn sa-btn--primary" data-sa-modal-open="@modalId" aria-haspopup="dialog" aria-controls="@modalId">@(shippable ? "Yêu cầu báo giá" : "Đăng ký khảo sát miễn phí")</button>
                     @if (telHref != null)
                     {
                         <a class="sa-btn sa-btn--secondary" href="tel:@telHref">Gọi @phone</a>
@@ -205,6 +215,39 @@
                 </table>
             </section>
         }
+
+        @if (!shippable)
+        {
+            <section class="sa-service-area" aria-labelledby="sa-service-area-title">
+                <h2 class="sa-service-area__title" id="sa-service-area-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/></svg>
+                    Khu vực phục vụ: Miền Bắc – Thanh Hóa
+                </h2>
+                <p>Đội thi công của Ngọc Anh trực tiếp khảo sát và lắp đặt trong phạm vi từ Miền Bắc đến Thanh Hóa.</p>
+                <p class="sa-service-area__note">Ngoài khu vực này, quý khách vẫn có thể gửi đăng ký khảo sát — đội kinh doanh sẽ liên hệ tư vấn phương án phù hợp.</p>
+            </section>
+
+            <section class="sa-process-strip" aria-labelledby="sa-process-strip-title">
+                <h2 class="sa-process-strip__title" id="sa-process-strip-title">Quy trình thi công</h2>
+                <ol class="sa-process-strip__steps">
+                    <li class="sa-process-strip__step">
+                        <span class="sa-process-strip__num" aria-hidden="true">1</span>
+                        <h3>Khảo sát</h3>
+                        <p>Kỹ thuật viên khảo sát hiện trạng sân trường, đo đạc và tư vấn kích thước phù hợp.</p>
+                    </li>
+                    <li class="sa-process-strip__step">
+                        <span class="sa-process-strip__num" aria-hidden="true">2</span>
+                        <h3>Hợp đồng</h3>
+                        <p>Gửi báo giá chi tiết theo khảo sát thực tế, ký hợp đồng thi công.</p>
+                    </li>
+                    <li class="sa-process-strip__step">
+                        <span class="sa-process-strip__num" aria-hidden="true">3</span>
+                        <h3>Thi công</h3>
+                        <p>Đội ngũ riêng của Ngọc Anh lắp đặt, nghiệm thu và bàn giao bảo hành.</p>
+                    </li>
+                </ol>
+            </section>
+        }
     </div>
 
     @{
@@ -230,18 +273,37 @@
     }
 </main>
 
-<dialog class="sa-modal" id="@modalId" aria-labelledby="sa-quote-modal-title">
-    <div class="sa-modal__panel">
-        <div class="sa-modal__header">
-            <h2 class="sa-modal__title" id="sa-quote-modal-title">Yêu cầu báo giá</h2>
-            <button type="button" class="sa-modal__close" data-sa-modal-close aria-label="Đóng hộp thoại yêu cầu báo giá">
-                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-                Đóng
-            </button>
+@if (shippable)
+{
+    <dialog class="sa-modal" id="@modalId" aria-labelledby="sa-quote-modal-title">
+        <div class="sa-modal__panel">
+            <div class="sa-modal__header">
+                <h2 class="sa-modal__title" id="sa-quote-modal-title">Yêu cầu báo giá</h2>
+                <button type="button" class="sa-modal__close" data-sa-modal-close aria-label="Đóng hộp thoại yêu cầu báo giá">
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+                    Đóng
+                </button>
+            </div>
+            @await Html.PartialAsync("_QuoteRequestForm", new QuoteRequestFormViewModel { ProductOfInterest = productOfInterest, FormType = "general" })
         </div>
-        @await Html.PartialAsync("_QuoteRequestForm", new QuoteRequestFormViewModel { ProductOfInterest = productOfInterest, FormType = "general" })
-    </div>
-</dialog>
+    </dialog>
+}
+else
+{
+    <dialog class="sa-modal" id="@modalId" aria-labelledby="sa-survey-modal-title" aria-describedby="sa-survey-modal-sub">
+        <div class="sa-modal__panel">
+            <div class="sa-modal__header">
+                <h2 class="sa-modal__title" id="sa-survey-modal-title">Đăng ký khảo sát miễn phí</h2>
+                <button type="button" class="sa-modal__close" data-sa-modal-close aria-label="Đóng hộp thoại đăng ký khảo sát">
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+                    Đóng
+                </button>
+            </div>
+            <p class="sa-modal__sub" id="sa-survey-modal-sub">Để lại thông tin, kỹ thuật viên Ngọc Anh sẽ liên hệ hẹn lịch khảo sát tận nơi.</p>
+            @await Html.PartialAsync("_SurveyRequestForm", new QuoteRequestFormViewModel { ProductOfInterest = productOfInterest, FormType = "survey" })
+        </div>
+    </dialog>
+}
 
 @if (images.Count > 1)
 {
