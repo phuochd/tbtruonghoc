@@ -7,20 +7,22 @@ using TbTruongHoc.Web.Models;
 namespace TbTruongHoc.Web.Data;
 
 /// <summary>
-/// DEV-ONLY sample data for Site A, so the Story 6.1 shell can be looked at
-/// locally: a published top-level "Sản phẩm" <see cref="ProductHubPage"/>
-/// with the 11 Site A categories as published <see cref="ProductArchive"/>
-/// children, each with 1-2 published <see cref="ProductPost"/>s - except the
-/// last category, left empty so the empty-category hide rule is visible
-/// (dropdown shows 10 rows, "Xem tất cả 10 nhóm sản phẩm →"). Blank
-/// SiteSettings contact fields get sample values; filled ones are kept.
+/// DEV-ONLY sample data for Site A, so the Story 6.1+ pages can be looked at
+/// locally. Story 6.3: the "Sản phẩm" hub and the 11 categories come from the
+/// production <see cref="SiteACatalogSeed"/> (same titles/slugs; drafts);
+/// this seed publishes every sample category that is still a draft with no
+/// posts and adds 1-2 published placeholder <see cref="ProductPost"/>s to
+/// it - except the last category, published but left empty so the
+/// empty-category hide rule is visible (dropdown shows 10 rows, "Xem tất cả
+/// 10 nhóm sản phẩm →"). An existing dev DB (categories already published
+/// with products) is left as is. Blank SiteSettings contact fields get
+/// sample values; filled ones are kept.
 ///
 /// Opt-in only: runs when the environment is Development AND the config key
 /// <see cref="ConfigKey"/> is true (set by the launchSettings profile, so
 /// `dotnet run` gets it but the test host and production never do).
-/// The hub and its categories are created only when no page with slug
-/// <see cref="HubSlug"/> exists on Site A. Titles, slugs and products are
-/// placeholders, not real content.
+/// Category titles/slugs are the production ones (<see cref="SiteACatalogSeed"/>);
+/// only the products (and sample details/contacts) are placeholders.
 ///
 /// Story 6.2: on every run (like the contacts), blank excerpts / "Nhóm lọc"
 /// / "Chứng nhận" of the sample categories and an empty homepage trust band
@@ -33,27 +35,26 @@ public static class SiteASampleSeed
 {
     public const string ConfigKey = "DevSamples:SiteA";
 
-    internal const string HubSlug = "san-pham";
-    internal const string HubTitle = "Sản phẩm";
+    internal const string HubSlug = SiteACatalogSeed.HubSlug;
     internal const string SampleCategory = "Mẫu";
 
     /// <summary>
-    /// The 11 categories (epic-6-context) with placeholder products; the last
-    /// one has none on purpose.
+    /// Placeholder products per category slug (<see cref="SiteACatalogSeed.Categories"/>);
+    /// the last category has none on purpose.
     /// </summary>
-    internal static readonly IReadOnlyList<(string Title, string Slug, string[] Products)> Categories = new[]
+    internal static readonly IReadOnlyDictionary<string, string[]> Products = new Dictionary<string, string[]>
     {
-        ("Dù che nắng sân trường", "du-che-nang-san-truong", new[] { "Dù lệch tâm 3m (mẫu)", "Dù tâm vuông 4m (mẫu)" }),
-        ("Nội thất mầm non", "noi-that-mam-non", new[] { "Bàn ghế mầm non (mẫu)" }),
-        ("Quần áo nghi thức & cờ đội", "quan-ao-nghi-thuc-co-doi", new[] { "Bộ đồng phục nghi thức Đội (mẫu)", "Cờ Đội (mẫu)" }),
-        ("Thiết bị âm thanh – máy chiếu", "thiet-bi-am-thanh-may-chieu", new[] { "Loa hội trường (mẫu)" }),
-        ("Bảng tương tác", "bang-tuong-tac", new[] { "Bảng tương tác 86 inch (mẫu)" }),
-        ("Màn hình LED hiển thị", "man-hinh-led-hien-thi", new[] { "Màn hình LED P3 trong nhà (mẫu)" }),
-        ("Thiết bị văn phòng", "thiet-bi-van-phong", new[] { "Máy in văn phòng (mẫu)" }),
-        ("Phòng thí nghiệm Lý – Hóa – Sinh", "phong-thi-nghiem-ly-hoa-sinh", new[] { "Phòng thí nghiệm Hóa (mẫu)" }),
-        ("Bàn thí nghiệm", "ban-thi-nghiem", new[] { "Bàn thí nghiệm trung tâm (mẫu)" }),
-        ("Thiết bị – đồ dùng dạy học", "thiet-bi-do-dung-day-hoc", new[] { "Bộ đồ dùng dạy Toán lớp 1 (mẫu)" }),
-        ("Thiết bị mầm non ngoài trời", "thiet-bi-mam-non-ngoai-troi", Array.Empty<string>()),
+        ["du-che-nang-san-truong"] = new[] { "Dù lệch tâm 3m (mẫu)", "Dù tâm vuông 4m (mẫu)" },
+        ["noi-that-mam-non"] = new[] { "Bàn ghế mầm non (mẫu)" },
+        ["quan-ao-nghi-thuc-co-doi"] = new[] { "Bộ đồng phục nghi thức Đội (mẫu)", "Cờ Đội (mẫu)" },
+        ["thiet-bi-am-thanh-may-chieu"] = new[] { "Loa hội trường (mẫu)" },
+        ["bang-tuong-tac"] = new[] { "Bảng tương tác 86 inch (mẫu)" },
+        ["man-hinh-led-hien-thi"] = new[] { "Màn hình LED P3 trong nhà (mẫu)" },
+        ["thiet-bi-van-phong"] = new[] { "Máy in văn phòng (mẫu)" },
+        ["phong-thi-nghiem-ly-hoa-sinh"] = new[] { "Phòng thí nghiệm Hóa (mẫu)" },
+        ["ban-thi-nghiem"] = new[] { "Bàn thí nghiệm trung tâm (mẫu)" },
+        ["thiet-bi-do-dung-day-hoc"] = new[] { "Bộ đồ dùng dạy Toán lớp 1 (mẫu)" },
+        ["thiet-bi-mam-non-ngoai-troi"] = Array.Empty<string>(),
     };
 
     /// <summary>
@@ -100,43 +101,40 @@ public static class SiteASampleSeed
     {
         await FillBlankContactsAsync(api, siteId);
 
-        if (await api.Pages.GetBySlugAsync<PageInfo>(HubSlug, siteId) == null)
+        // Story 6.3: the hub + draft categories are the production seed's
+        // (a no-op once any of its slugs exists).
+        await SiteACatalogSeed.EnsureSeededAsync(api, siteId);
+        if (await api.Pages.GetBySlugAsync<PageInfo>(HubSlug, siteId) != null)
         {
-            await CreateHubAsync(api, siteId);
+            await PublishDraftSampleCategoriesAsync(api, siteId);
         }
 
         await FillBlankCategoryDetailsAsync(api, siteId);
         await FillEmptyTrustStatsAsync(api, siteId);
     }
 
-    private static async Task CreateHubAsync(IApi api, Guid siteId)
+    /// <summary>
+    /// Story 6.3: publishes each sample category that is still a draft with
+    /// no posts and adds its sample products. Published or post-bearing
+    /// categories (an existing dev DB, editor work) are left untouched.
+    /// </summary>
+    private static async Task PublishDraftSampleCategoriesAsync(IApi api, Guid siteId)
     {
-        // Append after the existing top-level pages so "Trang chủ" stays the start page.
-        var sitemap = await api.Sites.GetSitemapAsync(siteId, onlyPublished: false);
         var published = DateTime.Now.AddMinutes(-1);
 
-        var hub = await api.Pages.CreateAsync<ProductHubPage>();
-        hub.SiteId = siteId;
-        hub.ParentId = null;
-        hub.SortOrder = sitemap.Count;
-        hub.Title = HubTitle;
-        hub.Slug = HubSlug;
-        hub.Published = published;
-        await api.Pages.SaveAsync(hub);
-
-        for (var i = 0; i < Categories.Count; i++)
+        for (var i = 0; i < SiteACatalogSeed.Categories.Count; i++)
         {
-            var (title, slug, products) = Categories[i];
+            var slug = SiteACatalogSeed.Categories[i].Slug;
+            var archive = await api.Pages.GetBySlugAsync<ProductArchive>(SiteACatalogSeed.CategorySlug(slug), siteId);
+            if (archive == null || archive.Published.HasValue || (await api.Posts.GetAllAsync<PostInfo>(archive.Id)).Any())
+            {
+                continue;
+            }
 
-            var archive = await api.Pages.CreateAsync<ProductArchive>();
-            archive.SiteId = siteId;
-            archive.ParentId = hub.Id;
-            archive.SortOrder = i;
-            archive.Title = title;
-            archive.Slug = $"{HubSlug}/{slug}";
             archive.Published = published;
             await api.Pages.SaveAsync(archive);
 
+            var products = Products.TryGetValue(slug, out var list) ? list : Array.Empty<string>();
             for (var p = 0; p < products.Length; p++)
             {
                 var post = await api.Posts.CreateAsync<ProductPost>();

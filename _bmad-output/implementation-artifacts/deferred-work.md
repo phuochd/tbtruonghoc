@@ -128,3 +128,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-6-2-site-a-home-and-category-aggregate.md`
   summary: The dev-only SiteASampleSeed blank-fill pass (category excerpt/groups/certs, homepage trust stats) has no test asserting it fills or keeps values.
   evidence: The only seed test runs on a throwaway site without a SiteAHomePage start page and never reads the new fields (verification-gap review, Story 6.2).
+- source_spec: `_bmad-output/implementation-artifacts/spec-6-3-site-a-category-pages.md`
+  summary: Paginated category pages (`/page/2…n`, both sites) repeat page 1's title/meta and no page emits a canonical or rel prev/next link.
+  evidence: `_MetaTags.cshtml` has no canonical; `ProductArchive.cshtml` and `SiteAProductArchive.cshtml` render the same `<title>` on every page (6.3 review B3). Matters once a category has more than 12 products.

@@ -359,8 +359,16 @@ app.UsePiranha(options =>
     // at all, so existing pages are never touched.
     SiteAHomeSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
 
-    // DEV-ONLY: Site A sample hub/categories/products + blank contacts, so
-    // the 6.1 shell (dropdown, chip, footer) can be viewed locally. Opt-in
+    // Story 6.3 (Q1): idempotently seed Site A's published "Sản phẩm" hub
+    // plus its 11 categories as DRAFT ProductArchive children (title + slug
+    // only). Runs after SiteAHomeSeed so the hub is appended after
+    // "Trang chủ". Skipped entirely once any of the 12 slugs exists on
+    // Site A, so editor renames/deletions stick.
+    SiteACatalogSeed.EnsureSeededAsync(options.Api).GetAwaiter().GetResult();
+
+    // DEV-ONLY: publishes SiteACatalogSeed's draft Site A categories, adds
+    // placeholder products and fills blank contacts, so the 6.1-6.3 pages
+    // (shell, home, aggregate, category pages) can be viewed locally. Opt-in
     // via launchSettings; the test host and production never set the flag.
     if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>(SiteASampleSeed.ConfigKey))
     {
